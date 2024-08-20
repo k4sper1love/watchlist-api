@@ -1,1 +1,1 @@
-Documentation for Wishlist API.
+Documentation for Watchlist API.

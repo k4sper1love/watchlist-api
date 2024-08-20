@@ -3,8 +3,8 @@ package rest
 import (
 	"encoding/json"
 	"errors"
-	"github.com/k4sper1love/wishlist-api/internal/database/postgres"
-	"github.com/k4sper1love/wishlist-api/internal/models"
+	"github.com/k4sper1love/watchlist-api/internal/database/postgres"
+	"github.com/k4sper1love/watchlist-api/internal/models"
 	"io"
 	"log"
 	"net/http"

@@ -1,8 +1,8 @@
-package wishlist
+package watchlist
 
 import (
-	"github.com/k4sper1love/wishlist-api/internal/config"
-	"github.com/k4sper1love/wishlist-api/internal/transport/rest"
+	"github.com/k4sper1love/watchlist-api/internal/config"
+	"github.com/k4sper1love/watchlist-api/internal/transport/rest"
 	"log"
 )
 

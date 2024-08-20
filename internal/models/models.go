@@ -15,3 +15,11 @@ type Film struct {
 	Rating      float64 `json:"rating"`
 	PhotoUrl    string  `json:"photo_url"`
 }
+
+type Watchlist struct {
+	UserId   int     `json:"user_id"`
+	FilmId   int     `json:"film_id"`
+	AddedAt  string  `json:"added_at"`
+	IsViewed bool    `json:"is_viewed"`
+	Rating   float64 `json:"rating"`
+}

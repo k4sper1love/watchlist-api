@@ -2,7 +2,7 @@ package rest
 
 import (
 	"fmt"
-	"github.com/k4sper1love/wishlist-api/internal/config"
+	"github.com/k4sper1love/watchlist-api/internal/config"
 	"net/http"
 	"time"
 )

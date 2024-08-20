@@ -1,4 +1,4 @@
-module github.com/k4sper1love/wishlist-api
+module github.com/k4sper1love/watchlist-api
 
 go 1.23rc2
 

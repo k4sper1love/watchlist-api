@@ -3,7 +3,7 @@ package postgres
 import (
 	"database/sql"
 	"fmt"
-	"github.com/k4sper1love/wishlist-api/internal/config"
+	"github.com/k4sper1love/watchlist-api/internal/config"
 	_ "github.com/lib/pq"
 )
 

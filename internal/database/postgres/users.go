@@ -2,7 +2,7 @@ package postgres
 
 import (
 	"errors"
-	"github.com/k4sper1love/wishlist-api/internal/models"
+	"github.com/k4sper1love/watchlist-api/internal/models"
 )
 
 func AddUser(user *models.User) error {
