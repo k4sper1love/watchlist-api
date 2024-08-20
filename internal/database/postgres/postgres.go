@@ -1,0 +1,20 @@
+package postgres
+
+import (
+	"database/sql"
+	"fmt"
+	"github.com/k4sper1love/wishlist-api/internal/config"
+	_ "github.com/lib/pq"
+)
+
+func connectPostgres() *sql.DB {
+	conn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
+		config.Host, config.Port, config.User, config.Pass, config.Database)
+
+	db, err := sql.Open("postgres", conn)
+	if err != nil {
+		return nil
+	}
+
+	return db
+}
