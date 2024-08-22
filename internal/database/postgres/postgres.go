@@ -9,7 +9,7 @@ import (
 
 func connectPostgres() *sql.DB {
 	conn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
-		config.Host, config.Port, config.User, config.Pass, config.Database)
+		config.Hostname, config.Port, config.Username, config.Password, config.Database)
 
 	db, err := sql.Open("postgres", conn)
 	if err != nil {

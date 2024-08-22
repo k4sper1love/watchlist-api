@@ -9,55 +9,64 @@ import (
 	"net/http"
 )
 
-var ErrAlreadyExists = errors.New("resource already exists")
+var errAlreadyExists = errors.New("resource already exists")
 
-var ErrNotFound = errors.New("resource not found")
+var errNotFound = errors.New("resource not found")
 
-var ErrEmptyRequest = errors.New("empty request body")
+var errEmptyRequest = errors.New("empty request body")
 
-func ErrorResponse(w http.ResponseWriter, r *http.Request, status int, message string) {
+var errForeignKeyViolation = errors.New("attempted to reference a non-existent record")
+
+func errorResponse(w http.ResponseWriter, r *http.Request, status int, message string) {
 	env := envelope{"error": message}
 
-	err := writeJSON(w, status, env)
-	if err != nil {
-		log.Println(r, err)
-		w.WriteHeader(500)
-	}
+	writeJSON(w, r, status, env)
 }
 
-func ServerErrorResponse(w http.ResponseWriter, r *http.Request, err error) {
+func serverErrorResponse(w http.ResponseWriter, r *http.Request, err error) {
 	log.Println(r, err)
 
 	message := "the server encountered a problem and could not process your request"
-	ErrorResponse(w, r, http.StatusInternalServerError, message)
+	errorResponse(w, r, http.StatusInternalServerError, message)
 }
 
-func BadRequestResponse(w http.ResponseWriter, r *http.Request, err error) {
-	ErrorResponse(w, r, http.StatusBadRequest, err.Error())
+func badRequestResponse(w http.ResponseWriter, r *http.Request, err error) {
+	errorResponse(w, r, http.StatusBadRequest, err.Error())
 }
 
-func ConflictResponse(w http.ResponseWriter, r *http.Request) {
-	ErrorResponse(w, r, http.StatusConflict, ErrAlreadyExists.Error())
+func conflictResponse(w http.ResponseWriter, r *http.Request, err error) {
+	errorResponse(w, r, http.StatusConflict, err.Error())
 }
 
-func NotFoundResponse(w http.ResponseWriter, r *http.Request) {
-	ErrorResponse(w, r, http.StatusNotFound, ErrNotFound.Error())
+func notFoundResponse(w http.ResponseWriter, r *http.Request) {
+	errorResponse(w, r, http.StatusNotFound, errNotFound.Error())
 }
 
-func MethodNotAllowedResponse(w http.ResponseWriter, r *http.Request) {
+func methodNotAllowedResponse(w http.ResponseWriter, r *http.Request) {
 	message := fmt.Sprintf("the %s method is not supported this resource", r.Method)
-	ErrorResponse(w, r, http.StatusMethodNotAllowed, message)
+	errorResponse(w, r, http.StatusMethodNotAllowed, message)
 }
 
-func mapDBError(err error) error {
+func handleDBError(w http.ResponseWriter, r *http.Request, err error) {
 	var pqErr *pq.Error
 
 	switch {
-	case errors.As(err, &pqErr) && pqErr.Code == "23505":
-		return ErrAlreadyExists
+	case errors.As(err, &pqErr):
+		if pqErr.Code == "23505" {
+			conflictResponse(w, r, errAlreadyExists)
+			return
+		}
+		if pqErr.Code == "23503" {
+			conflictResponse(w, r, errForeignKeyViolation)
+			return
+		}
+		serverErrorResponse(w, r, err)
+		return
 	case errors.Is(err, sql.ErrNoRows):
-		return ErrNotFound
+		notFoundResponse(w, r)
+		return
 	default:
-		return err
+		serverErrorResponse(w, r, err)
+		return
 	}
 }

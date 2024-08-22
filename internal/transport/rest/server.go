@@ -12,7 +12,7 @@ var Address string
 var Server *http.Server
 
 func LoadServer() error {
-	Address = fmt.Sprintf("%s:%d", config.Host, config.ApplicationPort)
+	Address = fmt.Sprintf("%s:%d", config.Hostname, config.ApplicationPort)
 
 	Server = &http.Server{
 		Addr:         Address,
