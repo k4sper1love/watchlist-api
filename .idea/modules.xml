@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/wishlist-api.iml" filepath="$PROJECT_DIR$/.idea/wishlist-api.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/watchlist-api.iml" filepath="$PROJECT_DIR$/.idea/watchlist-api.iml" />
     </modules>
   </component>
 </project>

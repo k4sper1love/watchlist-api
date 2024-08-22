@@ -8,10 +8,10 @@ import (
 )
 
 var (
-	Host            string
+	Hostname        string
 	Port            int
-	User            string
-	Pass            string
+	Username        string
+	Password        string
 	Database        string
 	ApplicationPort int
 )
@@ -22,9 +22,9 @@ func LoadConfig() error {
 		return errors.New("error loading .env file")
 	}
 
-	Host = os.Getenv("POSTGRES_HOST")
-	User = os.Getenv("POSTGRES_USER")
-	Pass = os.Getenv("POSTGRES_PASS")
+	Hostname = os.Getenv("POSTGRES_HOSTNAME")
+	Username = os.Getenv("POSTGRES_USERNAME")
+	Password = os.Getenv("POSTGRES_PASSWORD")
 	Database = os.Getenv("POSTGRES_DATABASE")
 
 	Port, err = strconv.Atoi(os.Getenv("POSTGRES_PORT"))
