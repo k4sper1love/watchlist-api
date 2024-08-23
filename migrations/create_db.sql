@@ -28,6 +28,16 @@ create table if not exists films (
     foreign key (creator_id) references users(id) on delete set default
 );
 
+create table if not exists user_films (
+    user_id int not null,
+    film_id int not null,
+    comment varchar,
+    added_at timestamp default current_timestamp,
+    primary key (user_id, film_id),
+    foreign key (user_id) references users(id) on delete cascade,
+    foreign key (film_id) references films(id) on delete cascade
+);
+
 create table if not exists user_viewed (
     user_id int not null,
     film_id int not null,
@@ -35,7 +45,7 @@ create table if not exists user_viewed (
     review varchar,
     viewed_at timestamp default current_timestamp,
     primary key (user_id, film_id),
-    foreign key (user_id) references users(id) on delete cascade ,
+    foreign key (user_id) references users(id) on delete cascade,
     foreign key (film_id) references films(id)
 );
 
@@ -64,4 +74,6 @@ create table if not exists user_collections (
     primary key (user_id, collection_id),
     foreign key (user_id) references users(id),
     foreign key (collection_id) references collections(id)
-)
+);
+
+insert into users (username) values ('admin');

@@ -38,6 +38,7 @@ func route() *mux.Router {
 
 	userFilms.HandleFunc("", getUserFilmsHandler).Methods(http.MethodGet)
 	userFilms.HandleFunc("", addUserFilm).Methods(http.MethodPost)
+	//userFilms.HandleFunc("/new", defaultHandler).Methods(http.MethodPost) - no ideas now
 
 	userFilm := userFilms.PathPrefix("/{filmId:[0-9]+}").Subrouter()
 
