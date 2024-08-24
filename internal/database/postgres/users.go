@@ -17,7 +17,7 @@ func AddUser(user *models.User) error {
 	return db.QueryRow(query, user.Username).Scan(&user.Id, &user.Username, &user.CreatedAt)
 }
 
-func GetUserById(id int) (*models.User, error) {
+func GetUser(id int) (*models.User, error) {
 	db := connectPostgres()
 	if db == nil {
 		return nil, errors.New("cannot connect to PostgreSQL")
@@ -35,7 +35,7 @@ func GetUserById(id int) (*models.User, error) {
 	return &user, nil
 }
 
-func GetAllUsers() ([]*models.User, error) {
+func GetUsers() ([]*models.User, error) {
 	db := connectPostgres()
 	if db == nil {
 		return nil, errors.New("cannot connect to PostgreSQL")

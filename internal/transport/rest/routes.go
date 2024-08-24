@@ -12,48 +12,45 @@ func route() *mux.Router {
 	r.NotFoundHandler = http.HandlerFunc(notFoundResponse)
 	r.MethodNotAllowedHandler = http.HandlerFunc(methodNotAllowedResponse)
 
-	films := r.PathPrefix("/films").Subrouter()
-
-	films.HandleFunc("", getFilmsHandler).Methods(http.MethodGet)
-	films.HandleFunc("", addFilmHandler).Methods(http.MethodPost)
-
-	film := films.PathPrefix("/{filmId:[0-9]+}").Subrouter()
-
-	film.HandleFunc("", getFilmHandler).Methods(http.MethodGet)
-	film.HandleFunc("", updateFilmHandler).Methods(http.MethodPut)
-	film.HandleFunc("", deleteFilmHandler).Methods(http.MethodDelete)
-
 	users := r.PathPrefix("/users").Subrouter()
 
 	users.HandleFunc("", getUsersHandler).Methods(http.MethodGet)
 	users.HandleFunc("", addUserHandler).Methods(http.MethodPost)
+	users.HandleFunc("/{userId:[0-9]+}", getUserHandler).Methods(http.MethodGet)
+	users.HandleFunc("/{userId:[0-9]+}", updateUserHandler).Methods(http.MethodPut)
+	users.HandleFunc("/{userId:[0-9]+}", deleteUserHandler).Methods(http.MethodDelete)
 
-	user := users.PathPrefix("/{userId:[0-9]+}").Subrouter()
+	films := r.PathPrefix("/films").Subrouter()
 
-	user.HandleFunc("", getUserHandler).Methods(http.MethodGet)
-	user.HandleFunc("", updateUserHandler).Methods(http.MethodPut)
-	user.HandleFunc("", deleteUserHandler).Methods(http.MethodDelete)
+	films.HandleFunc("", getFilmsHandler).Methods(http.MethodGet)
+	films.HandleFunc("", addFilmHandler).Methods(http.MethodPost)
+	films.HandleFunc("/{filmId:[0-9]+}", getFilmHandler).Methods(http.MethodGet)
+	films.HandleFunc("/{filmId:[0-9]+}", updateFilmHandler).Methods(http.MethodPut)
+	films.HandleFunc("/{filmId:[0-9]+}", deleteFilmHandler).Methods(http.MethodDelete)
 
-	userFilms := user.PathPrefix("/films").Subrouter()
+	collections := r.PathPrefix("/users/{userId:[0-9]+}/collections").Subrouter()
 
-	userFilms.HandleFunc("", getUserFilmsHandler).Methods(http.MethodGet)
-	userFilms.HandleFunc("", addUserFilm).Methods(http.MethodPost)
-	//userFilms.HandleFunc("/new", defaultHandler).Methods(http.MethodPost) - no ideas now
+	collections.HandleFunc("", getCollectionsHandler).Methods(http.MethodGet)
+	collections.HandleFunc("", addCollectionHandler).Methods(http.MethodPost)
+	collections.HandleFunc("/{collectionId:[0-9]+}", getCollectionHandler).Methods(http.MethodGet)
+	collections.HandleFunc("/{collectionId:[0-9]+}", updateCollectionHandler).Methods(http.MethodPut)
+	collections.HandleFunc("/{collectionId:[0-9]+}", deleteCollectionHandler).Methods(http.MethodDelete)
 
-	userFilm := userFilms.PathPrefix("/{filmId:[0-9]+}").Subrouter()
+	collectionFilms := collections.PathPrefix("/{collectionId:[0-9]+}/films").Subrouter()
 
-	userFilm.HandleFunc("", getUserFilmHandler).Methods(http.MethodGet)
-	userFilm.HandleFunc("", updateUserFilmHandler).Methods(http.MethodPut)
-	userFilm.HandleFunc("", deleteUserFilmHandler).Methods(http.MethodDelete)
+	collectionFilms.HandleFunc("", getCollectionFilmsHandler).Methods(http.MethodGet)
+	collectionFilms.HandleFunc("/{filmId:[0-9]+}", addCollectionFilmHandler).Methods(http.MethodPost)
+	collectionFilms.HandleFunc("/{filmId:[0-9]+}", getCollectionFilmHandler).Methods(http.MethodGet)
+	collectionFilms.HandleFunc("/{filmId:[0-9]+}", updateCollectionFilmHandler).Methods(http.MethodPut)
+	collectionFilms.HandleFunc("/{filmId:[0-9]+}", deleteCollectionFilmHandler).Methods(http.MethodDelete)
 
-	//viewedFilms := r.PathPrefix("/users/{userId:[0-9]+/viewed}").Subrouter()
-	//
-	//viewedFilms.HandleFunc("", defaultHandler).Methods(http.MethodGet)
-	//viewedFilms.HandleFunc("", defaultHandler).Methods(http.MethodPost)
-	//
-	//viewedFilm.HandleFunc("/{id:[0-9]+}", defaultHandler).Methods(http.MethodGet)
-	//viewedFilm.HandleFunc("/{id:[0-9]+}", defaultHandler).Methods(http.MethodPut)
-	//viewedFilm.HandleFunc("/{id:[0-9]+}", defaultHandler).Methods(http.MethodDelete)
+	viewedFilms := r.PathPrefix("/users/{userId:[0-9]+}/viewed").Subrouter()
+
+	viewedFilms.HandleFunc("", getViewedFilmsHandler).Methods(http.MethodGet)
+	viewedFilms.HandleFunc("/{filmId:[0-9]+}", addViewedFilmHandler).Methods(http.MethodPost)
+	viewedFilms.HandleFunc("/{filmId:[0-9]+}", getViewedFilmHandler).Methods(http.MethodGet)
+	viewedFilms.HandleFunc("/{filmId:[0-9]+}", updateViewedFilmHandler).Methods(http.MethodPut)
+	viewedFilms.HandleFunc("/{filmId:[0-9]+}", deleteViewedFilmHandler).Methods(http.MethodDelete)
 
 	return r
 }

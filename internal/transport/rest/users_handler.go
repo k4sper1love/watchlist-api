@@ -34,7 +34,7 @@ func getUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := postgres.GetUserById(id)
+	user, err := postgres.GetUser(id)
 	if err != nil {
 		handleDBError(w, r, err)
 		return
@@ -46,7 +46,7 @@ func getUserHandler(w http.ResponseWriter, r *http.Request) {
 func getUsersHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println("getUsersHandler serving:", r.URL.Path, r.Host)
 
-	users, err := postgres.GetAllUsers()
+	users, err := postgres.GetUsers()
 	if err != nil {
 		serverErrorResponse(w, r, err)
 		return
@@ -63,7 +63,7 @@ func updateUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = postgres.GetUserById(id)
+	_, err = postgres.GetUser(id)
 	if err != nil {
 		handleDBError(w, r, err)
 		return
@@ -93,7 +93,7 @@ func deleteUserHandler(w http.ResponseWriter, r *http.Request) {
 		badRequestResponse(w, r, err)
 	}
 
-	_, err = postgres.GetUserById(id)
+	_, err = postgres.GetUser(id)
 	if err != nil {
 		handleDBError(w, r, err)
 		return

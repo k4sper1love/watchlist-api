@@ -5,7 +5,7 @@ import (
 	"github.com/k4sper1love/watchlist-api/internal/models"
 )
 
-func AddFilm(film *models.Film) error {
+func AddFilm(f *models.Film) error {
 	db := connectPostgres()
 	if db == nil {
 		return errors.New("cannot connect to PostgreSQL")
@@ -13,31 +13,14 @@ func AddFilm(film *models.Film) error {
 	defer db.Close()
 
 	query := `
-			INSERT INTO films (creator_id, title, year, genre, description, rating, photo_url)
+			INSERT INTO films (user_id, title, year, genre, description, rating, photo_url)
 			VALUES ($1, $2, $3, $4, $5, $6, $7)
-			RETURNING id, creator_id, title, year, genre, description, rating, photo_url
+			RETURNING id, user_id, title, year, genre, description, rating, photo_url, created_at
 			`
 
-	queryArgs := []interface{}{
-		film.CreatorId,
-		film.Title,
-		film.Year,
-		film.Genre,
-		film.Description,
-		film.Rating,
-		film.PhotoUrl,
-	}
+	queryArgs := []interface{}{f.UserId, f.Title, f.Year, f.Genre, f.Description, f.Rating, f.PhotoUrl}
 
-	scanArgs := []interface{}{
-		&film.Id,
-		&film.CreatorId,
-		&film.Title,
-		&film.Year,
-		&film.Genre,
-		&film.Description,
-		&film.Rating,
-		&film.PhotoUrl,
-	}
+	scanArgs := []interface{}{&f.Id, &f.UserId, &f.Title, &f.Year, &f.Genre, &f.Description, &f.Rating, &f.PhotoUrl, &f.CreatedAt}
 
 	return db.QueryRow(query, queryArgs...).Scan(scanArgs...)
 }
@@ -51,24 +34,15 @@ func GetFilm(id int) (*models.Film, error) {
 
 	query := `SELECT * FROM films WHERE id = $1`
 
-	var film models.Film
-	args := []interface{}{
-		&film.Id,
-		&film.CreatorId,
-		&film.Title,
-		&film.Year,
-		&film.Genre,
-		&film.Description,
-		&film.Rating,
-		&film.PhotoUrl,
-	}
+	var f models.Film
+	args := []interface{}{&f.Id, &f.UserId, &f.Title, &f.Year, &f.Genre, &f.Description, &f.Rating, &f.PhotoUrl, &f.CreatedAt}
 
 	err := db.QueryRow(query, id).Scan(args...)
 	if err != nil {
 		return nil, err
 	}
 
-	return &film, nil
+	return &f, nil
 }
 
 func GetFilms() ([]*models.Film, error) {
@@ -91,13 +65,14 @@ func GetFilms() ([]*models.Film, error) {
 		var film models.Film
 		args := []interface{}{
 			&film.Id,
-			&film.CreatorId,
+			&film.UserId,
 			&film.Title,
 			&film.Year,
 			&film.Genre,
 			&film.Description,
 			&film.Rating,
 			&film.PhotoUrl,
+			&film.CreatedAt,
 		}
 		err = rows.Scan(args...)
 		if err != nil {
@@ -124,7 +99,7 @@ func UpdateFilm(film *models.Film) error {
 			UPDATE films
 			SET title = $2, year = $3, genre = $4, description = $5, rating = $6, photo_url = $7
 			WHERE id = $1
-			RETURNING id, creator_id, title, year, genre, description, rating, photo_url
+			RETURNING id, user_id, title, year, genre, description, rating, photo_url, created_at
 			`
 
 	queryArgs := []interface{}{
@@ -139,13 +114,14 @@ func UpdateFilm(film *models.Film) error {
 
 	scanArgs := []interface{}{
 		&film.Id,
-		&film.CreatorId,
+		&film.UserId,
 		&film.Title,
 		&film.Year,
 		&film.Genre,
 		&film.Description,
 		&film.Rating,
 		&film.PhotoUrl,
+		&film.CreatedAt,
 	}
 	return db.QueryRow(query, queryArgs...).Scan(scanArgs...)
 }
