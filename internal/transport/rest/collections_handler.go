@@ -10,14 +10,10 @@ import (
 func addCollectionHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println("addCollectionHandler serving:", r.URL.Path, r.Host)
 
-	userId, err := parseIdParam(r, "userId")
-	if err != nil {
-		badRequestResponse(w, r, err)
-		return
-	}
+	userId := r.Context().Value("userId").(int)
 
 	var collection models.Collection
-	err = parseRequestBody(r, &collection)
+	err := parseRequestBody(r, &collection)
 	if err != nil {
 		badRequestResponse(w, r, err)
 		return
@@ -54,11 +50,7 @@ func getCollectionHandler(w http.ResponseWriter, r *http.Request) {
 func getCollectionsHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println("getCollectionsHandler serving:", r.URL.Path, r.Host)
 
-	userId, err := parseIdParam(r, "userId")
-	if err != nil {
-		badRequestResponse(w, r, err)
-		return
-	}
+	userId := r.Context().Value("userId").(int)
 
 	collections, err := postgres.GetCollections(userId)
 	if err != nil {

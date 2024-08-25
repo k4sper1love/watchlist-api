@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/lib/pq"
+	"golang.org/x/crypto/bcrypt"
 	"log"
 	"net/http"
 )
@@ -47,6 +48,16 @@ func methodNotAllowedResponse(w http.ResponseWriter, r *http.Request) {
 	errorResponse(w, r, http.StatusMethodNotAllowed, message)
 }
 
+func invalidAuthTokenResponse(w http.ResponseWriter, r *http.Request) {
+	message := "invalid or missing authentication token"
+	errorResponse(w, r, http.StatusUnauthorized, message)
+}
+
+func invalidLoginResponse(w http.ResponseWriter, r *http.Request) {
+	message := "invalid login credentials"
+	errorResponse(w, r, http.StatusUnauthorized, message)
+}
+
 func handleDBError(w http.ResponseWriter, r *http.Request, err error) {
 	var pqErr *pq.Error
 
@@ -64,6 +75,9 @@ func handleDBError(w http.ResponseWriter, r *http.Request, err error) {
 		return
 	case errors.Is(err, sql.ErrNoRows):
 		notFoundResponse(w, r)
+		return
+	case errors.Is(err, bcrypt.ErrMismatchedHashAndPassword):
+		invalidLoginResponse(w, r)
 		return
 	default:
 		serverErrorResponse(w, r, err)

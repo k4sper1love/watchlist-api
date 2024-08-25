@@ -7,8 +7,25 @@ import (
 	"net/http"
 )
 
-func addUserHandler(w http.ResponseWriter, r *http.Request) {
-	log.Println("addUserHandler serving:", r.URL.Path, r.Host)
+func getUserHandler(w http.ResponseWriter, r *http.Request) {
+	log.Println("getUserHandler serving:", r.URL.Path, r.Host)
+
+	userId := r.Context().Value("userId").(int)
+
+	user, err := postgres.GetUserById(userId)
+	if err != nil {
+		handleDBError(w, r, err)
+		return
+	}
+	user.Password = ""
+
+	writeJSON(w, r, http.StatusOK, envelope{"user": user})
+}
+
+func updateUserHandler(w http.ResponseWriter, r *http.Request) {
+	log.Println("updateUserHandler serving:", r.URL.Path, r.Host)
+
+	userId := r.Context().Value("userId").(int)
 
 	var user models.User
 	err := parseRequestBody(r, &user)
@@ -16,66 +33,7 @@ func addUserHandler(w http.ResponseWriter, r *http.Request) {
 		badRequestResponse(w, r, err)
 		return
 	}
-
-	err = postgres.AddUser(&user)
-	if err != nil {
-		handleDBError(w, r, err)
-		return
-	}
-
-	writeJSON(w, r, http.StatusCreated, envelope{"user": user})
-}
-
-func getUserHandler(w http.ResponseWriter, r *http.Request) {
-	log.Println("getUserHandler serving:", r.URL.Path, r.Host)
-	id, err := parseIdParam(r, "userId")
-	if err != nil {
-		badRequestResponse(w, r, err)
-		return
-	}
-
-	user, err := postgres.GetUser(id)
-	if err != nil {
-		handleDBError(w, r, err)
-		return
-	}
-
-	writeJSON(w, r, http.StatusOK, envelope{"user": user})
-}
-
-func getUsersHandler(w http.ResponseWriter, r *http.Request) {
-	log.Println("getUsersHandler serving:", r.URL.Path, r.Host)
-
-	users, err := postgres.GetUsers()
-	if err != nil {
-		serverErrorResponse(w, r, err)
-		return
-	}
-
-	writeJSON(w, r, http.StatusOK, envelope{"users": users})
-}
-
-func updateUserHandler(w http.ResponseWriter, r *http.Request) {
-	log.Println("updateUserHandler serving:", r.URL.Path, r.Host)
-	id, err := parseIdParam(r, "userId")
-	if err != nil {
-		badRequestResponse(w, r, err)
-		return
-	}
-
-	_, err = postgres.GetUser(id)
-	if err != nil {
-		handleDBError(w, r, err)
-		return
-	}
-
-	var user models.User
-	err = parseRequestBody(r, &user)
-	if err != nil {
-		badRequestResponse(w, r, err)
-		return
-	}
-	user.Id = id
+	user.Id = userId
 
 	err = postgres.UpdateUser(&user)
 	if err != nil {
@@ -88,23 +46,14 @@ func updateUserHandler(w http.ResponseWriter, r *http.Request) {
 
 func deleteUserHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println("deleteUserHandler serving:", r.URL.Path, r.Host)
-	id, err := parseIdParam(r, "userId")
-	if err != nil {
-		badRequestResponse(w, r, err)
-	}
 
-	_, err = postgres.GetUser(id)
-	if err != nil {
-		handleDBError(w, r, err)
-		return
-	}
+	userId := r.Context().Value("userId").(int)
 
-	err = postgres.DeleteUser(id)
+	err := postgres.DeleteUser(userId)
 	if err != nil {
 		handleDBError(w, r, err)
 		return
 	}
 
 	writeJSON(w, r, http.StatusOK, envelope{"message": "user deleted"})
-
 }

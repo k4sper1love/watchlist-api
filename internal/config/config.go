@@ -14,6 +14,7 @@ var (
 	Password        string
 	Database        string
 	ApplicationPort int
+	TokenPassword   string
 )
 
 func LoadConfig() error {
@@ -26,6 +27,7 @@ func LoadConfig() error {
 	Username = os.Getenv("POSTGRES_USERNAME")
 	Password = os.Getenv("POSTGRES_PASSWORD")
 	Database = os.Getenv("POSTGRES_DATABASE")
+	TokenPassword = os.Getenv("TOKEN_PASSWORD")
 
 	Port, err = strconv.Atoi(os.Getenv("POSTGRES_PORT"))
 	if err != nil {

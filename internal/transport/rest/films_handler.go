@@ -10,12 +10,15 @@ import (
 func addFilmHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println("addFilmHandler serving:", r.URL.Path, r.Host)
 
+	userId := r.Context().Value("userId").(int)
+
 	var film models.Film
 	err := parseRequestBody(r, &film)
 	if err != nil {
 		badRequestResponse(w, r, err)
 		return
 	}
+	film.UserId = userId
 
 	err = postgres.AddFilm(&film)
 	if err != nil {
@@ -47,7 +50,9 @@ func getFilmHandler(w http.ResponseWriter, r *http.Request) {
 func getFilmsHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println("getFilmsHandler serving:", r.URL.Path, r.Host)
 
-	films, err := postgres.GetFilms()
+	userId := r.Context().Value("userId").(int)
+
+	films, err := postgres.GetFilmsByUser(userId)
 	if err != nil {
 		handleDBError(w, r, err)
 		return

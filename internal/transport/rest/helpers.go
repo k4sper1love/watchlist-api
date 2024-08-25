@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 )
 
 type envelope map[string]interface{}
@@ -56,4 +57,13 @@ func parseRequestBody(r *http.Request, v any) error {
 		return err
 	}
 	return nil
+}
+
+func getTokenFromHeader(r *http.Request) string {
+	tokenHeader := r.Header.Get("Authorization")
+	if tokenHeader == "" {
+		return ""
+	}
+
+	return strings.TrimPrefix(tokenHeader, "Bearer")
 }
