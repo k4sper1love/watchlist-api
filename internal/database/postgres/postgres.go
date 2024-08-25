@@ -7,11 +7,14 @@ import (
 	_ "github.com/lib/pq"
 )
 
-func connectPostgres() *sql.DB {
+var db *sql.DB
+
+func ConnectPostgres() *sql.DB {
 	conn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
 		config.Hostname, config.Port, config.Username, config.Password, config.Database)
 
-	db, err := sql.Open("postgres", conn)
+	var err error
+	db, err = sql.Open("postgres", conn)
 	if err != nil {
 		return nil
 	}

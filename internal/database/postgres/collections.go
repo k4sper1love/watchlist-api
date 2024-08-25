@@ -1,33 +1,20 @@
 package postgres
 
 import (
-	"errors"
 	"github.com/k4sper1love/watchlist-api/internal/models"
 )
 
 func AddCollection(c *models.Collection) error {
-	db := connectPostgres()
-	if db == nil {
-		return errors.New("cannot connect to PostgreSQL")
-	}
-	defer db.Close()
-
 	query := `INSERT INTO collections (user_id, name, description) VALUES ($1, $2, $3) RETURNING id, created_at`
 
 	return db.QueryRow(query, c.UserId, c.Name, c.Description).Scan(&c.Id, &c.CreatedAt)
 }
 
-func GetCollection(id int) (*models.Collection, error) {
-	db := connectPostgres()
-	if db == nil {
-		return nil, errors.New("cannot connect to PostgreSQL")
-	}
-	defer db.Close()
-
+func GetCollection(collectionId int) (*models.Collection, error) {
 	query := `SELECT * FROM collections WHERE id = $1`
 
 	var c models.Collection
-	err := db.QueryRow(query, id).Scan(&c.Id, &c.UserId, &c.Name, &c.Description, &c.CreatedAt)
+	err := db.QueryRow(query, collectionId).Scan(&c.Id, &c.UserId, &c.Name, &c.Description, &c.CreatedAt)
 	if err != nil {
 		return nil, err
 	}
@@ -36,12 +23,6 @@ func GetCollection(id int) (*models.Collection, error) {
 }
 
 func GetCollections(userId int) ([]*models.Collection, error) {
-	db := connectPostgres()
-	if db == nil {
-		return nil, errors.New("cannot connect to PostgreSQL")
-	}
-	defer db.Close()
-
 	query := `SELECT * FROM collections WHERE user_id = $1`
 
 	rows, err := db.Query(query, userId)
@@ -68,12 +49,6 @@ func GetCollections(userId int) ([]*models.Collection, error) {
 }
 
 func UpdateCollection(c *models.Collection) error {
-	db := connectPostgres()
-	if db == nil {
-		return errors.New("cannot connect to PostgreSQL")
-	}
-	defer db.Close()
-
 	query := `
 			UPDATE collections 
 			SET name = $2, description = $3 
@@ -85,12 +60,6 @@ func UpdateCollection(c *models.Collection) error {
 }
 
 func DeleteCollection(id int) error {
-	db := connectPostgres()
-	if db == nil {
-		return errors.New("cannot connect to PostgreSQL")
-	}
-	defer db.Close()
-
 	query := `DELETE FROM collections WHERE id = $1`
 
 	_, err := db.Exec(query, id)
