@@ -27,15 +27,27 @@ func updateUserHandler(w http.ResponseWriter, r *http.Request) {
 
 	userId := r.Context().Value("userId").(int)
 
-	var user models.User
-	err := parseRequestBody(r, &user)
+	user, err := postgres.GetUserById(userId)
+	if err != nil {
+		handleDBError(w, r, err)
+		return
+	}
+
+	err = parseRequestBody(r, user)
 	if err != nil {
 		badRequestResponse(w, r, err)
 		return
 	}
-	user.Id = userId
 
-	err = postgres.UpdateUser(&user)
+	errs := models.ValidateStruct(user)
+	if errs != nil {
+		failedValidationResponse(w, r, errs)
+		return
+	}
+	user.Id = userId
+	user.Password = ""
+
+	err = postgres.UpdateUser(user)
 	if err != nil {
 		handleDBError(w, r, err)
 		return

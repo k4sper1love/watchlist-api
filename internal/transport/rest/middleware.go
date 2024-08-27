@@ -2,9 +2,6 @@ package rest
 
 import (
 	"context"
-	"github.com/golang-jwt/jwt"
-	"github.com/k4sper1love/watchlist-api/internal/config"
-	"github.com/k4sper1love/watchlist-api/internal/models"
 	"net/http"
 )
 
@@ -25,18 +22,14 @@ func jwtAuth(next http.Handler) http.Handler {
 			}
 		}
 
-		tokenString := getTokenFromHeader(r)
+		tokenString := parseTokenFromHeader(r)
 		if tokenString == "" {
 			invalidAuthTokenResponse(w, r)
 			return
 		}
 
-		claims := &models.TokenClaims{}
-		token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
-			return []byte(config.TokenPassword), nil
-		})
-
-		if err != nil || !token.Valid {
+		claims := parseTokenClaims(tokenString)
+		if claims == nil {
 			invalidAuthTokenResponse(w, r)
 			return
 		}

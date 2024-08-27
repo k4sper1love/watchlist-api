@@ -3,7 +3,9 @@ package rest
 import (
 	"encoding/json"
 	"errors"
+	"github.com/golang-jwt/jwt"
 	"github.com/gorilla/mux"
+	"github.com/k4sper1love/watchlist-api/internal/config"
 	"io"
 	"log"
 	"net/http"
@@ -59,11 +61,24 @@ func parseRequestBody(r *http.Request, v any) error {
 	return nil
 }
 
-func getTokenFromHeader(r *http.Request) string {
+func parseTokenFromHeader(r *http.Request) string {
 	tokenHeader := r.Header.Get("Authorization")
 	if tokenHeader == "" {
 		return ""
 	}
 
-	return strings.TrimPrefix(tokenHeader, "Bearer")
+	return strings.TrimPrefix(tokenHeader, "Bearer ")
+}
+
+func parseTokenClaims(tokenString string) *tokenClaims {
+	claims := &tokenClaims{}
+	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
+		return []byte(config.TokenPassword), nil
+	})
+
+	if err != nil || !token.Valid {
+		return nil
+	}
+
+	return claims
 }

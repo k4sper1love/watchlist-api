@@ -23,11 +23,11 @@ func addCollectionFilmHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var collectionFilm models.CollectionFilm
-	err = parseRequestBody(r, &collectionFilm)
-	if err != nil {
-		badRequestResponse(w, r, err)
-		return
-	}
+	//err = parseRequestBody(r, &collectionFilm)
+	//if err != nil {
+	//	badRequestResponse(w, r, err)
+	//	return
+	//}
 	collectionFilm.CollectionId = collectionId
 	collectionFilm.FilmId = filmId
 
@@ -97,14 +97,13 @@ func updateCollectionFilmHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = postgres.GetCollectionFilm(collectionId, filmId)
+	collectionFilm, err := postgres.GetCollectionFilm(collectionId, filmId)
 	if err != nil {
 		handleDBError(w, r, err)
 		return
 	}
 
-	var collectionFilm models.CollectionFilm
-	err = parseRequestBody(r, &collectionFilm)
+	err = parseRequestBody(r, collectionFilm)
 	if err != nil {
 		badRequestResponse(w, r, err)
 		return
@@ -112,7 +111,7 @@ func updateCollectionFilmHandler(w http.ResponseWriter, r *http.Request) {
 	collectionFilm.CollectionId = collectionId
 	collectionFilm.FilmId = filmId
 
-	err = postgres.UpdateCollectionFilm(&collectionFilm)
+	err = postgres.UpdateCollectionFilm(collectionFilm)
 	if err != nil {
 		handleDBError(w, r, err)
 		return

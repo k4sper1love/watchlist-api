@@ -4,34 +4,38 @@ import (
 	"github.com/golang-jwt/jwt"
 	"github.com/k4sper1love/watchlist-api/internal/config"
 	"github.com/k4sper1love/watchlist-api/internal/database/postgres"
-	"github.com/k4sper1love/watchlist-api/internal/models"
 	"time"
 )
 
-func GenerateAccessToken(userId int) (string, error) {
-	expirationTime := time.Now().Add(5 * time.Minute)
-	claims := &models.TokenClaims{
+type tokenClaims struct {
+	UserId int `json:"user_id"`
+	jwt.StandardClaims
+}
+
+func generateAccessToken(userId int) (string, error) {
+	expirationTime := time.Now().Add(15 * time.Minute)
+	claims := &tokenClaims{
 		UserId: userId,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: expirationTime.Unix(),
 		},
 	}
 
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	token := jwt.NewWithClaims(jwt.GetSigningMethod("HS256"), claims)
 
 	return token.SignedString([]byte(config.TokenPassword))
 }
 
-func GenerateAndSaveRefreshToken(userId int) (string, error) {
+func generateAndSaveRefreshToken(userId int) (string, error) {
 	expirationTime := time.Now().Add(24 * time.Hour)
-	claims := &models.TokenClaims{
+	claims := &tokenClaims{
 		UserId: userId,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: expirationTime.Unix(),
 		},
 	}
 
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	token := jwt.NewWithClaims(jwt.GetSigningMethod("HS256"), claims)
 
 	tokenString, err := token.SignedString([]byte(config.TokenPassword))
 	if err != nil {

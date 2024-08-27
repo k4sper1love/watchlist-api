@@ -1,7 +1,6 @@
 package rest
 
 import (
-	"errors"
 	"github.com/k4sper1love/watchlist-api/internal/database/postgres"
 	"github.com/k4sper1love/watchlist-api/internal/models"
 	"golang.org/x/crypto/bcrypt"
@@ -23,12 +22,12 @@ func register(user *models.User) (*authResponse, error) {
 	}
 	user.Password = ""
 
-	accessToken, err := GenerateAccessToken(user.Id)
+	accessToken, err := generateAccessToken(user.Id)
 	if err != nil {
 		return nil, err
 	}
 
-	refreshToken, err := GenerateAndSaveRefreshToken(user.Id)
+	refreshToken, err := generateAndSaveRefreshToken(user.Id)
 	if err != nil {
 		return nil, err
 	}
@@ -54,12 +53,12 @@ func login(email, password string) (*authResponse, error) {
 	}
 	user.Password = ""
 
-	accessToken, err := GenerateAccessToken(user.Id)
+	accessToken, err := generateAccessToken(user.Id)
 	if err != nil {
 		return nil, err
 	}
 
-	refreshToken, err := GenerateAndSaveRefreshToken(user.Id)
+	refreshToken, err := generateAndSaveRefreshToken(user.Id)
 	if err != nil {
 		return nil, err
 	}
@@ -74,9 +73,14 @@ func login(email, password string) (*authResponse, error) {
 }
 
 func refreshAccessToken(refreshToken string) (string, error) {
-	isValid, err := postgres.IsRefreshTokenValid(refreshToken)
-	if err != nil || !isValid {
-		return "", errors.New("invalid or revoked refresh token")
+	claims := parseTokenClaims(refreshToken)
+	if claims == nil {
+		return "", errInvalidRefreshToken
+	}
+
+	isRevoked, err := postgres.IsRefreshTokenRevoked(refreshToken)
+	if err != nil || isRevoked {
+		return "", errInvalidRefreshToken
 	}
 
 	userId, err := postgres.GetIdFromRefreshToken(refreshToken)
@@ -84,9 +88,19 @@ func refreshAccessToken(refreshToken string) (string, error) {
 		return "", err
 	}
 
-	return GenerateAccessToken(userId)
+	return generateAccessToken(userId)
 }
 
 func logout(refreshToken string) error {
+	claims := parseTokenClaims(refreshToken)
+	if claims == nil {
+		return errInvalidRefreshToken
+	}
+
+	isRevoked, err := postgres.IsRefreshTokenRevoked(refreshToken)
+	if err != nil || isRevoked {
+		return errInvalidRefreshToken
+	}
+
 	return postgres.RevokeRefreshToken(refreshToken)
 }

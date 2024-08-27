@@ -29,23 +29,22 @@ func RevokeRefreshToken(refreshToken string) error {
 	return err
 }
 
-func IsRefreshTokenValid(refreshToken string) (bool, error) {
+func IsRefreshTokenRevoked(refreshToken string) (bool, error) {
 	hashedToken := hashToken(refreshToken)
 
-	query := `SELECT revoked, expires_at FROM refresh_tokens WHERE token = $1`
+	query := `SELECT revoked FROM refresh_tokens WHERE token = $1`
 
 	var revoked bool
-	var exp time.Time
-	err := db.QueryRow(query, hashedToken).Scan(&revoked, &exp)
+	err := db.QueryRow(query, hashedToken).Scan(&revoked)
 	if err != nil {
 		return false, err
 	}
 
-	if revoked || time.Now().After(exp) {
-		return false, nil
+	if revoked {
+		return true, nil
 	}
 
-	return true, nil
+	return false, nil
 }
 
 func GetIdFromRefreshToken(refreshToken string) (int, error) {

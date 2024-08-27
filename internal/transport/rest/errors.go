@@ -18,7 +18,9 @@ var errEmptyRequest = errors.New("empty request body")
 
 var errForeignKeyViolation = errors.New("attempted to reference a non-existent record")
 
-func errorResponse(w http.ResponseWriter, r *http.Request, status int, message string) {
+var errInvalidRefreshToken = errors.New("invalid or revoked refresh token")
+
+func errorResponse(w http.ResponseWriter, r *http.Request, status int, message interface{}) {
 	env := envelope{"error": message}
 
 	writeJSON(w, r, status, env)
@@ -53,9 +55,13 @@ func invalidAuthTokenResponse(w http.ResponseWriter, r *http.Request) {
 	errorResponse(w, r, http.StatusUnauthorized, message)
 }
 
-func invalidLoginResponse(w http.ResponseWriter, r *http.Request) {
-	message := "invalid login credentials"
+func incorrectPasswordResponse(w http.ResponseWriter, r *http.Request) {
+	message := "incorrect password"
 	errorResponse(w, r, http.StatusUnauthorized, message)
+}
+
+func failedValidationResponse(w http.ResponseWriter, r *http.Request, errs map[string]string) {
+	errorResponse(w, r, http.StatusUnprocessableEntity, errs)
 }
 
 func handleDBError(w http.ResponseWriter, r *http.Request, err error) {
@@ -77,7 +83,7 @@ func handleDBError(w http.ResponseWriter, r *http.Request, err error) {
 		notFoundResponse(w, r)
 		return
 	case errors.Is(err, bcrypt.ErrMismatchedHashAndPassword):
-		invalidLoginResponse(w, r)
+		incorrectPasswordResponse(w, r)
 		return
 	default:
 		serverErrorResponse(w, r, err)

@@ -20,6 +20,12 @@ func addFilmHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	film.UserId = userId
 
+	errs := models.ValidateStruct(&film)
+	if errs != nil {
+		failedValidationResponse(w, r, errs)
+		return
+	}
+
 	err = postgres.AddFilm(&film)
 	if err != nil {
 		handleDBError(w, r, err)
@@ -70,21 +76,26 @@ func updateFilmHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = postgres.GetFilm(id)
+	film, err := postgres.GetFilm(id)
 	if err != nil {
 		handleDBError(w, r, err)
 		return
 	}
 
-	var film models.Film
-	err = parseRequestBody(r, &film)
+	err = parseRequestBody(r, film)
 	if err != nil {
 		badRequestResponse(w, r, err)
 		return
 	}
 	film.Id = id
 
-	err = postgres.UpdateFilm(&film)
+	errs := models.ValidateStruct(film)
+	if errs != nil {
+		failedValidationResponse(w, r, errs)
+		return
+	}
+
+	err = postgres.UpdateFilm(film)
 	if err != nil {
 		handleDBError(w, r, err)
 		return

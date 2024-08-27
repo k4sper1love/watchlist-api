@@ -20,6 +20,12 @@ func addCollectionHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	collection.UserId = userId
 
+	errs := models.ValidateStruct(&collection)
+	if errs != nil {
+		failedValidationResponse(w, r, errs)
+		return
+	}
+
 	err = postgres.AddCollection(&collection)
 	if err != nil {
 		handleDBError(w, r, err)
@@ -70,21 +76,26 @@ func updateCollectionHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = postgres.GetCollection(collectionId)
+	collection, err := postgres.GetCollection(collectionId)
 	if err != nil {
 		handleDBError(w, r, err)
 		return
 	}
 
-	var collection models.Collection
-	err = parseRequestBody(r, &collection)
+	err = parseRequestBody(r, collection)
 	if err != nil {
 		badRequestResponse(w, r, err)
 		return
 	}
 	collection.Id = collectionId
 
-	err = postgres.UpdateCollection(&collection)
+	errs := models.ValidateStruct(collection)
+	if errs != nil {
+		failedValidationResponse(w, r, errs)
+		return
+	}
+
+	err = postgres.UpdateCollection(collection)
 	if err != nil {
 		handleDBError(w, r, err)
 	}
