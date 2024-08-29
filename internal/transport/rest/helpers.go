@@ -3,9 +3,11 @@ package rest
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/golang-jwt/jwt"
 	"github.com/gorilla/mux"
 	"github.com/k4sper1love/watchlist-api/internal/config"
+	"github.com/k4sper1love/watchlist-api/internal/database/postgres"
 	"io"
 	"log"
 	"net/http"
@@ -81,4 +83,15 @@ func parseTokenClaims(tokenString string) *tokenClaims {
 	}
 
 	return claims
+}
+
+func addPermissionAndAssignToUser(userId, objectId int, objectType, action string) error {
+	permission := fmt.Sprintf("%s:%d:%s", objectType, objectId, action)
+
+	err := postgres.AddPermission(permission)
+	if err != nil {
+		return err
+	}
+
+	return postgres.AddUserPermissions(userId, permission)
 }

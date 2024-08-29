@@ -32,6 +32,15 @@ func addFilmHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	actions := []string{"read", "update", "delete"}
+	for _, action := range actions {
+		err = addPermissionAndAssignToUser(userId, film.Id, "film", action)
+		if err != nil {
+			serverErrorResponse(w, r, err)
+			return
+		}
+	}
+
 	writeJSON(w, r, http.StatusCreated, envelope{"film": film})
 }
 

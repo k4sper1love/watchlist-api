@@ -61,7 +61,13 @@ func deleteUserHandler(w http.ResponseWriter, r *http.Request) {
 
 	userId := r.Context().Value("userId").(int)
 
-	err := postgres.DeleteUser(userId)
+	_, err := postgres.GetUserById(userId)
+	if err != nil {
+		handleDBError(w, r, err)
+		return
+	}
+
+	err = postgres.DeleteUser(userId)
 	if err != nil {
 		handleDBError(w, r, err)
 		return

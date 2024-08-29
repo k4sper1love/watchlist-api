@@ -32,6 +32,15 @@ func addCollectionHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	actions := []string{"read", "update", "delete"}
+	for _, action := range actions {
+		err = addPermissionAndAssignToUser(userId, collection.Id, "collection", action)
+		if err != nil {
+			serverErrorResponse(w, r, err)
+			return
+		}
+	}
+
 	writeJSON(w, r, http.StatusCreated, envelope{"collection": collection})
 }
 

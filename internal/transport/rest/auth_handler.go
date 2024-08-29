@@ -1,6 +1,7 @@
 package rest
 
 import (
+	"github.com/k4sper1love/watchlist-api/internal/database/postgres"
 	"github.com/k4sper1love/watchlist-api/internal/models"
 	"log"
 	"net/http"
@@ -25,6 +26,13 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 	resp, err := register(&user)
 	if err != nil {
 		handleDBError(w, r, err)
+		return
+	}
+
+	permissionCodes := []string{"film:create", "collection:create"}
+	err = postgres.AddUserPermissions(user.Id, permissionCodes...)
+	if err != nil {
+		serverErrorResponse(w, r, err)
 		return
 	}
 

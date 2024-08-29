@@ -64,6 +64,11 @@ func failedValidationResponse(w http.ResponseWriter, r *http.Request, errs map[s
 	errorResponse(w, r, http.StatusUnprocessableEntity, errs)
 }
 
+func forbiddenResponse(w http.ResponseWriter, r *http.Request) {
+	message := "you don't have enough permissions to perform this action"
+	errorResponse(w, r, http.StatusForbidden, message)
+}
+
 func handleDBError(w http.ResponseWriter, r *http.Request, err error) {
 	var pqErr *pq.Error
 
