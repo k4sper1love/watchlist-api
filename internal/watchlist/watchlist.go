@@ -29,13 +29,13 @@ func Run() {
 	}()
 
 	log.Print("Loading server")
-	err = rest.LoadServer()
-	if err != nil {
+	server := rest.LoadServer()
+	if server == nil {
 		log.Fatal("Error loading server")
 	}
 
-	log.Println("Run server on", rest.Address)
-	err = rest.Server.ListenAndServe()
+	log.Println("Run server on", server.Addr)
+	err = server.ListenAndServe()
 	if err != nil {
 		log.Println(err)
 		return

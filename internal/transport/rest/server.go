@@ -7,20 +7,16 @@ import (
 	"time"
 )
 
-var Address string
+func LoadServer() *http.Server {
+	address := fmt.Sprintf("%s:%d", config.Hostname, config.ApplicationPort)
 
-var Server *http.Server
-
-func LoadServer() error {
-	Address = fmt.Sprintf("%s:%d", config.Hostname, config.ApplicationPort)
-
-	Server = &http.Server{
-		Addr:         Address,
+	server := &http.Server{
+		Addr:         address,
 		Handler:      route(),
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 10 * time.Second,
 		IdleTimeout:  10 * time.Second,
 	}
 
-	return nil
+	return server
 }
