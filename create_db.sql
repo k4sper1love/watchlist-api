@@ -11,6 +11,7 @@ drop table if exists viewed_films;
 drop table if exists user_films;
 drop table if exists films ;
 drop table if exists users;
+drop extension if exists citext;
 
 create extension if not exists citext;
 
