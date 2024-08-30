@@ -14,7 +14,7 @@ import (
 )
 
 func Serve() error {
-	address := fmt.Sprintf("%s:%d", config.Hostname, config.ApplicationPort)
+	address := fmt.Sprintf("%s:%d", config.Host, config.Port)
 
 	server := &http.Server{
 		Addr:         address,

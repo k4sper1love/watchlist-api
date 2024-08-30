@@ -7,19 +7,20 @@ import (
 	"log"
 )
 
-func Run() {
-	log.Println("run initialization whole app")
-
-	log.Print("loading .env file")
-	err := config.LoadConfig()
+func Run(args []string) {
+	err := config.ParseEnv()
 	if err != nil {
-		log.Fatal("error loading .env file")
+		log.Fatalf("error loading .env file: %v", err)
 	}
 
-	log.Print("connection to database")
-	db := postgres.ConnectPostgres()
-	if db == nil {
-		log.Fatal("cannot connect to PostgreSQL")
+	err = config.ParseFlags(args[1:])
+	if err != nil {
+		log.Fatalf("error loading flags: %v", err)
+	}
+
+	db, err := postgres.OpenDB()
+	if err != nil {
+		log.Fatalf("cannot connect to PostgreSQL or apply migrations: %v", err)
 	}
 
 	defer func() {
