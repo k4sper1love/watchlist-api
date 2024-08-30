@@ -2,7 +2,9 @@ package rest
 
 import (
 	"github.com/k4sper1love/watchlist-api/internal/database/postgres"
+	"github.com/k4sper1love/watchlist-api/internal/filters"
 	"github.com/k4sper1love/watchlist-api/internal/models"
+	"github.com/k4sper1love/watchlist-api/internal/validator"
 	"log"
 	"net/http"
 )
@@ -20,7 +22,7 @@ func addCollectionHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	collection.UserId = userId
 
-	errs := models.ValidateStruct(&collection)
+	errs := validator.ValidateStruct(&collection)
 	if errs != nil {
 		failedValidationResponse(w, r, errs)
 		return
@@ -67,13 +69,38 @@ func getCollectionsHandler(w http.ResponseWriter, r *http.Request) {
 
 	userId := r.Context().Value("userId").(int)
 
-	collections, err := postgres.GetCollections(userId)
+	var input struct {
+		Name string
+		filters.Filters
+	}
+
+	qs := r.URL.Query()
+
+	input.Name = parseQueryString(qs, "name", "")
+
+	input.Filters.Page = parseQueryInt(qs, "page", 1)
+	input.Filters.PageSize = parseQueryInt(qs, "page_size", 5)
+
+	input.Filters.Sort = parseQueryString(qs, "sort", "id")
+
+	input.Filters.SortSafeList = []string{
+		"id", "name", "created_at",
+		"-id", "-name", "-created_at",
+	}
+
+	errs := filters.ValidateFilters(input.Filters)
+	if errs != nil {
+		failedValidationResponse(w, r, errs)
+		return
+	}
+
+	collections, metadata, err := postgres.GetCollections(userId, input.Name, input.Filters)
 	if err != nil {
 		handleDBError(w, r, err)
 		return
 	}
 
-	writeJSON(w, r, http.StatusOK, envelope{"collections": collections})
+	writeJSON(w, r, http.StatusOK, envelope{"collections": collections, "metadata": metadata})
 }
 
 func updateCollectionHandler(w http.ResponseWriter, r *http.Request) {
@@ -98,7 +125,7 @@ func updateCollectionHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	collection.Id = collectionId
 
-	errs := models.ValidateStruct(collection)
+	errs := validator.ValidateStruct(collection)
 	if errs != nil {
 		failedValidationResponse(w, r, errs)
 		return

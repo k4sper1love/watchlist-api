@@ -2,7 +2,9 @@ package rest
 
 import (
 	"github.com/k4sper1love/watchlist-api/internal/database/postgres"
+	"github.com/k4sper1love/watchlist-api/internal/filters"
 	"github.com/k4sper1love/watchlist-api/internal/models"
+	"github.com/k4sper1love/watchlist-api/internal/validator"
 	"log"
 	"net/http"
 )
@@ -20,7 +22,7 @@ func addFilmHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	film.UserId = userId
 
-	errs := models.ValidateStruct(&film)
+	errs := validator.ValidateStruct(&film)
 	if errs != nil {
 		failedValidationResponse(w, r, errs)
 		return
@@ -67,13 +69,42 @@ func getFilmsHandler(w http.ResponseWriter, r *http.Request) {
 
 	userId := r.Context().Value("userId").(int)
 
-	films, err := postgres.GetFilmsByUser(userId)
+	var input struct {
+		Title     string
+		MinRating float64
+		MaxRating float64
+		filters.Filters
+	}
+
+	qs := r.URL.Query()
+
+	input.Title = parseQueryString(qs, "title", "")
+	input.MinRating = parseQueryFloat(qs, "rating_min", 0)
+	input.MaxRating = parseQueryFloat(qs, "rating_max", 0)
+
+	input.Filters.Page = parseQueryInt(qs, "page", 1)
+	input.Filters.PageSize = parseQueryInt(qs, "page_size", 5)
+
+	input.Filters.Sort = parseQueryString(qs, "sort", "id")
+
+	input.Filters.SortSafeList = []string{
+		"id", "title", "rating",
+		"-id", "-title", "-rating",
+	}
+
+	errs := filters.ValidateFilters(input.Filters)
+	if errs != nil {
+		failedValidationResponse(w, r, errs)
+		return
+	}
+
+	films, metadata, err := postgres.GetFilmsByUser(userId, input.Title, input.MinRating, input.MaxRating, input.Filters)
 	if err != nil {
 		handleDBError(w, r, err)
 		return
 	}
 
-	writeJSON(w, r, http.StatusOK, envelope{"films": films})
+	writeJSON(w, r, http.StatusOK, envelope{"films": films, "metadata": metadata})
 }
 
 func updateFilmHandler(w http.ResponseWriter, r *http.Request) {
@@ -98,7 +129,7 @@ func updateFilmHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	film.Id = id
 
-	errs := models.ValidateStruct(film)
+	errs := validator.ValidateStruct(film)
 	if errs != nil {
 		failedValidationResponse(w, r, errs)
 		return

@@ -11,6 +11,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
 )
@@ -94,4 +95,35 @@ func addPermissionAndAssignToUser(userId, objectId int, objectType, action strin
 	}
 
 	return postgres.AddUserPermissions(userId, permission)
+}
+
+func parseQuery[T any](qs url.Values, key string, defaultValue T, parseFunc func(string) (T, error)) T {
+	value := qs.Get(key)
+
+	if value == "" {
+		return defaultValue
+	}
+
+	parsedValue, err := parseFunc(value)
+	if err != nil {
+		return defaultValue
+	}
+
+	return parsedValue
+}
+
+func parseQueryString(qs url.Values, key string, defaultValue string) string {
+	return parseQuery(qs, key, defaultValue, func(v string) (string, error) {
+		return v, nil
+	})
+}
+
+func parseQueryInt(qs url.Values, key string, defaultValue int) int {
+	return parseQuery(qs, key, defaultValue, strconv.Atoi)
+}
+
+func parseQueryFloat(qs url.Values, key string, defaultValue float64) float64 {
+	return parseQuery(qs, key, defaultValue, func(v string) (float64, error) {
+		return strconv.ParseFloat(v, 64)
+	})
 }

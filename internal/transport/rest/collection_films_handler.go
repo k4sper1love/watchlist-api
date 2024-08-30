@@ -2,6 +2,7 @@ package rest
 
 import (
 	"github.com/k4sper1love/watchlist-api/internal/database/postgres"
+	"github.com/k4sper1love/watchlist-api/internal/filters"
 	"github.com/k4sper1love/watchlist-api/internal/models"
 	"log"
 	"net/http"
@@ -73,13 +74,35 @@ func getCollectionFilmsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	collectionFilms, err := postgres.GetCollectionFilms(collectionId)
+	var input struct {
+		filters.Filters
+	}
+
+	qs := r.URL.Query()
+
+	input.Filters.Page = parseQueryInt(qs, "page", 1)
+	input.Filters.PageSize = parseQueryInt(qs, "page_size", 5)
+
+	input.Filters.Sort = parseQueryString(qs, "sort", "film_id")
+
+	input.Filters.SortSafeList = []string{
+		"film_id", "added_at",
+		"-film_id", "-added_at",
+	}
+
+	errs := filters.ValidateFilters(input.Filters)
+	if errs != nil {
+		failedValidationResponse(w, r, errs)
+		return
+	}
+
+	collectionFilms, metadata, err := postgres.GetCollectionFilms(collectionId, input.Filters)
 	if err != nil {
 		handleDBError(w, r, err)
 		return
 	}
 
-	writeJSON(w, r, http.StatusOK, envelope{"collection_films": collectionFilms})
+	writeJSON(w, r, http.StatusOK, envelope{"collection_films": collectionFilms, "metadata": metadata})
 }
 
 func updateCollectionFilmHandler(w http.ResponseWriter, r *http.Request) {

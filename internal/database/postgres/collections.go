@@ -1,6 +1,8 @@
 package postgres
 
 import (
+	"fmt"
+	"github.com/k4sper1love/watchlist-api/internal/filters"
 	"github.com/k4sper1love/watchlist-api/internal/models"
 )
 
@@ -22,30 +24,44 @@ func GetCollection(collectionId int) (*models.Collection, error) {
 	return &c, nil
 }
 
-func GetCollections(userId int) ([]*models.Collection, error) {
-	query := `SELECT * FROM collections WHERE user_id = $1`
+func GetCollections(userId int, name string, f filters.Filters) ([]*models.Collection, filters.Metadata, error) {
+	query := fmt.Sprintf(
+		`	
+			SELECT count(*) OVER(), * 
+			FROM collections 
+			WHERE user_id = $1 
+			  AND (LOWER(name) = LOWER($2) OR $2 = '')
+			ORDER BY %s %s, id
+			LIMIT $3 OFFSET $4
+			`,
+		f.SortColumn(), f.SortDirection())
 
-	rows, err := db.Query(query, userId)
+	rows, err := db.Query(query, userId, name, f.Limit(), f.Offset())
 	if err != nil {
-		return nil, err
+		return nil, filters.Metadata{}, err
 	}
 	defer rows.Close()
+
+	totalRecords := 0
 
 	var collections []*models.Collection
 	for rows.Next() {
 		var c models.Collection
-		err = rows.Scan(&c.Id, &c.UserId, &c.Name, &c.Description, &c.CreatedAt)
+		err = rows.Scan(&totalRecords, &c.Id, &c.UserId, &c.Name, &c.Description, &c.CreatedAt)
 		if err != nil {
-			return nil, err
+			return nil, filters.Metadata{}, err
 		}
+
 		collections = append(collections, &c)
 	}
 
 	if err = rows.Err(); err != nil {
-		return nil, err
+		return nil, filters.Metadata{}, err
 	}
 
-	return collections, nil
+	metadata := filters.CalculateMetadata(totalRecords, f.Page, f.PageSize)
+
+	return collections, metadata, nil
 }
 
 func UpdateCollection(c *models.Collection) error {

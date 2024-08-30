@@ -1,6 +1,8 @@
 package postgres
 
 import (
+	"fmt"
+	"github.com/k4sper1love/watchlist-api/internal/filters"
 	"github.com/k4sper1love/watchlist-api/internal/models"
 )
 
@@ -32,45 +34,47 @@ func GetFilm(id int) (*models.Film, error) {
 	return &f, nil
 }
 
-func GetFilmsByUser(userId int) ([]*models.Film, error) {
-	query := `SELECT * FROM films where user_id = $1`
+func GetFilmsByUser(userId int, title string, min, max float64, f filters.Filters) ([]*models.Film, filters.Metadata, error) {
+	query := fmt.Sprintf(
+		`		
+			SELECT count(*) OVER(), * 
+			FROM films 
+			WHERE user_id = $1
+			  AND (LOWER(title) = LOWER($2) OR $2 = '') 
+			  AND (rating >= $3 OR $3 = 0) 
+			  AND (rating <= $4 OR $4 = 0) 
+			ORDER BY %s %s, id
+			LIMIT $5 OFFSET $6
+			`,
+		f.SortColumn(), f.SortDirection())
 
-	rows, err := db.Query(query, userId)
+	rows, err := db.Query(query, userId, title, min, max, f.Limit(), f.Offset())
 	if err != nil {
-		return nil, err
+		return nil, filters.Metadata{}, err
 	}
 	defer rows.Close()
+
+	totalRecords := 0
 
 	var films []*models.Film
 	for rows.Next() {
 		var film models.Film
-		args := []interface{}{
-			&film.Id,
-			&film.UserId,
-			&film.Title,
-			&film.Year,
-			&film.Genre,
-			&film.Description,
-			&film.Rating,
-			&film.PhotoUrl,
-			&film.Comment,
-			&film.IsViewed,
-			&film.UserRating,
-			&film.Review,
-			&film.CreatedAt,
-		}
+		args := []interface{}{&totalRecords, &film.Id, &film.UserId, &film.Title, &film.Year, &film.Genre, &film.Description, &film.Rating, &film.PhotoUrl, &film.Comment, &film.IsViewed, &film.UserRating, &film.Review, &film.CreatedAt}
 		err = rows.Scan(args...)
 		if err != nil {
-			return nil, err
+			return nil, filters.Metadata{}, err
 		}
+
 		films = append(films, &film)
 	}
 
 	if err = rows.Err(); err != nil {
-		return nil, err
+		return nil, filters.Metadata{}, err
 	}
 
-	return films, nil
+	metadata := filters.CalculateMetadata(totalRecords, f.Page, f.PageSize)
+
+	return films, metadata, nil
 }
 
 func UpdateFilm(film *models.Film) error {
@@ -81,19 +85,7 @@ func UpdateFilm(film *models.Film) error {
 			RETURNING user_id
 			`
 
-	queryArgs := []interface{}{
-		film.Id,
-		film.Title,
-		film.Year,
-		film.Genre,
-		film.Description,
-		film.Rating,
-		film.PhotoUrl,
-		film.Comment,
-		film.IsViewed,
-		film.UserRating,
-		film.Review,
-	}
+	queryArgs := []interface{}{film.Id, film.Title, film.Year, film.Genre, film.Description, film.Rating, film.PhotoUrl, film.Comment, film.IsViewed, film.UserRating, film.Review}
 
 	return db.QueryRow(query, queryArgs...).Scan(&film.UserId)
 }
