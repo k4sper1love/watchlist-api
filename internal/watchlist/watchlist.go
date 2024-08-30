@@ -8,18 +8,18 @@ import (
 )
 
 func Run() {
-	log.Println("Run initialization whole app")
+	log.Println("run initialization whole app")
 
-	log.Print("Loading .env file")
+	log.Print("loading .env file")
 	err := config.LoadConfig()
 	if err != nil {
-		log.Fatal("Error loading .env file")
+		log.Fatal("error loading .env file")
 	}
 
-	log.Print("Connection to database")
+	log.Print("connection to database")
 	db := postgres.ConnectPostgres()
 	if db == nil {
-		log.Fatal("Cannot connect to PostgreSQL")
+		log.Fatal("cannot connect to PostgreSQL")
 	}
 
 	defer func() {
@@ -28,16 +28,8 @@ func Run() {
 		}
 	}()
 
-	log.Print("Loading server")
-	server := rest.LoadServer()
-	if server == nil {
-		log.Fatal("Error loading server")
-	}
-
-	log.Println("Run server on", server.Addr)
-	err = server.ListenAndServe()
+	err = rest.Serve()
 	if err != nil {
-		log.Println(err)
-		return
+		log.Fatal(err)
 	}
 }
