@@ -2,7 +2,7 @@ package rest
 
 import (
 	"github.com/k4sper1love/watchlist-api/internal/database/postgres"
-	"github.com/k4sper1love/watchlist-api/internal/models"
+	"github.com/k4sper1love/watchlist-api/internal/validator"
 	"log"
 	"net/http"
 )
@@ -39,7 +39,7 @@ func updateUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	errs := models.ValidateStruct(user)
+	errs := validator.ValidateStruct(user)
 	if errs != nil {
 		failedValidationResponse(w, r, errs)
 		return
