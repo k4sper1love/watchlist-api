@@ -37,8 +37,13 @@ func badRequestResponse(w http.ResponseWriter, r *http.Request, err error) {
 	errorResponse(w, r, http.StatusBadRequest, err.Error())
 }
 
-func conflictResponse(w http.ResponseWriter, r *http.Request, err error) {
+func uniqueConflictResponse(w http.ResponseWriter, r *http.Request, err error) {
 	errorResponse(w, r, http.StatusConflict, err.Error())
+}
+
+func editConflictResponse(w http.ResponseWriter, r *http.Request) {
+	message := "record update failed due to a conflict. Please try again"
+	errorResponse(w, r, http.StatusConflict, message)
 }
 
 func notFoundResponse(w http.ResponseWriter, r *http.Request) {
@@ -75,11 +80,11 @@ func handleDBError(w http.ResponseWriter, r *http.Request, err error) {
 	switch {
 	case errors.As(err, &pqErr):
 		if pqErr.Code == "23505" {
-			conflictResponse(w, r, errAlreadyExists)
+			uniqueConflictResponse(w, r, errAlreadyExists)
 			return
 		}
 		if pqErr.Code == "23503" {
-			conflictResponse(w, r, errForeignKeyViolation)
+			uniqueConflictResponse(w, r, errForeignKeyViolation)
 			return
 		}
 		serverErrorResponse(w, r, err)

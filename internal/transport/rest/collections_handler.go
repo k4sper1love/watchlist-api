@@ -1,6 +1,8 @@
 package rest
 
 import (
+	"database/sql"
+	"errors"
 	"github.com/k4sper1love/watchlist-api/internal/database/postgres"
 	"github.com/k4sper1love/watchlist-api/internal/filters"
 	"github.com/k4sper1love/watchlist-api/internal/models"
@@ -133,7 +135,13 @@ func updateCollectionHandler(w http.ResponseWriter, r *http.Request) {
 
 	err = postgres.UpdateCollection(collection)
 	if err != nil {
-		handleDBError(w, r, err)
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			editConflictResponse(w, r)
+		default:
+			handleDBError(w, r, err)
+		}
+		return
 	}
 
 	writeJSON(w, r, http.StatusOK, envelope{"collection": collection})

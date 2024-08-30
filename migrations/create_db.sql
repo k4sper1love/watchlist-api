@@ -12,12 +12,15 @@ drop table if exists user_films;
 drop table if exists films ;
 drop table if exists users;
 
+create extension if not exists citext;
+
 create table if not exists users (
     id serial primary key,
-    username varchar not null unique,
-    email varchar not null unique,
+    username citext not null unique,
+    email citext not null unique,
     password varchar not null,
-    created_at timestamp with time zone default current_timestamp(5)
+    created_at timestamp(5) with time zone default NOW(),
+    version int not null default 1
 );
 
 create table if not exists films (
@@ -33,7 +36,8 @@ create table if not exists films (
     is_viewed boolean default false,
     user_rating float,
     review varchar,
-    created_at timestamp with time zone default current_timestamp(5)
+    created_at timestamp(5) with time zone default NOW(),
+    updated_at timestamp(5) with time zone default NOW()
 );
 
 create table if not exists collections (
@@ -41,14 +45,16 @@ create table if not exists collections (
     user_id int references users(id),
     name varchar,
     description varchar,
-    created_at timestamp default current_timestamp(5)
+    created_at timestamp(5) with time zone default NOW(),
+    updated_at timestamp(5) with time zone default NOW()
 );
 
 
 create table if not exists collection_films (
     collection_id int not null,
     film_id int not null,
-    added_at timestamp with time zone default current_timestamp(5),
+    created_at timestamp(5) with time zone default NOW(),
+    updated_at timestamp(5) with time zone default NOW(),
     primary key (collection_id, film_id),
     foreign key (collection_id) references collections(id),
     foreign key (film_id) references films(id)

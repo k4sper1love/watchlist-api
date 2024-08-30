@@ -11,13 +11,13 @@ func AddUser(u *models.User) error {
 	query := `
 			INSERT INTO users (username, email, password)
 			VALUES ($1, $2, $3) 
-			RETURNING id, created_at
+			RETURNING id, created_at, version
 			`
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	return db.QueryRowContext(ctx, query, u.Username, u.Email, u.Password).Scan(&u.Id, &u.CreatedAt)
+	return db.QueryRowContext(ctx, query, u.Username, u.Email, u.Password).Scan(&u.Id, &u.CreatedAt, &u.Version)
 }
 
 func GetUserById(id int) (*models.User, error) {
@@ -26,13 +26,13 @@ func GetUserById(id int) (*models.User, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	var user models.User
-	err := db.QueryRowContext(ctx, query, id).Scan(&user.Id, &user.Username, &user.Email, &user.Password, &user.CreatedAt)
+	var u models.User
+	err := db.QueryRowContext(ctx, query, id).Scan(&u.Id, &u.Username, &u.Email, &u.Password, &u.CreatedAt, &u.Version)
 	if err != nil {
 		return nil, err
 	}
 
-	return &user, nil
+	return &u, nil
 }
 
 func GetUserByEmail(email string) (*models.User, error) {
@@ -41,13 +41,13 @@ func GetUserByEmail(email string) (*models.User, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	var user models.User
-	err := db.QueryRowContext(ctx, query, email).Scan(&user.Id, &user.Username, &user.Email, &user.Password, &user.CreatedAt)
+	var u models.User
+	err := db.QueryRowContext(ctx, query, email).Scan(&u.Id, &u.Username, &u.Email, &u.Password, &u.CreatedAt, &u.Version)
 	if err != nil {
 		return nil, err
 	}
 
-	return &user, nil
+	return &u, nil
 }
 
 func GetUsers() ([]*models.User, error) {
@@ -69,12 +69,12 @@ func GetUsers() ([]*models.User, error) {
 
 	var users []*models.User
 	for rows.Next() {
-		var user models.User
-		err = rows.Scan(&user.Id, &user.Username, &user.CreatedAt)
+		var u models.User
+		err = rows.Scan(&u.Id, &u.Username, &u.Email, &u.Password, &u.CreatedAt, &u.Version)
 		if err != nil {
 			return nil, err
 		}
-		users = append(users, &user)
+		users = append(users, &u)
 	}
 
 	if err = rows.Err(); err != nil {
@@ -84,13 +84,17 @@ func GetUsers() ([]*models.User, error) {
 	return users, nil
 }
 
-func UpdateUser(user *models.User) error {
-	query := `UPDATE users SET username = $2 WHERE id = $1 RETURNING id, username, email, created_at`
+func UpdateUser(u *models.User) error {
+	query := `
+			UPDATE users 
+			SET username = $3, version = version + 1
+			WHERE id = $1 AND version = $2
+			RETURNING id, username, email, created_at`
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	return db.QueryRowContext(ctx, query, user.Id, user.Username).Scan(&user.Id, &user.Username, &user.Email, &user.CreatedAt)
+	return db.QueryRowContext(ctx, query, u.Id, u.Version, u.Username).Scan(&u.Id, &u.Username, &u.Email, &u.CreatedAt)
 }
 
 func DeleteUser(id int) error {

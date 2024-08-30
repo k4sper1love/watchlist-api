@@ -10,12 +10,12 @@ import (
 )
 
 func AddCollection(c *models.Collection) error {
-	query := `INSERT INTO collections (user_id, name, description) VALUES ($1, $2, $3) RETURNING id, created_at`
+	query := `INSERT INTO collections (user_id, name, description) VALUES ($1, $2, $3) RETURNING id, created_at, updated_at`
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	return db.QueryRowContext(ctx, query, c.UserId, c.Name, c.Description).Scan(&c.Id, &c.CreatedAt)
+	return db.QueryRowContext(ctx, query, c.UserId, c.Name, c.Description).Scan(&c.Id, &c.CreatedAt, &c.UpdatedAt)
 }
 
 func GetCollection(collectionId int) (*models.Collection, error) {
@@ -25,7 +25,7 @@ func GetCollection(collectionId int) (*models.Collection, error) {
 	defer cancel()
 
 	var c models.Collection
-	err := db.QueryRowContext(ctx, query, collectionId).Scan(&c.Id, &c.UserId, &c.Name, &c.Description, &c.CreatedAt)
+	err := db.QueryRowContext(ctx, query, collectionId).Scan(&c.Id, &c.UserId, &c.Name, &c.Description, &c.CreatedAt, &c.UpdatedAt)
 	if err != nil {
 		return nil, err
 	}
@@ -64,7 +64,7 @@ func GetCollections(userId int, name string, f filters.Filters) ([]*models.Colle
 	var collections []*models.Collection
 	for rows.Next() {
 		var c models.Collection
-		err = rows.Scan(&totalRecords, &c.Id, &c.UserId, &c.Name, &c.Description, &c.CreatedAt)
+		err = rows.Scan(&totalRecords, &c.Id, &c.UserId, &c.Name, &c.Description, &c.CreatedAt, &c.UpdatedAt)
 		if err != nil {
 			return nil, filters.Metadata{}, err
 		}
@@ -84,15 +84,15 @@ func GetCollections(userId int, name string, f filters.Filters) ([]*models.Colle
 func UpdateCollection(c *models.Collection) error {
 	query := `
 			UPDATE collections 
-			SET name = $2, description = $3 
-			WHERE id = $1 
-        	RETURNING id, user_id, name, description, created_at
+			SET name = $3, description = $4, updated_at = CURRENT_TIMESTAMP
+			WHERE id = $1 AND updated_at = $2
+        	RETURNING user_id, created_at, updated_at
         	`
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	return db.QueryRowContext(ctx, query, c.Id, c.Name, c.Description).Scan(&c.Id, &c.UserId, &c.Name, &c.Description, &c.CreatedAt)
+	return db.QueryRowContext(ctx, query, c.Id, c.UpdatedAt, c.Name, c.Description).Scan(&c.UserId, &c.CreatedAt, &c.UpdatedAt)
 }
 
 func DeleteCollection(id int) error {

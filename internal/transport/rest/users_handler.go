@@ -1,6 +1,8 @@
 package rest
 
 import (
+	"database/sql"
+	"errors"
 	"github.com/k4sper1love/watchlist-api/internal/database/postgres"
 	"github.com/k4sper1love/watchlist-api/internal/validator"
 	"log"
@@ -49,7 +51,12 @@ func updateUserHandler(w http.ResponseWriter, r *http.Request) {
 
 	err = postgres.UpdateUser(user)
 	if err != nil {
-		handleDBError(w, r, err)
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			editConflictResponse(w, r)
+		default:
+			handleDBError(w, r, err)
+		}
 		return
 	}
 

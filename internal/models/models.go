@@ -10,6 +10,7 @@ type User struct {
 	Email     string    `json:"email" validate:"required,email"`
 	Password  string    `json:"password,omitempty" validate:"required,password"`
 	CreatedAt time.Time `json:"created_at"`
+	Version   int       `json:"-"`
 }
 
 type Collection struct {
@@ -18,6 +19,7 @@ type Collection struct {
 	Name        string    `json:"name" validate:"required,min=3,max=100"`
 	Description string    `json:"description,omitempty" validate:"omitempty,max=500"`
 	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
 }
 
 type Film struct {
@@ -34,10 +36,12 @@ type Film struct {
 	UserRating  float64   `json:"user_rating,omitempty" validate:"omitempty,gte=1,lte=10"`
 	Review      string    `json:"review,omitempty" validate:"omitempty,max=500"`
 	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
 }
 
 type CollectionFilm struct {
 	CollectionId int       `json:"collection_id"`
 	FilmId       int       `json:"film_id"`
-	AddedAt      time.Time `json:"added_at"`
+	CreatedAt    time.Time `json:"added_at"`
+	UpdatedAt    time.Time `json:"updated_at"`
 }

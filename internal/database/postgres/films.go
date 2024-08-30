@@ -13,11 +13,11 @@ func AddFilm(f *models.Film) error {
 	query := `
 			INSERT INTO films (user_id, title, year, genre, description, rating, photo_url, comment, is_viewed, user_rating, review)
 			VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
-			RETURNING id, created_at
+			RETURNING id, created_at, updated_at
 			`
 
 	queryArgs := []interface{}{f.UserId, f.Title, f.Year, f.Genre, f.Description, f.Rating, f.PhotoUrl, f.Comment, f.IsViewed, f.UserRating, f.Review}
-	scanArgs := []interface{}{&f.Id, &f.CreatedAt}
+	scanArgs := []interface{}{&f.Id, &f.CreatedAt, &f.UpdatedAt}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
@@ -29,7 +29,7 @@ func GetFilm(id int) (*models.Film, error) {
 	query := `SELECT * FROM films WHERE id = $1`
 
 	var f models.Film
-	args := []interface{}{&f.Id, &f.UserId, &f.Title, &f.Year, &f.Genre, &f.Description, &f.Rating, &f.PhotoUrl, &f.Comment, &f.IsViewed, &f.UserRating, &f.Review, &f.CreatedAt}
+	args := []interface{}{&f.Id, &f.UserId, &f.Title, &f.Year, &f.Genre, &f.Description, &f.Rating, &f.PhotoUrl, &f.Comment, &f.IsViewed, &f.UserRating, &f.Review, &f.CreatedAt, &f.UpdatedAt}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
@@ -75,7 +75,7 @@ func GetFilmsByUser(userId int, title string, min, max float64, f filters.Filter
 	var films []*models.Film
 	for rows.Next() {
 		var film models.Film
-		args := []interface{}{&totalRecords, &film.Id, &film.UserId, &film.Title, &film.Year, &film.Genre, &film.Description, &film.Rating, &film.PhotoUrl, &film.Comment, &film.IsViewed, &film.UserRating, &film.Review, &film.CreatedAt}
+		args := []interface{}{&totalRecords, &film.Id, &film.UserId, &film.Title, &film.Year, &film.Genre, &film.Description, &film.Rating, &film.PhotoUrl, &film.Comment, &film.IsViewed, &film.UserRating, &film.Review, &film.CreatedAt, &film.UpdatedAt}
 		err = rows.Scan(args...)
 		if err != nil {
 			return nil, filters.Metadata{}, err
@@ -96,17 +96,17 @@ func GetFilmsByUser(userId int, title string, min, max float64, f filters.Filter
 func UpdateFilm(film *models.Film) error {
 	query := `
 			UPDATE films
-			SET title = $2, year = $3, genre = $4, description = $5, rating = $6, photo_url = $7, comment = $8, is_viewed = $9, user_rating = $10, review = $11
-			WHERE id = $1
-			RETURNING user_id
+			SET title = $3, year = $4, genre = $5, description = $6, rating = $7, photo_url = $8, comment = $9, is_viewed = $10, user_rating = $11, review = $12, updated_at = CURRENT_TIMESTAMP
+			WHERE id = $1 AND updated_at = $2
+			RETURNING user_id, updated_at
 			`
 
-	queryArgs := []interface{}{film.Id, film.Title, film.Year, film.Genre, film.Description, film.Rating, film.PhotoUrl, film.Comment, film.IsViewed, film.UserRating, film.Review}
+	queryArgs := []interface{}{film.Id, film.UpdatedAt, film.Title, film.Year, film.Genre, film.Description, film.Rating, film.PhotoUrl, film.Comment, film.IsViewed, film.UserRating, film.Review}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	return db.QueryRowContext(ctx, query, queryArgs...).Scan(&film.UserId)
+	return db.QueryRowContext(ctx, query, queryArgs...).Scan(&film.UserId, &film.UpdatedAt)
 }
 
 func DeleteFilm(id int) error {

@@ -10,12 +10,12 @@ import (
 )
 
 func AddCollectionFilm(c *models.CollectionFilm) error {
-	query := `INSERT INTO collection_films (collection_id, film_id) VALUES ($1, $2) RETURNING added_at`
+	query := `INSERT INTO collection_films (collection_id, film_id) VALUES ($1, $2) RETURNING created_at, updated_at`
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	return db.QueryRowContext(ctx, query, c.CollectionId, c.FilmId).Scan(&c.AddedAt)
+	return db.QueryRowContext(ctx, query, c.CollectionId, c.FilmId).Scan(&c.CreatedAt, &c.UpdatedAt)
 }
 
 func GetCollectionFilm(collectionId, filmId int) (*models.CollectionFilm, error) {
@@ -25,7 +25,7 @@ func GetCollectionFilm(collectionId, filmId int) (*models.CollectionFilm, error)
 	defer cancel()
 
 	var c models.CollectionFilm
-	err := db.QueryRowContext(ctx, query, collectionId, filmId).Scan(&c.CollectionId, &c.FilmId, &c.AddedAt)
+	err := db.QueryRowContext(ctx, query, collectionId, filmId).Scan(&c.CollectionId, &c.FilmId, &c.CreatedAt, &c.UpdatedAt)
 	if err != nil {
 		return nil, err
 	}
@@ -63,7 +63,7 @@ func GetCollectionFilms(collectionId int, f filters.Filters) ([]*models.Collecti
 	var collectionFilms []*models.CollectionFilm
 	for rows.Next() {
 		var c models.CollectionFilm
-		err = rows.Scan(&totalRecords, &c.CollectionId, &c.FilmId, &c.AddedAt)
+		err = rows.Scan(&totalRecords, &c.CollectionId, &c.FilmId, &c.CreatedAt, &c.UpdatedAt)
 		if err != nil {
 			return nil, filters.Metadata{}, err
 		}
@@ -82,17 +82,15 @@ func GetCollectionFilms(collectionId int, f filters.Filters) ([]*models.Collecti
 func UpdateCollectionFilm(c *models.CollectionFilm) error {
 	query := `
 			UPDATE collection_films 
-			SET added_at = $3 
-			WHERE collection_id = $1 AND film_id = $2
-			RETURNING *
+			SET created_at = $4, updated_at = CURRENT_TIMESTAMP
+			WHERE collection_id = $1 AND film_id = $2 AND updated_at = $3
+			RETURNING created_at, updated_at
 			`
-
-	args := []interface{}{&c.CollectionId, &c.FilmId, &c.AddedAt}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	return db.QueryRowContext(ctx, query, c.CollectionId, c.FilmId, c.AddedAt).Scan(args...)
+	return db.QueryRowContext(ctx, query, c.CollectionId, c.FilmId, c.UpdatedAt, c.CreatedAt).Scan(&c.CreatedAt, &c.UpdatedAt)
 }
 
 func DeleteCollectionFilm(collectionId, filmId int) error {
