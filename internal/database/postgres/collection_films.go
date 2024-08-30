@@ -1,22 +1,31 @@
 package postgres
 
 import (
+	"context"
 	"fmt"
 	"github.com/k4sper1love/watchlist-api/internal/filters"
 	"github.com/k4sper1love/watchlist-api/internal/models"
+	"log"
+	"time"
 )
 
 func AddCollectionFilm(c *models.CollectionFilm) error {
 	query := `INSERT INTO collection_films (collection_id, film_id) VALUES ($1, $2) RETURNING added_at`
 
-	return db.QueryRow(query, c.CollectionId, c.FilmId).Scan(&c.AddedAt)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	return db.QueryRowContext(ctx, query, c.CollectionId, c.FilmId).Scan(&c.AddedAt)
 }
 
 func GetCollectionFilm(collectionId, filmId int) (*models.CollectionFilm, error) {
 	query := `SELECT * FROM collection_films WHERE collection_id = $1 AND film_id = $2`
 
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
 	var c models.CollectionFilm
-	err := db.QueryRow(query, collectionId, filmId).Scan(&c.CollectionId, &c.FilmId, &c.AddedAt)
+	err := db.QueryRowContext(ctx, query, collectionId, filmId).Scan(&c.CollectionId, &c.FilmId, &c.AddedAt)
 	if err != nil {
 		return nil, err
 	}
@@ -35,11 +44,19 @@ func GetCollectionFilms(collectionId int, f filters.Filters) ([]*models.Collecti
 			`,
 		f.SortColumn(), f.SortDirection())
 
-	rows, err := db.Query(query, collectionId, f.Limit(), f.Offset())
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	rows, err := db.QueryContext(ctx, query, collectionId, f.Limit(), f.Offset())
 	if err != nil {
 		return nil, filters.Metadata{}, err
 	}
-	defer rows.Close()
+
+	defer func() {
+		if err := rows.Close(); err != nil {
+			log.Println(err)
+		}
+	}()
 
 	totalRecords := 0
 
@@ -72,12 +89,18 @@ func UpdateCollectionFilm(c *models.CollectionFilm) error {
 
 	args := []interface{}{&c.CollectionId, &c.FilmId, &c.AddedAt}
 
-	return db.QueryRow(query, c.CollectionId, c.FilmId, c.AddedAt).Scan(args...)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	return db.QueryRowContext(ctx, query, c.CollectionId, c.FilmId, c.AddedAt).Scan(args...)
 }
 
 func DeleteCollectionFilm(collectionId, filmId int) error {
 	query := `DELETE FROM collection_films WHERE collection_id = $1 AND film_id = $2`
 
-	_, err := db.Exec(query, collectionId, filmId)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	_, err := db.ExecContext(ctx, query, collectionId, filmId)
 	return err
 }

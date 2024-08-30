@@ -1,22 +1,31 @@
 package postgres
 
 import (
+	"context"
 	"fmt"
 	"github.com/k4sper1love/watchlist-api/internal/filters"
 	"github.com/k4sper1love/watchlist-api/internal/models"
+	"log"
+	"time"
 )
 
 func AddCollection(c *models.Collection) error {
 	query := `INSERT INTO collections (user_id, name, description) VALUES ($1, $2, $3) RETURNING id, created_at`
 
-	return db.QueryRow(query, c.UserId, c.Name, c.Description).Scan(&c.Id, &c.CreatedAt)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	return db.QueryRowContext(ctx, query, c.UserId, c.Name, c.Description).Scan(&c.Id, &c.CreatedAt)
 }
 
 func GetCollection(collectionId int) (*models.Collection, error) {
 	query := `SELECT * FROM collections WHERE id = $1`
 
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
 	var c models.Collection
-	err := db.QueryRow(query, collectionId).Scan(&c.Id, &c.UserId, &c.Name, &c.Description, &c.CreatedAt)
+	err := db.QueryRowContext(ctx, query, collectionId).Scan(&c.Id, &c.UserId, &c.Name, &c.Description, &c.CreatedAt)
 	if err != nil {
 		return nil, err
 	}
@@ -36,11 +45,19 @@ func GetCollections(userId int, name string, f filters.Filters) ([]*models.Colle
 			`,
 		f.SortColumn(), f.SortDirection())
 
-	rows, err := db.Query(query, userId, name, f.Limit(), f.Offset())
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	rows, err := db.QueryContext(ctx, query, userId, name, f.Limit(), f.Offset())
 	if err != nil {
 		return nil, filters.Metadata{}, err
 	}
-	defer rows.Close()
+
+	defer func() {
+		if err := rows.Close(); err != nil {
+			log.Println(err)
+		}
+	}()
 
 	totalRecords := 0
 
@@ -72,12 +89,18 @@ func UpdateCollection(c *models.Collection) error {
         	RETURNING id, user_id, name, description, created_at
         	`
 
-	return db.QueryRow(query, c.Id, c.Name, c.Description).Scan(&c.Id, &c.UserId, &c.Name, &c.Description, &c.CreatedAt)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	return db.QueryRowContext(ctx, query, c.Id, c.Name, c.Description).Scan(&c.Id, &c.UserId, &c.Name, &c.Description, &c.CreatedAt)
 }
 
 func DeleteCollection(id int) error {
 	query := `DELETE FROM collections WHERE id = $1`
 
-	_, err := db.Exec(query, id)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	_, err := db.ExecContext(ctx, query, id)
 	return err
 }

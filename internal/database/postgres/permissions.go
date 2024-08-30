@@ -1,6 +1,11 @@
 package postgres
 
-import "github.com/lib/pq"
+import (
+	"context"
+	"github.com/lib/pq"
+	"log"
+	"time"
+)
 
 type Permissions []string
 
@@ -20,7 +25,10 @@ func AddPermission(code string) error {
 			ON CONFLICT (code) DO NOTHING 
 			`
 
-	_, err := db.Exec(query, code)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	_, err := db.ExecContext(ctx, query, code)
 	return err
 }
 
@@ -32,7 +40,10 @@ func AddUserPermissions(userId int, codes ...string) error {
 			WHERE permissions.code = ANY($2)
 			`
 
-	_, err := db.Exec(query, userId, pq.Array(codes))
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	_, err := db.ExecContext(ctx, query, userId, pq.Array(codes))
 	return err
 }
 
@@ -44,11 +55,19 @@ func GetUserPermissions(userId int) (Permissions, error) {
 			WHERE user_permissions.user_id = $1
 			`
 
-	rows, err := db.Query(query, userId)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	rows, err := db.QueryContext(ctx, query, userId)
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+
+	defer func() {
+		if err := rows.Close(); err != nil {
+			log.Println(err)
+		}
+	}()
 
 	var permissions Permissions
 	for rows.Next() {

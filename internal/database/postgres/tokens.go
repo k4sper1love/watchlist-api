@@ -1,6 +1,7 @@
 package postgres
 
 import (
+	"context"
 	"crypto/sha256"
 	"encoding/hex"
 	"time"
@@ -16,7 +17,10 @@ func SaveRefreshToken(refreshToken string, userId int, expiresAt time.Time) erro
 
 	query := `INSERT INTO refresh_tokens(token, user_id, expires_at) values ($1, $2, $3)`
 
-	_, err := db.Exec(query, hashedToken, userId, expiresAt)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	_, err := db.ExecContext(ctx, query, hashedToken, userId, expiresAt)
 	return err
 }
 
@@ -25,7 +29,10 @@ func RevokeRefreshToken(refreshToken string) error {
 
 	query := `UPDATE refresh_tokens SET revoked = TRUE WHERE token = $1`
 
-	_, err := db.Exec(query, hashedToken)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	_, err := db.ExecContext(ctx, query, hashedToken)
 	return err
 }
 
@@ -34,8 +41,11 @@ func IsRefreshTokenRevoked(refreshToken string) (bool, error) {
 
 	query := `SELECT revoked FROM refresh_tokens WHERE token = $1`
 
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
 	var revoked bool
-	err := db.QueryRow(query, hashedToken).Scan(&revoked)
+	err := db.QueryRowContext(ctx, query, hashedToken).Scan(&revoked)
 	if err != nil {
 		return false, err
 	}
@@ -52,8 +62,11 @@ func GetIdFromRefreshToken(refreshToken string) (int, error) {
 
 	query := `SELECT user_id FROM refresh_tokens WHERE token = $1`
 
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
 	var userId int
-	err := db.QueryRow(query, hashedToken).Scan(&userId)
+	err := db.QueryRowContext(ctx, query, hashedToken).Scan(&userId)
 	if err != nil {
 		return 0, err
 	}

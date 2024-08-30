@@ -1,9 +1,12 @@
 package postgres
 
 import (
+	"context"
 	"fmt"
 	"github.com/k4sper1love/watchlist-api/internal/filters"
 	"github.com/k4sper1love/watchlist-api/internal/models"
+	"log"
+	"time"
 )
 
 func AddFilm(f *models.Film) error {
@@ -14,10 +17,12 @@ func AddFilm(f *models.Film) error {
 			`
 
 	queryArgs := []interface{}{f.UserId, f.Title, f.Year, f.Genre, f.Description, f.Rating, f.PhotoUrl, f.Comment, f.IsViewed, f.UserRating, f.Review}
-
 	scanArgs := []interface{}{&f.Id, &f.CreatedAt}
 
-	return db.QueryRow(query, queryArgs...).Scan(scanArgs...)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	return db.QueryRowContext(ctx, query, queryArgs...).Scan(scanArgs...)
 }
 
 func GetFilm(id int) (*models.Film, error) {
@@ -26,7 +31,10 @@ func GetFilm(id int) (*models.Film, error) {
 	var f models.Film
 	args := []interface{}{&f.Id, &f.UserId, &f.Title, &f.Year, &f.Genre, &f.Description, &f.Rating, &f.PhotoUrl, &f.Comment, &f.IsViewed, &f.UserRating, &f.Review, &f.CreatedAt}
 
-	err := db.QueryRow(query, id).Scan(args...)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	err := db.QueryRowContext(ctx, query, id).Scan(args...)
 	if err != nil {
 		return nil, err
 	}
@@ -48,11 +56,19 @@ func GetFilmsByUser(userId int, title string, min, max float64, f filters.Filter
 			`,
 		f.SortColumn(), f.SortDirection())
 
-	rows, err := db.Query(query, userId, title, min, max, f.Limit(), f.Offset())
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	rows, err := db.QueryContext(ctx, query, userId, title, min, max, f.Limit(), f.Offset())
 	if err != nil {
 		return nil, filters.Metadata{}, err
 	}
-	defer rows.Close()
+
+	defer func() {
+		if err := rows.Close(); err != nil {
+			log.Println(err)
+		}
+	}()
 
 	totalRecords := 0
 
@@ -87,12 +103,18 @@ func UpdateFilm(film *models.Film) error {
 
 	queryArgs := []interface{}{film.Id, film.Title, film.Year, film.Genre, film.Description, film.Rating, film.PhotoUrl, film.Comment, film.IsViewed, film.UserRating, film.Review}
 
-	return db.QueryRow(query, queryArgs...).Scan(&film.UserId)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	return db.QueryRowContext(ctx, query, queryArgs...).Scan(&film.UserId)
 }
 
 func DeleteFilm(id int) error {
 	query := `DELETE FROM films WHERE id = $1`
 
-	_, err := db.Exec(query, id)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	_, err := db.ExecContext(ctx, query, id)
 	return err
 }
