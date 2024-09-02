@@ -1,7 +1,7 @@
 package filters
 
 import (
-	"github.com/k4sper1love/watchlist-api/internal/validator"
+	"github.com/k4sper1love/watchlist-api/pkg/validator"
 	"math"
 	"strings"
 )
@@ -35,8 +35,13 @@ func CalculateMetadata(totalRecords, page, pageSize int) Metadata {
 	}
 }
 
-func ValidateFilters(f Filters) map[string]string {
-	errs := validator.ValidateStruct(&f)
+func ValidateFilters(f Filters) (map[string]string, error) {
+	v, err := validator.New()
+	if err != nil {
+		return nil, err
+	}
+
+	errs := validator.ValidateStruct(v, &f)
 
 	if !isValueInList(f.Sort, f.SortSafeList) {
 		if errs == nil {
@@ -46,7 +51,7 @@ func ValidateFilters(f Filters) map[string]string {
 		errs["sort"] = "invalid sort value"
 	}
 
-	return errs
+	return errs, nil
 }
 
 func (f Filters) SortColumn() string {

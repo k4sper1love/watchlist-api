@@ -2,11 +2,16 @@ package vcs
 
 import (
 	"fmt"
-	"log"
 	"runtime/debug"
 )
 
-func Version() string {
+var version string
+
+func init() {
+	version = buildVersion()
+}
+
+func buildVersion() string {
 	var (
 		time     string
 		revision string
@@ -15,8 +20,7 @@ func Version() string {
 
 	bInfo, ok := debug.ReadBuildInfo()
 	if !ok {
-		log.Println("Build info not available")
-		return ""
+		version = "unknown"
 	}
 
 	for _, bSetting := range bInfo.Settings {
@@ -32,9 +36,22 @@ func Version() string {
 		}
 	}
 
-	if modified {
-		return fmt.Sprintf("%s-%s-dirty", time, revision)
+	if time == "" {
+		time = "unknown-time"
 	}
 
-	return fmt.Sprintf("%s-%s", time, revision)
+	if revision == "" {
+		revision = "unknown-revision"
+	}
+
+	version = fmt.Sprintf("%s-%s", time, revision)
+	if modified {
+		version += "-dirty"
+	}
+
+	return version
+}
+
+func GetVersion() string {
+	return version
 }
