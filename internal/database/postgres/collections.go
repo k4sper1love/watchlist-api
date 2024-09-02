@@ -9,6 +9,9 @@ import (
 	"time"
 )
 
+// AddCollection inserts a new collection into the collections table.
+//
+// Returns an error if the insertion fails.
 func AddCollection(c *models.Collection) error {
 	query := `INSERT INTO collections (user_id, name, description) VALUES ($1, $2, $3) RETURNING id, created_at, updated_at`
 
@@ -18,6 +21,9 @@ func AddCollection(c *models.Collection) error {
 	return db.QueryRowContext(ctx, query, c.UserId, c.Name, c.Description).Scan(&c.Id, &c.CreatedAt, &c.UpdatedAt)
 }
 
+// GetCollection retrieves a collection by its ID.
+//
+// Returns the collection and an error if retrieval fails.
 func GetCollection(collectionId int) (*models.Collection, error) {
 	query := `SELECT * FROM collections WHERE id = $1`
 
@@ -33,6 +39,9 @@ func GetCollection(collectionId int) (*models.Collection, error) {
 	return &c, nil
 }
 
+// GetCollections retrieves collections for a user with optional filtering and pagination.
+//
+// Returns a slice of collections, metadata, and an error if retrieval fails.
 func GetCollections(userId int, name string, f filters.Filters) ([]*models.Collection, filters.Metadata, error) {
 	query := fmt.Sprintf(
 		`	
@@ -81,6 +90,9 @@ func GetCollections(userId int, name string, f filters.Filters) ([]*models.Colle
 	return collections, metadata, nil
 }
 
+// UpdateCollection updates an existing collection's details.
+//
+// Returns an error if the update fails.
 func UpdateCollection(c *models.Collection) error {
 	query := `
 			UPDATE collections 
@@ -95,6 +107,9 @@ func UpdateCollection(c *models.Collection) error {
 	return db.QueryRowContext(ctx, query, c.Id, c.UpdatedAt, c.Name, c.Description).Scan(&c.UserId, &c.CreatedAt, &c.UpdatedAt)
 }
 
+// DeleteCollection removes a collection by its ID.
+//
+// Returns an error if the deletion fails.
 func DeleteCollection(id int) error {
 	query := `DELETE FROM collections WHERE id = $1`
 

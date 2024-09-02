@@ -9,6 +9,9 @@ import (
 	"time"
 )
 
+// AddFilm inserts a new film into the database and returns its ID, creation, and update timestamps.
+//
+// Returns an error if insertion fails.
 func AddFilm(f *models.Film) error {
 	query := `
 			INSERT INTO films (user_id, title, year, genre, description, rating, photo_url, comment, is_viewed, user_rating, review)
@@ -25,6 +28,9 @@ func AddFilm(f *models.Film) error {
 	return db.QueryRowContext(ctx, query, queryArgs...).Scan(scanArgs...)
 }
 
+// GetFilm retrieves a film by its ID.
+//
+// Returns the film and an error if the query fails.
 func GetFilm(id int) (*models.Film, error) {
 	query := `SELECT * FROM films WHERE id = $1`
 
@@ -42,6 +48,9 @@ func GetFilm(id int) (*models.Film, error) {
 	return &f, nil
 }
 
+// GetFilmsByUser retrieves films for a specific user based on filters and pagination.
+//
+// Returns a list of films, metadata, and an error if the query fails.
 func GetFilmsByUser(userId int, title string, min, max float64, f filters.Filters) ([]*models.Film, filters.Metadata, error) {
 	query := fmt.Sprintf(
 		`		
@@ -93,6 +102,9 @@ func GetFilmsByUser(userId int, title string, min, max float64, f filters.Filter
 	return films, metadata, nil
 }
 
+// UpdateFilm updates the details of an existing film.
+//
+// Returns an error if the update fails.
 func UpdateFilm(film *models.Film) error {
 	query := `
 			UPDATE films
@@ -109,6 +121,9 @@ func UpdateFilm(film *models.Film) error {
 	return db.QueryRowContext(ctx, query, queryArgs...).Scan(&film.UserId, &film.UpdatedAt)
 }
 
+// DeleteFilm removes a film by its ID.
+//
+// Returns an error if the deletion fails.
 func DeleteFilm(id int) error {
 	query := `DELETE FROM films WHERE id = $1`
 

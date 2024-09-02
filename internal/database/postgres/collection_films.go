@@ -9,6 +9,9 @@ import (
 	"time"
 )
 
+// AddCollectionFilm adds a film to a collection.
+//
+// Returns an error if the insertion fails.
 func AddCollectionFilm(c *models.CollectionFilm) error {
 	query := `INSERT INTO collection_films (collection_id, film_id) VALUES ($1, $2) RETURNING created_at, updated_at`
 
@@ -18,6 +21,9 @@ func AddCollectionFilm(c *models.CollectionFilm) error {
 	return db.QueryRowContext(ctx, query, c.CollectionId, c.FilmId).Scan(&c.CreatedAt, &c.UpdatedAt)
 }
 
+// GetCollectionFilm retrieves the association of a film in a collection by collection ID and film ID.
+//
+// Returns the association and an error if retrieval fails.
 func GetCollectionFilm(collectionId, filmId int) (*models.CollectionFilm, error) {
 	query := `SELECT * FROM collection_films WHERE collection_id = $1 AND film_id = $2`
 
@@ -33,6 +39,9 @@ func GetCollectionFilm(collectionId, filmId int) (*models.CollectionFilm, error)
 	return &c, nil
 }
 
+// GetCollectionFilms retrieves all films in a collection with optional pagination and sorting.
+//
+// Returns a slice of collection-film associations, metadata, and an error if retrieval fails.
 func GetCollectionFilms(collectionId int, f filters.Filters) ([]*models.CollectionFilm, filters.Metadata, error) {
 	query := fmt.Sprintf(
 		`	
@@ -79,6 +88,9 @@ func GetCollectionFilms(collectionId int, f filters.Filters) ([]*models.Collecti
 	return collectionFilms, metadata, nil
 }
 
+// UpdateCollectionFilm updates the association of a film in a collection.
+//
+// Returns an error if the update fails.
 func UpdateCollectionFilm(c *models.CollectionFilm) error {
 	query := `
 			UPDATE collection_films 
@@ -93,6 +105,9 @@ func UpdateCollectionFilm(c *models.CollectionFilm) error {
 	return db.QueryRowContext(ctx, query, c.CollectionId, c.FilmId, c.UpdatedAt, c.CreatedAt).Scan(&c.CreatedAt, &c.UpdatedAt)
 }
 
+// DeleteCollectionFilm removes a film from a collection by collection ID and film ID.
+//
+// Returns an error if the deletion fails.
 func DeleteCollectionFilm(collectionId, filmId int) error {
 	query := `DELETE FROM collection_films WHERE collection_id = $1 AND film_id = $2`
 

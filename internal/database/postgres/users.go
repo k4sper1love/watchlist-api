@@ -7,6 +7,9 @@ import (
 	"time"
 )
 
+// AddUser inserts a new user into the database and returns the user with ID, creation timestamp, and version.
+//
+// Returns an error if insertion fails.
 func AddUser(u *models.User) error {
 	query := `
 			INSERT INTO users (username, email, password)
@@ -20,6 +23,9 @@ func AddUser(u *models.User) error {
 	return db.QueryRowContext(ctx, query, u.Username, u.Email, u.Password).Scan(&u.Id, &u.CreatedAt, &u.Version)
 }
 
+// GetUserById retrieves a user by their ID.
+//
+// Returns the user and an error if retrieval fails.
 func GetUserById(id int) (*models.User, error) {
 	query := `SELECT * FROM users WHERE id = $1`
 
@@ -35,6 +41,9 @@ func GetUserById(id int) (*models.User, error) {
 	return &u, nil
 }
 
+// GetUserByEmail retrieves a user by their email address.
+//
+// Returns the user and an error if retrieval fails.
 func GetUserByEmail(email string) (*models.User, error) {
 	query := `SELECT * FROM users WHERE email = $1`
 
@@ -50,6 +59,9 @@ func GetUserByEmail(email string) (*models.User, error) {
 	return &u, nil
 }
 
+// GetUsers retrieves all users from the database.
+//
+// Returns a slice of users and an error if retrieval fails.
 func GetUsers() ([]*models.User, error) {
 	query := `SELECT * FROM users`
 
@@ -84,6 +96,9 @@ func GetUsers() ([]*models.User, error) {
 	return users, nil
 }
 
+// UpdateUser updates a user's details based on their ID and version.
+//
+// Returns an error if the update fails.
 func UpdateUser(u *models.User) error {
 	query := `
 			UPDATE users 
@@ -97,6 +112,9 @@ func UpdateUser(u *models.User) error {
 	return db.QueryRowContext(ctx, query, u.Id, u.Version, u.Username).Scan(&u.Id, &u.Username, &u.Email, &u.CreatedAt)
 }
 
+// DeleteUser removes a user from the database by their ID.
+//
+// Returns an error if deletion fails.
 func DeleteUser(id int) error {
 	query := `DELETE FROM users WHERE id = $1`
 

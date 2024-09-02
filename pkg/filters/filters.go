@@ -1,3 +1,9 @@
+/*
+Package filters provides functionality for managing and validating filter parameters for data retrieval.
+It includes structures for specifying filters, functions for validating and calculating pagination metadata,
+and methods for handling sorting and pagination details.
+*/
+
 package filters
 
 import (
@@ -6,21 +12,27 @@ import (
 	"strings"
 )
 
+// Filters represents the parameters for filtering and pagination.
+// It includes fields for pagination (Page, PageSize), sorting (Sort), and a list of safe sort options (SortSafeList).
 type Filters struct {
-	Page         int      `json:"page" validate:"gte=1,lte=10000000"`
-	PageSize     int      `json:"page_size" validate:"gte=1,lte=100"`
-	Sort         string   `json:"sort"`
-	SortSafeList []string `json:"sort_safe_list"`
+	Page         int      `json:"page" validate:"gte=1,lte=10000000"` // Current page number, must be between 1 and 10,000,000.
+	PageSize     int      `json:"page_size" validate:"gte=1,lte=100"` // Number of items per page, must be between 1 and 100.
+	Sort         string   `json:"sort"`                               // Field to sort by, optionally prefixed with '-' for descending order.
+	SortSafeList []string `json:"sort_safe_list"`                     // List of allowed sort fields.
 }
 
+// Metadata holds pagination information for the result set.
+// It includes the current page, page size, first and last page numbers, and total record count.
 type Metadata struct {
-	CurrentPage  int `json:"current_page,omitempty"`
-	PageSize     int `json:"page_size,omitempty"`
-	FirstPage    int `json:"first_page,omitempty"`
-	LastPage     int `json:"last_page,omitempty"`
-	TotalRecords int `json:"total_records,omitempty"`
+	CurrentPage  int `json:"current_page,omitempty"`  // The current page number.
+	PageSize     int `json:"page_size,omitempty"`     // The number of items per page.
+	FirstPage    int `json:"first_page,omitempty"`    // The first page number, usually 1.
+	LastPage     int `json:"last_page,omitempty"`     // The last page number based on total records and page size.
+	TotalRecords int `json:"total_records,omitempty"` // The total number of records available.
 }
 
+// CalculateMetadata calculates pagination metadata based on total records, current page, and page size.
+// It returns a Metadata struct with details about the pagination.
 func CalculateMetadata(totalRecords, page, pageSize int) Metadata {
 	if totalRecords == 0 {
 		return Metadata{}
@@ -35,13 +47,10 @@ func CalculateMetadata(totalRecords, page, pageSize int) Metadata {
 	}
 }
 
+// ValidateFilters validates the filter parameters against predefined constraints.
+// It returns a map of validation error messages and any additional errors encountered.
 func ValidateFilters(f Filters) (map[string]string, error) {
-	v, err := validator.New()
-	if err != nil {
-		return nil, err
-	}
-
-	errs := validator.ValidateStruct(v, &f)
+	errs := validator.ValidateStruct(&f)
 
 	if !isValueInList(f.Sort, f.SortSafeList) {
 		if errs == nil {
@@ -54,10 +63,13 @@ func ValidateFilters(f Filters) (map[string]string, error) {
 	return errs, nil
 }
 
+// SortColumn returns the column to sort by, stripping any leading '-' for descending order.
 func (f Filters) SortColumn() string {
 	return strings.TrimPrefix(f.Sort, "-")
 }
 
+// SortDirection returns the sort direction based on whether the Sort field starts with '-'.
+// Returns "DESC" for descending order, and "ASC" for ascending order.
 func (f Filters) SortDirection() string {
 	if strings.HasPrefix(f.Sort, "-") {
 		return "DESC"
@@ -65,14 +77,19 @@ func (f Filters) SortDirection() string {
 	return "ASC"
 }
 
+// Limit returns the maximum number of items per page (page size).
 func (f Filters) Limit() int {
 	return f.PageSize
 }
 
+// Offset calculates the starting index for the current page of results.
+// It is based on the page number and page size.
 func (f Filters) Offset() int {
 	return (f.Page - 1) * f.PageSize
 }
 
+// isValueInList checks if a given string value is present in a list of strings.
+// Returns true if the value is found, otherwise false.
 func isValueInList(s string, list []string) bool {
 	for _, v := range list {
 		if s == v {

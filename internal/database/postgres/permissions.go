@@ -7,8 +7,12 @@ import (
 	"time"
 )
 
+// Permissions represents a slice of permission codes.
 type Permissions []string
 
+// Include checks if a given permission code is present in the Permissions slice.
+//
+// Returns true if the code is present, false otherwise.
 func (p Permissions) Include(code string) bool {
 	for _, v := range p {
 		if code == v {
@@ -18,6 +22,9 @@ func (p Permissions) Include(code string) bool {
 	return false
 }
 
+// AddPermission inserts a new permission into the permissions table.
+//
+// Returns an error if the insertion fails.
 func AddPermission(code string) error {
 	query := `
 			INSERT INTO permissions (code)
@@ -32,6 +39,9 @@ func AddPermission(code string) error {
 	return err
 }
 
+// AddUserPermissions adds multiple permissions for a specific user.
+//
+// Returns an error if the insertion fails.
 func AddUserPermissions(userId int, codes ...string) error {
 	query := `
 			INSERT INTO user_permissions (user_id, permissions_id)
@@ -47,6 +57,9 @@ func AddUserPermissions(userId int, codes ...string) error {
 	return err
 }
 
+// GetUserPermissions retrieves all permission codes for a specific user.
+//
+// Returns a slice of permission codes and an error if the retrieval fails.
 func GetUserPermissions(userId int) (Permissions, error) {
 	query := `
 			SELECT permissions.code 
@@ -63,12 +76,14 @@ func GetUserPermissions(userId int) (Permissions, error) {
 		return nil, err
 	}
 
+	// Ensure the rows are closed when the function returns.
 	defer func() {
 		if err := rows.Close(); err != nil {
 			log.Println(err)
 		}
 	}()
 
+	// Initialize a slice to store retrieved permissions.
 	var permissions Permissions
 	for rows.Next() {
 		var permission string
@@ -79,6 +94,7 @@ func GetUserPermissions(userId int) (Permissions, error) {
 		permissions = append(permissions, permission)
 	}
 
+	// Check if any error occurred during iteration over rows.
 	if err = rows.Err(); err != nil {
 		return nil, err
 	}

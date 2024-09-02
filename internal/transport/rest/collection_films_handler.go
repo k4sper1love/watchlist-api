@@ -10,6 +10,9 @@ import (
 	"net/http"
 )
 
+// addCollectionFilmHandler adds a film to a collection.
+//
+// Returns a JSON response with the created collection-film relationship or an error if the addition fails.
 func addCollectionFilmHandler(w http.ResponseWriter, r *http.Request) {
 	sl.PrintHandlerInfo(r)
 
@@ -25,6 +28,7 @@ func addCollectionFilmHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Create a new CollectionFilm object with the parsed IDs.
 	var collectionFilm models.CollectionFilm
 	collectionFilm.CollectionId = collectionId
 	collectionFilm.FilmId = filmId
@@ -38,6 +42,9 @@ func addCollectionFilmHandler(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, r, http.StatusCreated, envelope{"collection_film": collectionFilm})
 }
 
+// getCollectionFilmHandler retrieves the details of a film in a specific collection.
+//
+// Returns a JSON response with the collection-film relationship or an error if retrieval fails.
 func getCollectionFilmHandler(w http.ResponseWriter, r *http.Request) {
 	sl.PrintHandlerInfo(r)
 
@@ -62,6 +69,9 @@ func getCollectionFilmHandler(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, r, http.StatusOK, envelope{"collection_film": collectionFilm})
 }
 
+// getCollectionFilmsHandler retrieves a list of films in a specific collection with optional filters.
+//
+// Returns a JSON response with the list of collection-films and metadata or an error if retrieval fails.
 func getCollectionFilmsHandler(w http.ResponseWriter, r *http.Request) {
 	sl.PrintHandlerInfo(r)
 
@@ -71,10 +81,12 @@ func getCollectionFilmsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Define an input structure to hold filter and pagination parameters.
 	var input struct {
 		filters.Filters
 	}
 
+	// Parse query string parameters from the request URL.
 	qs := r.URL.Query()
 
 	input.Filters.Page = parseQueryInt(qs, "page", 1)
@@ -82,11 +94,13 @@ func getCollectionFilmsHandler(w http.ResponseWriter, r *http.Request) {
 
 	input.Filters.Sort = parseQueryString(qs, "sort", "film_id")
 
+	// Define a safe list of sortable fields.
 	input.Filters.SortSafeList = []string{
 		"film_id", "added_at",
 		"-film_id", "-added_at",
 	}
 
+	// Validate the filters.
 	errs, err := filters.ValidateFilters(input.Filters)
 	switch {
 	case err != nil:
@@ -97,6 +111,7 @@ func getCollectionFilmsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Retrieve the list of collection-films based on the filters.
 	collectionFilms, metadata, err := postgres.GetCollectionFilms(collectionId, input.Filters)
 	if err != nil {
 		handleDBError(w, r, err)
@@ -106,6 +121,9 @@ func getCollectionFilmsHandler(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, r, http.StatusOK, envelope{"collection_films": collectionFilms, "metadata": metadata})
 }
 
+// updateCollectionFilmHandler updates the details of a film in a collection.
+//
+// Returns a JSON response with the updated collection-film relationship or an error if the update fails.
 func updateCollectionFilmHandler(w http.ResponseWriter, r *http.Request) {
 	sl.PrintHandlerInfo(r)
 
@@ -132,8 +150,8 @@ func updateCollectionFilmHandler(w http.ResponseWriter, r *http.Request) {
 		badRequestResponse(w, r, err)
 		return
 	}
-	collectionFilm.CollectionId = collectionId
-	collectionFilm.FilmId = filmId
+	collectionFilm.CollectionId = collectionId // Ensure the collection ID is set.
+	collectionFilm.FilmId = filmId             // Ensure the film ID is set.
 
 	err = postgres.UpdateCollectionFilm(collectionFilm)
 	if err != nil {
@@ -149,6 +167,9 @@ func updateCollectionFilmHandler(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, r, http.StatusOK, envelope{"collection_film": collectionFilm})
 }
 
+// deleteCollectionFilmHandler removes a film from a collection.
+//
+// Returns a JSON response confirming deletion or an error if the deletion fails.
 func deleteCollectionFilmHandler(w http.ResponseWriter, r *http.Request) {
 	sl.PrintHandlerInfo(r)
 
@@ -164,6 +185,7 @@ func deleteCollectionFilmHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Verify that the collection-film relationship exists in the database.
 	_, err = postgres.GetCollectionFilm(collectionId, filmId)
 	if err != nil {
 		handleDBError(w, r, err)

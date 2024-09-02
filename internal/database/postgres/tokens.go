@@ -7,11 +7,15 @@ import (
 	"time"
 )
 
+// hashToken hashes the given token using SHA-256 and returns its hexadecimal representation.
 func hashToken(token string) string {
 	hash := sha256.Sum256([]byte(token))
 	return hex.EncodeToString(hash[:])
 }
 
+// SaveRefreshToken stores a refresh token, its associated user ID, and its expiration time in the database.
+//
+// Returns an error if insertion fails.
 func SaveRefreshToken(refreshToken string, userId int, expiresAt time.Time) error {
 	hashedToken := hashToken(refreshToken)
 
@@ -24,6 +28,9 @@ func SaveRefreshToken(refreshToken string, userId int, expiresAt time.Time) erro
 	return err
 }
 
+// RevokeRefreshToken marks a refresh token as revoked in the database.
+//
+// Returns an error if the update fails.
 func RevokeRefreshToken(refreshToken string) error {
 	hashedToken := hashToken(refreshToken)
 
@@ -36,6 +43,9 @@ func RevokeRefreshToken(refreshToken string) error {
 	return err
 }
 
+// IsRefreshTokenRevoked checks if a refresh token has been revoked.
+//
+// Returns true if the token is revoked, false otherwise, and an error if the query fails.
 func IsRefreshTokenRevoked(refreshToken string) (bool, error) {
 	hashedToken := hashToken(refreshToken)
 
@@ -57,6 +67,9 @@ func IsRefreshTokenRevoked(refreshToken string) (bool, error) {
 	return false, nil
 }
 
+// GetIdFromRefreshToken retrieves the user ID associated with a refresh token.
+//
+// Returns the user ID and an error if the query fails.
 func GetIdFromRefreshToken(refreshToken string) (int, error) {
 	hashedToken := hashToken(refreshToken)
 

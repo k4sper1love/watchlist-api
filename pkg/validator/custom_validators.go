@@ -6,6 +6,7 @@ import (
 	"unicode"
 )
 
+// validation Messages maps validation tags to human-readable error messages.
 var validationMessages = map[string]string{
 	"required": "is required field",
 	"username": "must contain only letters, numbers, dots, and underscores",
@@ -20,6 +21,8 @@ var validationMessages = map[string]string{
 	"max":      "must be at most ",
 }
 
+// getValidationMessage returns the error message for a given validation error,
+// customizing messages for "lte", "gte", "min", and "max" tags.
 func getValidationMessage(fe validator.FieldError) string {
 	message, ok := validationMessages[fe.Tag()]
 	if !ok {
@@ -35,6 +38,8 @@ func getValidationMessage(fe validator.FieldError) string {
 	return message
 }
 
+// usernameValidator checks if a username contains only allowed characters:
+// letters, numbers, dots, and underscores.
 func usernameValidator(fl validator.FieldLevel) bool {
 	username := fl.Field().String()
 
@@ -43,15 +48,18 @@ func usernameValidator(fl validator.FieldLevel) bool {
 	return validUsername.MatchString(username)
 }
 
+// passwordValidator ensures a password meets security criteria:
+// minimum length of 8 characters, and contains upper, lower, number, and special characters.
 func passwordValidator(fl validator.FieldLevel) bool {
 	password := fl.Field().String()
 
-	var hasMinLen = len(password) >= 8
-	var hasUpper bool
-	var hasLower bool
-	var hasNumber bool
-	var hasSpecial bool
+	var hasMinLen = len(password) >= 8 // Check if the password meets the minimum length of 8 characters.
+	var hasUpper bool                  // Flag to track if the password contains an uppercase letter.
+	var hasLower bool                  // Flag to track if the password contains a lowercase letter.
+	var hasNumber bool                 // Flag to track if the password contains a numeric digit.
+	var hasSpecial bool                // Flag to track if the password contains a special character
 
+	// Iterate through each character in the password to set the respective flags.
 	for _, char := range password {
 		switch {
 		case unicode.IsUpper(char):
@@ -60,10 +68,12 @@ func passwordValidator(fl validator.FieldLevel) bool {
 			hasLower = true
 		case unicode.IsNumber(char):
 			hasNumber = true
+		// Check if the character is a punctuation or symbol.
 		case unicode.IsPunct(char) || unicode.IsSymbol(char):
 			hasSpecial = true
 		}
 	}
 
+	// Return true if all criteria are met, otherwise return false.
 	return hasMinLen && hasUpper && hasLower && hasNumber && hasSpecial
 }
