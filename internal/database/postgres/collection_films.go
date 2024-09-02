@@ -3,8 +3,8 @@ package postgres
 import (
 	"context"
 	"fmt"
-	"github.com/k4sper1love/watchlist-api/internal/filters"
 	"github.com/k4sper1love/watchlist-api/internal/models"
+	"github.com/k4sper1love/watchlist-api/pkg/filters"
 	"log"
 	"time"
 )

@@ -4,13 +4,13 @@ import (
 	"database/sql"
 	"errors"
 	"github.com/k4sper1love/watchlist-api/internal/database/postgres"
-	"github.com/k4sper1love/watchlist-api/internal/validator"
-	"log"
+	"github.com/k4sper1love/watchlist-api/pkg/logger/sl"
+	"github.com/k4sper1love/watchlist-api/pkg/validator"
 	"net/http"
 )
 
 func getUserHandler(w http.ResponseWriter, r *http.Request) {
-	log.Println("getUserHandler serving:", r.URL.Path, r.Host)
+	sl.PrintHandlerInfo(r)
 
 	userId := r.Context().Value("userId").(int)
 
@@ -25,7 +25,7 @@ func getUserHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func updateUserHandler(w http.ResponseWriter, r *http.Request) {
-	log.Println("updateUserHandler serving:", r.URL.Path, r.Host)
+	sl.PrintHandlerInfo(r)
 
 	userId := r.Context().Value("userId").(int)
 
@@ -41,7 +41,13 @@ func updateUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	errs := validator.ValidateStruct(user)
+	v, err := validator.New()
+	if err != nil {
+		serverErrorResponse(w, r, err)
+		return
+	}
+
+	errs := validator.ValidateStruct(v, user)
 	if errs != nil {
 		failedValidationResponse(w, r, errs)
 		return
@@ -64,7 +70,7 @@ func updateUserHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func deleteUserHandler(w http.ResponseWriter, r *http.Request) {
-	log.Println("deleteUserHandler serving:", r.URL.Path, r.Host)
+	sl.PrintHandlerInfo(r)
 
 	userId := r.Context().Value("userId").(int)
 

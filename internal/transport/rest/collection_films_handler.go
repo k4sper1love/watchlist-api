@@ -4,14 +4,14 @@ import (
 	"database/sql"
 	"errors"
 	"github.com/k4sper1love/watchlist-api/internal/database/postgres"
-	"github.com/k4sper1love/watchlist-api/internal/filters"
 	"github.com/k4sper1love/watchlist-api/internal/models"
-	"log"
+	"github.com/k4sper1love/watchlist-api/pkg/filters"
+	"github.com/k4sper1love/watchlist-api/pkg/logger/sl"
 	"net/http"
 )
 
 func addCollectionFilmHandler(w http.ResponseWriter, r *http.Request) {
-	log.Println("addCollectionFilmHandler serving:", r.URL.Path, r.Host)
+	sl.PrintHandlerInfo(r)
 
 	collectionId, err := parseIdParam(r, "collectionId")
 	if err != nil {
@@ -26,11 +26,6 @@ func addCollectionFilmHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var collectionFilm models.CollectionFilm
-	//err = parseRequestBody(r, &collectionFilm)
-	//if err != nil {
-	//	badRequestResponse(w, r, err)
-	//	return
-	//}
 	collectionFilm.CollectionId = collectionId
 	collectionFilm.FilmId = filmId
 
@@ -44,7 +39,7 @@ func addCollectionFilmHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func getCollectionFilmHandler(w http.ResponseWriter, r *http.Request) {
-	log.Println("getCollectionFilmHandler serving:", r.URL.Path, r.Host)
+	sl.PrintHandlerInfo(r)
 
 	collectionId, err := parseIdParam(r, "collectionId")
 	if err != nil {
@@ -68,7 +63,7 @@ func getCollectionFilmHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func getCollectionFilmsHandler(w http.ResponseWriter, r *http.Request) {
-	log.Println("getCollectionFilmsHandler serving:", r.URL.Path, r.Host)
+	sl.PrintHandlerInfo(r)
 
 	collectionId, err := parseIdParam(r, "collectionId")
 	if err != nil {
@@ -92,8 +87,12 @@ func getCollectionFilmsHandler(w http.ResponseWriter, r *http.Request) {
 		"-film_id", "-added_at",
 	}
 
-	errs := filters.ValidateFilters(input.Filters)
-	if errs != nil {
+	errs, err := filters.ValidateFilters(input.Filters)
+	switch {
+	case err != nil:
+		serverErrorResponse(w, r, err)
+		return
+	case errs != nil:
 		failedValidationResponse(w, r, errs)
 		return
 	}
@@ -108,7 +107,7 @@ func getCollectionFilmsHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func updateCollectionFilmHandler(w http.ResponseWriter, r *http.Request) {
-	log.Println("updateCollectionFilmHandler serving:", r.URL.Path, r.Host)
+	sl.PrintHandlerInfo(r)
 
 	collectionId, err := parseIdParam(r, "collectionId")
 	if err != nil {
@@ -151,7 +150,7 @@ func updateCollectionFilmHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func deleteCollectionFilmHandler(w http.ResponseWriter, r *http.Request) {
-	log.Println("deleteCollectionFilmHandler serving:", r.URL.Path, r.Host)
+	sl.PrintHandlerInfo(r)
 
 	collectionId, err := parseIdParam(r, "collectionId")
 	if err != nil {

@@ -4,21 +4,24 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"github.com/k4sper1love/watchlist-api/pkg/logger/sl"
 	"github.com/lib/pq"
 	"golang.org/x/crypto/bcrypt"
-	"log"
+	"log/slog"
 	"net/http"
 )
 
-var errAlreadyExists = errors.New("resource already exists")
+var (
+	errAlreadyExists = errors.New("resource already exists")
 
-var errNotFound = errors.New("resource not found")
+	errNotFound = errors.New("resource not found")
 
-var errEmptyRequest = errors.New("empty request body")
+	errEmptyRequest = errors.New("empty request body")
 
-var errForeignKeyViolation = errors.New("attempted to reference a non-existent record")
+	errForeignKeyViolation = errors.New("attempted to reference a non-existent record")
 
-var errInvalidRefreshToken = errors.New("invalid or revoked refresh token")
+	errInvalidRefreshToken = errors.New("invalid or revoked refresh token")
+)
 
 func errorResponse(w http.ResponseWriter, r *http.Request, status int, message interface{}) {
 	env := envelope{"error": message}
@@ -27,7 +30,12 @@ func errorResponse(w http.ResponseWriter, r *http.Request, status int, message i
 }
 
 func serverErrorResponse(w http.ResponseWriter, r *http.Request, err error) {
-	log.Println(r, "\n", err)
+	sl.Log.Error(
+		"server error",
+		slog.Any("error", err),
+		slog.String("method", r.Method),
+		slog.String("url", r.URL.String()),
+	)
 
 	message := "the server encountered a problem and could not process your request"
 	errorResponse(w, r, http.StatusInternalServerError, message)

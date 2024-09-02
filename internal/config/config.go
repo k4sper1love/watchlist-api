@@ -34,12 +34,17 @@ func ParseFlags(args []string) error {
 	flagSet := ff.NewFlagSet("API")
 
 	flagSet.IntVar(&Port, 'p', "port", 8001, "API server port")
-	flagSet.StringVar(&Env, 'e', "env", "development", "Environment (development|staging|production)")
+	flagSet.StringVar(&Env, 'e', "env", "dev", "Environment (local|dev|prod)")
 	flagSet.StringVar(&Dsn, 'd', "dsn", "", "PostgreSQL DSN")
 	flagSet.StringVar(&Migrations, 'm', "migrations", "", "Path to migration files folder. If not provided, migrations do not apply")
 
-	if err := ff.Parse(flagSet, args, ff.WithEnvVarPrefix("APP")); err != nil {
+	err := ff.Parse(flagSet, args, ff.WithEnvVarPrefix("APP"))
+	if err != nil {
 		return err
+	}
+
+	if Env != "local" && Env != "dev" && Env != "prod" {
+		return errors.New("invalid env value")
 	}
 
 	return nil

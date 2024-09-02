@@ -3,13 +3,13 @@ package rest
 import (
 	"github.com/k4sper1love/watchlist-api/internal/database/postgres"
 	"github.com/k4sper1love/watchlist-api/internal/models"
-	"github.com/k4sper1love/watchlist-api/internal/validator"
-	"log"
+	"github.com/k4sper1love/watchlist-api/pkg/logger/sl"
+	"github.com/k4sper1love/watchlist-api/pkg/validator"
 	"net/http"
 )
 
 func registerHandler(w http.ResponseWriter, r *http.Request) {
-	log.Println("registerHandler serving:", r.URL.Path, r.Host)
+	sl.PrintHandlerInfo(r)
 
 	var user models.User
 	err := parseRequestBody(r, &user)
@@ -18,7 +18,13 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	errs := validator.ValidateStruct(&user)
+	v, err := validator.New()
+	if err != nil {
+		serverErrorResponse(w, r, err)
+		return
+	}
+
+	errs := validator.ValidateStruct(v, &user)
 	if errs != nil {
 		failedValidationResponse(w, r, errs)
 		return
@@ -41,7 +47,7 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func loginHandler(w http.ResponseWriter, r *http.Request) {
-	log.Println("loginHandler serving:", r.URL.Path, r.Host)
+	sl.PrintHandlerInfo(r)
 
 	var input struct {
 		Email    string `json:"email" validate:"required,email"`
@@ -54,7 +60,13 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	errs := validator.ValidateStruct(&input)
+	v, err := validator.New()
+	if err != nil {
+		serverErrorResponse(w, r, err)
+		return
+	}
+
+	errs := validator.ValidateStruct(v, &input)
 	if errs != nil {
 		failedValidationResponse(w, r, errs)
 		return
@@ -70,6 +82,8 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func refreshAccessTokenHandler(w http.ResponseWriter, r *http.Request) {
+	sl.PrintHandlerInfo(r)
+
 	refreshToken := parseTokenFromHeader(r)
 	if refreshToken == "" {
 		invalidAuthTokenResponse(w, r)
@@ -86,6 +100,8 @@ func refreshAccessTokenHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func logoutHandler(w http.ResponseWriter, r *http.Request) {
+	sl.PrintHandlerInfo(r)
+
 	refreshToken := parseTokenFromHeader(r)
 	if refreshToken == "" {
 		invalidAuthTokenResponse(w, r)

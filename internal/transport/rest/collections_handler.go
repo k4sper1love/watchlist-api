@@ -4,15 +4,15 @@ import (
 	"database/sql"
 	"errors"
 	"github.com/k4sper1love/watchlist-api/internal/database/postgres"
-	"github.com/k4sper1love/watchlist-api/internal/filters"
 	"github.com/k4sper1love/watchlist-api/internal/models"
-	"github.com/k4sper1love/watchlist-api/internal/validator"
-	"log"
+	"github.com/k4sper1love/watchlist-api/pkg/filters"
+	"github.com/k4sper1love/watchlist-api/pkg/logger/sl"
+	"github.com/k4sper1love/watchlist-api/pkg/validator"
 	"net/http"
 )
 
 func addCollectionHandler(w http.ResponseWriter, r *http.Request) {
-	log.Println("addCollectionHandler serving:", r.URL.Path, r.Host)
+	sl.PrintHandlerInfo(r)
 
 	userId := r.Context().Value("userId").(int)
 
@@ -24,7 +24,13 @@ func addCollectionHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	collection.UserId = userId
 
-	errs := validator.ValidateStruct(&collection)
+	v, err := validator.New()
+	if err != nil {
+		serverErrorResponse(w, r, err)
+		return
+	}
+
+	errs := validator.ValidateStruct(v, &collection)
 	if errs != nil {
 		failedValidationResponse(w, r, errs)
 		return
@@ -49,7 +55,7 @@ func addCollectionHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func getCollectionHandler(w http.ResponseWriter, r *http.Request) {
-	log.Println("getCollectionHandler serving:", r.URL.Path, r.Host)
+	sl.PrintHandlerInfo(r)
 
 	collectionId, err := parseIdParam(r, "collectionId")
 	if err != nil {
@@ -67,7 +73,7 @@ func getCollectionHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func getCollectionsHandler(w http.ResponseWriter, r *http.Request) {
-	log.Println("getCollectionsHandler serving:", r.URL.Path, r.Host)
+	sl.PrintHandlerInfo(r)
 
 	userId := r.Context().Value("userId").(int)
 
@@ -90,8 +96,12 @@ func getCollectionsHandler(w http.ResponseWriter, r *http.Request) {
 		"-id", "-name", "-created_at",
 	}
 
-	errs := filters.ValidateFilters(input.Filters)
-	if errs != nil {
+	errs, err := filters.ValidateFilters(input.Filters)
+	switch {
+	case err != nil:
+		serverErrorResponse(w, r, err)
+		return
+	case errs != nil:
 		failedValidationResponse(w, r, errs)
 		return
 	}
@@ -106,7 +116,7 @@ func getCollectionsHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func updateCollectionHandler(w http.ResponseWriter, r *http.Request) {
-	log.Println("updateCollectionHandler serving:", r.URL.Path, r.Host)
+	sl.PrintHandlerInfo(r)
 
 	collectionId, err := parseIdParam(r, "collectionId")
 	if err != nil {
@@ -127,7 +137,13 @@ func updateCollectionHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	collection.Id = collectionId
 
-	errs := validator.ValidateStruct(collection)
+	v, err := validator.New()
+	if err != nil {
+		serverErrorResponse(w, r, err)
+		return
+	}
+
+	errs := validator.ValidateStruct(v, collection)
 	if errs != nil {
 		failedValidationResponse(w, r, errs)
 		return
@@ -148,7 +164,7 @@ func updateCollectionHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func deleteCollectionHandler(w http.ResponseWriter, r *http.Request) {
-	log.Println("deleteCollectionHandler serving:", r.URL.Path, r.Host)
+	sl.PrintHandlerInfo(r)
 
 	collectionId, err := parseIdParam(r, "collectionId")
 	if err != nil {

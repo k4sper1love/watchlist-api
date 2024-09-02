@@ -5,7 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"github.com/k4sper1love/watchlist-api/internal/config"
-	"log"
+	"github.com/k4sper1love/watchlist-api/pkg/logger/sl"
+	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
@@ -33,7 +34,7 @@ func Serve() error {
 
 		s := <-quit
 
-		log.Println("caught signal", s.String())
+		sl.Log.Debug("caught signal", slog.String("signal", s.String()))
 
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
@@ -41,20 +42,21 @@ func Serve() error {
 		shutdownErr <- server.Shutdown(ctx)
 	}()
 
-	log.Println("starting server on", server.Addr)
+	sl.Log.Info("starting server", slog.String("address", server.Addr))
 
 	err := server.ListenAndServe()
 	if !errors.Is(err, http.ErrServerClosed) {
+		sl.Log.Error("server error", slog.Any("error", err))
 		return err
 	}
 
 	err = <-shutdownErr
 	if err != nil {
+		sl.Log.Error("shutdown error", slog.Any("error", err))
 		return err
 	}
 
-	log.Println("stopped server on", server.Addr)
+	sl.Log.Info("stopped server on", slog.String("address", server.Addr))
 
 	return nil
-
 }

@@ -8,8 +8,9 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/k4sper1love/watchlist-api/internal/config"
 	"github.com/k4sper1love/watchlist-api/internal/database/postgres"
+	"github.com/k4sper1love/watchlist-api/pkg/logger/sl"
 	"io"
-	"log"
+	"log/slog"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -32,8 +33,13 @@ func writeJSON(w http.ResponseWriter, r *http.Request, status int, data envelope
 
 	err := e.Encode(data)
 	if err != nil {
-		log.Println(r, err)
-		w.WriteHeader(500)
+		sl.Log.Error(
+			"failed to encode response data",
+			slog.Any("error", err),
+			slog.Any("request", r),
+		)
+
+		w.WriteHeader(http.StatusInternalServerError)
 	}
 }
 

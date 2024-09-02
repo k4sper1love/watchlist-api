@@ -4,15 +4,15 @@ import (
 	"database/sql"
 	"errors"
 	"github.com/k4sper1love/watchlist-api/internal/database/postgres"
-	"github.com/k4sper1love/watchlist-api/internal/filters"
 	"github.com/k4sper1love/watchlist-api/internal/models"
-	"github.com/k4sper1love/watchlist-api/internal/validator"
-	"log"
+	"github.com/k4sper1love/watchlist-api/pkg/filters"
+	"github.com/k4sper1love/watchlist-api/pkg/logger/sl"
+	"github.com/k4sper1love/watchlist-api/pkg/validator"
 	"net/http"
 )
 
 func addFilmHandler(w http.ResponseWriter, r *http.Request) {
-	log.Println("addFilmHandler serving:", r.URL.Path, r.Host)
+	sl.PrintHandlerInfo(r)
 
 	userId := r.Context().Value("userId").(int)
 
@@ -24,7 +24,13 @@ func addFilmHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	film.UserId = userId
 
-	errs := validator.ValidateStruct(&film)
+	v, err := validator.New()
+	if err != nil {
+		serverErrorResponse(w, r, err)
+		return
+	}
+
+	errs := validator.ValidateStruct(v, &film)
 	if errs != nil {
 		failedValidationResponse(w, r, errs)
 		return
@@ -49,7 +55,7 @@ func addFilmHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func getFilmHandler(w http.ResponseWriter, r *http.Request) {
-	log.Println("getFilmHandler serving:", r.URL.Path, r.Host)
+	sl.PrintHandlerInfo(r)
 
 	id, err := parseIdParam(r, "filmId")
 	if err != nil {
@@ -67,7 +73,7 @@ func getFilmHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func getFilmsHandler(w http.ResponseWriter, r *http.Request) {
-	log.Println("getFilmsHandler serving:", r.URL.Path, r.Host)
+	sl.PrintHandlerInfo(r)
 
 	userId := r.Context().Value("userId").(int)
 
@@ -94,8 +100,12 @@ func getFilmsHandler(w http.ResponseWriter, r *http.Request) {
 		"-id", "-title", "-rating",
 	}
 
-	errs := filters.ValidateFilters(input.Filters)
-	if errs != nil {
+	errs, err := filters.ValidateFilters(input.Filters)
+	switch {
+	case err != nil:
+		serverErrorResponse(w, r, err)
+		return
+	case errs != nil:
 		failedValidationResponse(w, r, errs)
 		return
 	}
@@ -110,7 +120,7 @@ func getFilmsHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func updateFilmHandler(w http.ResponseWriter, r *http.Request) {
-	log.Println("updateFilmHandler serving:", r.URL.Path, r.Host)
+	sl.PrintHandlerInfo(r)
 
 	id, err := parseIdParam(r, "filmId")
 	if err != nil {
@@ -131,7 +141,13 @@ func updateFilmHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	film.Id = id
 
-	errs := validator.ValidateStruct(film)
+	v, err := validator.New()
+	if err != nil {
+		serverErrorResponse(w, r, err)
+		return
+	}
+
+	errs := validator.ValidateStruct(v, film)
 	if errs != nil {
 		failedValidationResponse(w, r, errs)
 		return
@@ -152,7 +168,7 @@ func updateFilmHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func deleteFilmHandler(w http.ResponseWriter, r *http.Request) {
-	log.Println("deleteFilmHandler serving:", r.URL.Path, r.Host)
+	sl.PrintHandlerInfo(r)
 
 	id, err := parseIdParam(r, "filmId")
 	if err != nil {
