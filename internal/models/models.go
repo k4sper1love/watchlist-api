@@ -40,7 +40,7 @@ type Film struct {
 	UserId      int       `json:"user_id"`                                                 // Identifier of the user who added the film.
 	Title       string    `json:"title" validate:"required,min=3,max=100"`                 // Title of the film; required, between 3 and 100 characters.
 	Year        int       `json:"year,omitempty" validate:"omitempty,gte=1888,lte=2100"`   // Release year of the film; optional, must be between 1888 and 2100.
-	Genre       string    `json:"genre,omitempty" validate:"omitempty,alpha"`              // Genre of the film; optional, only alphabetic characters.
+	Genre       string    `json:"genre,omitempty" validate:"omitempty,alpha, max=100"`     // Genre of the film; optional, only alphabetic characters.
 	Description string    `json:"description,omitempty" validate:"omitempty,max=1000"`     // Description of the film; optional, up to 1000 characters.
 	Rating      float64   `json:"rating,omitempty" validate:"omitempty,gte=1,lte=10"`      // Rating of the film; optional, must be between 1 and 10.
 	PhotoUrl    string    `json:"photo_url,omitempty" validate:"omitempty,url"`            // URL of the film's photo; optional, must be a valid URL.

@@ -1,8 +1,9 @@
-create table if not exists refresh_tokens
+CREATE TABLE IF NOT EXISTS refresh_tokens
 (
-    id         serial primary key,
-    token      text not null,
-    user_id    int references users (id) on delete cascade,
-    expires_at timestamp with time zone,
-    revoked    boolean default false
+    id         BIGSERIAL PRIMARY KEY,
+    token      TEXT                     NOT NULL,
+    user_id    BIGINT                NOT NULL,
+    expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    revoked    BOOLEAN                  NOT NULL DEFAULT FALSE,
+    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
 );

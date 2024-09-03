@@ -1,1 +1,1 @@
-drop table if exists films;
+DROP TABLE IF EXISTS films;

@@ -1,9 +1,10 @@
-create table if not exists collections
+CREATE TABLE IF NOT EXISTS collections
 (
-    id          serial primary key,
-    user_id     int references users (id),
-    name        varchar,
-    description varchar,
-    created_at  timestamp(5) with time zone default NOW(),
-    updated_at  timestamp(5) with time zone default NOW()
+    id          BIGSERIAL PRIMARY KEY,
+    user_id     BIGINT                   NOT NULL,
+    name        TEXT NOT NULL,
+    description TEXT,
+    created_at  TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    updated_at  TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
 );

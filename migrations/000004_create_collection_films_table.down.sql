@@ -1,1 +1,1 @@
-drop table if exists collection_films;
+DROP TABLE IF EXISTS collection_films;

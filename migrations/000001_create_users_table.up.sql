@@ -1,13 +1,13 @@
 -- Add the citext extension to support case-insensitive text types.
 -- The `citext` extension provides a case-insensitive text type for PostgreSQL.
-create extension if not exists citext;
+CREATE EXTENSION IF NOT EXISTS citext;
 
-create table if not exists users
+CREATE TABLE IF NOT EXISTS users
 (
-    id         serial primary key,
-    username   citext  not null unique,
-    email      citext  not null unique,
-    password   varchar not null,
-    created_at timestamp(5) with time zone default NOW(),
-    version    int     not null            default 1
+    id         BIGSERIAL PRIMARY KEY,
+    username   CITEXT                   NOT NULL UNIQUE,
+    email      CITEXT                   NOT NULL UNIQUE,
+    password   TEXT                     NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    version    BIGINT                   NOT NULL DEFAULT 1
 );

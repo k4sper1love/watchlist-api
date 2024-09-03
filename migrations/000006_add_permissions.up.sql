@@ -1,18 +1,19 @@
-create table if not exists permissions
+CREATE TABLE IF NOT EXISTS permissions
 (
-    id   serial primary key,
-    code varchar unique not null
+    id   BIGSERIAL PRIMARY KEY,
+    code TEXT UNIQUE NOT NULL
 );
 
-create table if not exists user_permissions
+CREATE TABLE IF NOT EXISTS user_permissions
 (
-    user_id        int not null,
-    permissions_id int not null,
-    primary key (user_id, permissions_id),
-    foreign key (user_id) references users (id) on delete cascade,
-    foreign key (permissions_id) references permissions (id)
+    user_id        BIGINT NOT NULL,
+    permissions_id BIGINT NOT NULL,
+    PRIMARY KEY (user_id, permissions_id),
+    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
+    FOREIGN KEY (permissions_id) REFERENCES permissions (id) ON DELETE CASCADE
 );
 
-insert into permissions (code)
-values ('film:create'),
+-- Insert default permissions into the permissions table
+INSERT INTO permissions (code)
+VALUES ('film:create'),
        ('collection:create');

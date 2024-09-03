@@ -1,10 +1,10 @@
-create table if not exists collection_films
+CREATE TABLE IF NOT EXISTS collection_films
 (
-    collection_id int not null,
-    film_id       int not null,
-    created_at    timestamp(5) with time zone default NOW(),
-    updated_at    timestamp(5) with time zone default NOW(),
-    primary key (collection_id, film_id),
-    foreign key (collection_id) references collections (id),
-    foreign key (film_id) references films (id)
+    collection_id BIGINT NOT NULL,
+    film_id       BIGINT NOT NULL,
+    created_at    TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    updated_at    TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    PRIMARY KEY (collection_id, film_id),
+    FOREIGN KEY (collection_id) REFERENCES collections(id) ON DELETE CASCADE,
+    FOREIGN KEY (film_id) REFERENCES films(id) ON DELETE CASCADE
 );

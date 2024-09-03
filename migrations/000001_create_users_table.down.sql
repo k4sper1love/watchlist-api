@@ -1,3 +1,3 @@
-drop table if exists users;
+DROP TABLE IF EXISTS users;
 -- remove citext extension
-drop extension if exists citext;
+DROP EXTENSION IF EXISTS citext;
