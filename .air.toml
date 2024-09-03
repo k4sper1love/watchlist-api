@@ -1,0 +1,8 @@
+# Use the "air" command to run
+
+[build]
+cmd = "go build -o ./bin/watchlist.exe ./cmd/watchlist"
+bin = "bin/watchlist.exe"
+full_bin = "./bin/watchlist.exe"
+include_ext = ["go", "tpl", "tmpl", "html"]
+exclude_dir = ["assets", "tmp", "vendor", "testdata", "scripts", "diagrams"]
