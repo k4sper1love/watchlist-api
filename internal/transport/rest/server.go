@@ -10,7 +10,6 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"syscall"
 	"time"
 )
 
@@ -35,7 +34,7 @@ func Serve() error {
 	go func() {
 		// Channel to receive termination signals.
 		quit := make(chan os.Signal, 1)
-		signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+		signal.Notify(quit, os.Interrupt, os.Kill)
 
 		// Wait for a termination signal.
 		s := <-quit
