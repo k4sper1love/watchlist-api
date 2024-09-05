@@ -2,6 +2,8 @@ package rest
 
 import (
 	"github.com/gorilla/mux"
+	_ "github.com/k4sper1love/watchlist-api/docs"
+	httpSwagger "github.com/swaggo/http-swagger"
 	"net/http"
 )
 
@@ -14,14 +16,23 @@ import (
 //
 //	*mux.Router - Configured router with all routes and middleware.
 func route() *mux.Router {
-	router := mux.NewRouter()
+	router := mux.NewRouter() //Register a new router
 
 	router.Use(requireAuth) // Apply JWT authentication middleware
 
-	router.NotFoundHandler = http.HandlerFunc(notFoundResponse)                 // Handle 404 Not Found
-	router.MethodNotAllowedHandler = http.HandlerFunc(methodNotAllowedResponse) // Handle 405 Method Not Allowed
+	// Handle 404 Not Found
+	router.NotFoundHandler = http.HandlerFunc(notFoundResponse)
 
-	router.HandleFunc("/api/v1/healthcheck", healthcheckHandler).Methods(http.MethodGet) // Health check endpoint
+	// Handle 405 Method Not Allowed
+	router.MethodNotAllowedHandler = http.HandlerFunc(methodNotAllowedResponse)
+
+	// Health check endpoint
+	router.HandleFunc("/api/v1/healthcheck", healthcheckHandler).Methods(http.MethodGet)
+
+	// Swagger documentation UI endpoint
+	router.Handle("/swagger/{rest:.*}", httpSwagger.Handler(
+		httpSwagger.URL("/swagger/doc.json"), // Swagger UI will use the Swagger JSON file
+	))
 
 	// Subrouter for authentication routes
 	auth1 := router.PathPrefix("/api/v1").Subrouter()

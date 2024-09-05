@@ -1,0 +1,173 @@
+basePath: /api/v1
+definitions:
+  models.User:
+    properties:
+      created_at:
+        description: Timestamp when the user was created.
+        example: "2024-09-04T13:37:24.87653+05:00"
+        type: string
+      email:
+        description: Email address of the user; must be a valid email format.
+        example: john_doe@example.com
+        type: string
+      id:
+        description: Unique identifier for the user.
+        example: 1
+        type: integer
+      username:
+        description: Username of the user; must be unique and valid.
+        example: john_doe
+        type: string
+    required:
+    - email
+    - username
+    type: object
+  swagger.ErrorResponse:
+    properties:
+      error:
+        example: some kind of error
+        type: string
+    type: object
+  swagger.UserResponse:
+    properties:
+      user:
+        $ref: '#/definitions/models.User'
+    type: object
+info:
+  contact:
+    email: s_yelkin@proton.me
+    name: API Support
+  description: This is a REST API for saving movies you want to watch.
+  title: Watchlist API
+paths:
+  /user:
+    delete:
+      consumes:
+      - application/json
+      description: Delete user by ID using an authentication token
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/swagger.UserResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+      security:
+      - JWTAuth: []
+      summary: Delete user account
+      tags:
+      - user
+    get:
+      consumes:
+      - application/json
+      description: |-
+        Get information about user by ID using an authentication token
+        Authorization is required.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/swagger.UserResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+      security:
+      - JWTAuth: []
+      summary: Get user account
+      tags:
+      - user
+    put:
+      consumes:
+      - application/json
+      description: Update information about user by ID using an authentication token
+      parameters:
+      - description: User information to update
+        in: body
+        name: username
+        required: true
+        schema:
+          example: "{\n\t\"username\": \"new_username\"\n}"
+          type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/swagger.UserResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+      security:
+      - JWTAuth: []
+      summary: Update user account
+      tags:
+      - user
+securityDefinitions:
+  JWTAuth:
+    description: '"JWT Authorization header using the Bearer scheme. Example: ''Authorization:
+      Bearer {token}''"'
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

@@ -9,9 +9,19 @@ import (
 	"net/http"
 )
 
-// getUserHandler retrieves the user details for the authenticated user.
-//
-// Returns a JSON response with the user details or an error if retrieval fails.
+// GetUser godoc
+// @Summary Get user account
+// @Description Get information about user by ID using an authentication token
+// @Tags user
+// @Accept json
+// @Produce json
+// @Success 200 {object} swagger.UserResponse
+// @Failure 400 {object} swagger.ErrorResponse
+// @Failure 401 {object} swagger.ErrorResponse
+// @Failure 404 {object} swagger.ErrorResponse
+// @Failure 500 {object} swagger.ErrorResponse
+// @Security JWTAuth
+// @Router /user [get]
 func getUserHandler(w http.ResponseWriter, r *http.Request) {
 	sl.PrintHandlerInfo(r)
 
@@ -29,9 +39,22 @@ func getUserHandler(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, r, http.StatusOK, envelope{"user": user})
 }
 
-// updateUserHandler updates the details of the authenticated user.
-//
-// Returns a JSON response with the updated user details or an error if the update fails.
+// UpdateUser godoc
+// @Summary Update user account
+// @Description Update information about user by ID using an authentication token
+// @Tags user
+// @Accept json
+// @Produce json
+// @Param username body string true "User information to update" SchemaExample({\n\t"username": "new_username"\n})
+// @Success 200 {object} swagger.UserResponse
+// @Failure 400 {object} swagger.ErrorResponse
+// @Failure 401 {object} swagger.ErrorResponse
+// @Failure 404 {object} swagger.ErrorResponse
+// @Failure 409 {object} swagger.ErrorResponse
+// @Failure 422 {object} swagger.ErrorResponse
+// @Failure 500 {object} swagger.ErrorResponse
+// @Security JWTAuth
+// @Router /user [put]
 func updateUserHandler(w http.ResponseWriter, r *http.Request) {
 	sl.PrintHandlerInfo(r)
 
@@ -74,6 +97,21 @@ func updateUserHandler(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, r, http.StatusOK, envelope{"user": user})
 }
 
+// DeleteUser godoc
+// @Summary Delete user account
+// @Description Delete user by ID using an authentication token
+// @Tags user
+// @Accept json
+// @Produce json
+// @Success 200 {object} swagger.UserResponse
+// @Failure 400 {object} swagger.ErrorResponse
+// @Failure 401 {object} swagger.ErrorResponse
+// @Failure 404 {object} swagger.ErrorResponse
+// @Failure 409 {object} swagger.ErrorResponse
+// @Failure 422 {object} swagger.ErrorResponse
+// @Failure 500 {object} swagger.ErrorResponse
+// @Security JWTAuth
+// @Router /user [delete]
 func deleteUserHandler(w http.ResponseWriter, r *http.Request) {
 	sl.PrintHandlerInfo(r)
 
