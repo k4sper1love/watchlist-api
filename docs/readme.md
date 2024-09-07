@@ -1,1 +1,1 @@
-Documentation for Wishlist code
+swag init -g cmd\watchlist\main.go

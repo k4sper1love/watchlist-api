@@ -24,11 +24,11 @@ type Filters struct {
 // Metadata holds pagination information for the result set.
 // It includes the current page, page size, first and last page numbers, and total record count.
 type Metadata struct {
-	CurrentPage  int `json:"current_page,omitempty"`  // The current page number.
-	PageSize     int `json:"page_size,omitempty"`     // The number of items per page.
-	FirstPage    int `json:"first_page,omitempty"`    // The first page number, usually 1.
-	LastPage     int `json:"last_page,omitempty"`     // The last page number based on total records and page size.
-	TotalRecords int `json:"total_records,omitempty"` // The total number of records available.
+	CurrentPage  int `json:"current_page,omitempty" example:"2"`   // The current page number.
+	PageSize     int `json:"page_size,omitempty" example:"5"`      // The number of items per page.
+	FirstPage    int `json:"first_page,omitempty" example:"1"`     // The first page number, usually 1.
+	LastPage     int `json:"last_page,omitempty" example:"3"`      // The last page number based on total records and page size.
+	TotalRecords int `json:"total_records,omitempty" example:"15"` // The total number of records available.
 }
 
 // CalculateMetadata calculates pagination metadata based on total records, current page, and page size.

@@ -11,9 +11,21 @@ import (
 	"net/http"
 )
 
-// addFilmHandler adds a new film to the database and assigns permissions to the user.
-//
-// Returns a JSON response with the created film or an error if the creation fails.
+// AddFilm godoc
+// @Summary Add new film
+// @Description Add a new film. You will be granted the permissions to get, update, and delete it.
+// @Tags films
+// @Accept json
+// @Produce json
+// @Param film body swagger.FilmRequest true "Information about the new film".
+// @Success 201 {object} swagger.FilmResponse
+// @Failure 400 {object} swagger.ErrorResponse
+// @Failure 401 {object} swagger.ErrorResponse
+// @Failure 409 {object} swagger.ErrorResponse
+// @Failure 422 {object} swagger.ErrorResponse
+// @Failure 500 {object} swagger.ErrorResponse
+// @Security JWTAuth
+// @Router /films [post]
 func addFilmHandler(w http.ResponseWriter, r *http.Request) {
 	sl.PrintHandlerInfo(r)
 
@@ -54,9 +66,20 @@ func addFilmHandler(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, r, http.StatusCreated, envelope{"film": film})
 }
 
-// getFilmHandler retrieves a film's details by its ID.
-//
-// Returns a JSON response with the film details or an error if retrieval fails.
+// GetFilm godoc
+// @Summary Get film by ID
+// @Description Get the film by ID. You must have permissions to get this film.
+// @Tags films
+// @Accept json
+// @Produce json
+// @Param film_id path int true "Film ID"
+// @Success 200 {object} swagger.FilmResponse
+// @Failure 400 {object} swagger.ErrorResponse
+// @Failure 401 {object} swagger.ErrorResponse
+// @Failure 403 {object} swagger.ErrorResponse
+// @Failure 500 {object} swagger.ErrorResponse
+// @Security JWTAuth
+// @Router /films/{film_id} [get]
 func getFilmHandler(w http.ResponseWriter, r *http.Request) {
 	sl.PrintHandlerInfo(r)
 
@@ -76,9 +99,24 @@ func getFilmHandler(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, r, http.StatusOK, envelope{"film": film})
 }
 
-// getFilmsHandler retrieves a list of films for the authenticated user with optional filters.
-//
-// Returns a JSON response with the list of films and metadata or an error if retrieval fails.
+// GetFilms godoc
+// @Summary Get user films
+// @Description Get a list of films by user ID from authentication token. It also returns metadata.
+// @Tags films
+// @Accept json
+// @Produce json
+// @Param title query string false "Filter by `title`"
+// @Param rating_min query number false "Filter by `minimum rating`"
+// @Param rating_max query number false "Filter by `maximum rating`"
+// @Param page query int false "Specify the desired `page`"
+// @Param page_size query int false "Specify the desired `page size`"
+// @Param sort query string false "Sorting by `id`, `title`, `rating`. Use `-` for desc"
+// @Success 200 {object} swagger.FilmsResponse
+// @Failure 401 {object} swagger.ErrorResponse
+// @Failure 422 {object} swagger.ErrorResponse
+// @Failure 500 {object} swagger.ErrorResponse
+// @Security JWTAuth
+// @Router /films [get]
 func getFilmsHandler(w http.ResponseWriter, r *http.Request) {
 	sl.PrintHandlerInfo(r)
 
@@ -102,7 +140,6 @@ func getFilmsHandler(w http.ResponseWriter, r *http.Request) {
 
 	input.Filters.Page = parseQueryInt(qs, "page", 1)
 	input.Filters.PageSize = parseQueryInt(qs, "page_size", 5)
-
 	input.Filters.Sort = parseQueryString(qs, "sort", "id")
 
 	// Define a safe list of sortable fields.
@@ -132,9 +169,24 @@ func getFilmsHandler(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, r, http.StatusOK, envelope{"films": films, "metadata": metadata})
 }
 
-// updateFilmHandler updates the details of an existing film.
-//
-// Returns a JSON response with the updated film details or an error if the update fails.
+// UpdateFilm godoc
+// @Summary Update the film
+// @Description Update the film by ID. You must have the permissions to update it.
+// @Tags films
+// @Accept json
+// @Produce json
+// @Param film_id path int true "Film ID"
+// @Param film body swagger.FilmRequest true "New information about the film"
+// @Success 200 {object} swagger.FilmResponse
+// @Failure 400 {object} swagger.ErrorResponse
+// @Failure 401 {object} swagger.ErrorResponse
+// @Failure 403 {object} swagger.ErrorResponse
+// @Failure 404 {object} swagger.ErrorResponse
+// @Failure 409 {object} swagger.ErrorResponse
+// @Failure 422 {object} swagger.ErrorResponse
+// @Failure 500 {object} swagger.ErrorResponse
+// @Security JWTAuth
+// @Router /films/{film_id} [put]
 func updateFilmHandler(w http.ResponseWriter, r *http.Request) {
 	sl.PrintHandlerInfo(r)
 
@@ -178,9 +230,21 @@ func updateFilmHandler(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, r, http.StatusOK, envelope{"film": film})
 }
 
-// deleteFilmHandler deletes a film from the database.
-//
-// Returns a JSON response confirming deletion or an error if the deletion fails.
+// DeleteFilm godoc
+// @Summary Delete the film
+// @Description Delete the film by ID. You must have the permissions to delete it.
+// @Tags films
+// @Accept json
+// @Produce json
+// @Param film_id path int true "Film ID"
+// @Success 200 {object} swagger.MessageResponse
+// @Failure 400 {object} swagger.ErrorResponse
+// @Failure 401 {object} swagger.ErrorResponse
+// @Failure 403 {object} swagger.ErrorResponse
+// @Failure 404 {object} swagger.ErrorResponse
+// @Failure 500 {object} swagger.ErrorResponse
+// @Security JWTAuth
+// @Router /films/{film_id} [delete]
 func deleteFilmHandler(w http.ResponseWriter, r *http.Request) {
 	sl.PrintHandlerInfo(r)
 

@@ -13,15 +13,19 @@ The Run function is the entry point for starting the application and manages the
 package watchlist
 
 import (
+	"fmt"
+	"github.com/k4sper1love/watchlist-api/docs"
 	"github.com/k4sper1love/watchlist-api/internal/config"
 	"github.com/k4sper1love/watchlist-api/internal/database/postgres"
 	"github.com/k4sper1love/watchlist-api/internal/transport/rest"
 	"github.com/k4sper1love/watchlist-api/pkg/logger/sl"
+	"github.com/k4sper1love/watchlist-api/pkg/vcs"
 	"log/slog"
 	"os"
 )
 
-// Run initializes and starts the application, handling configuration, logging, database connection, and server startup.
+// Run initializes and starts the application, handling configuration,
+// logging, database connection, and server startup.
 func Run(args []string) {
 	// Set up logging for the application, outputting to standard output.
 	sl.SetupLogger("local", os.Stdout)
@@ -62,6 +66,10 @@ func Run(args []string) {
 		}
 		sl.Log.Info("database connection closed")
 	}()
+
+	// Configure Swagger documentation.
+	docs.SwaggerInfo.Host = fmt.Sprintf("%s:%d", config.Host, config.Port)
+	docs.SwaggerInfo.Version = vcs.GetVersion()
 
 	// Start the REST server.
 	err = rest.Serve()

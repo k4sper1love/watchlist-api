@@ -15,10 +15,15 @@ import (
 	"net/http"
 )
 
-// healthcheckHandler responds with the current status of the API and system information.
-//
-// Returns a JSON response with the status and system information, including the environment and
-// version of the API.
+// HealthCheck godoc
+// @Summary Check API status
+// @Description Check the API status. Returns status and system information.
+// @Tags monitoring
+// @Accept json
+// @Produce json
+// @Success 200 {object} swagger.HealthCheckResponse
+// @Failure 500 {object} swagger.ErrorResponse
+// @Router /healthcheck [get]
 func healthcheckHandler(w http.ResponseWriter, r *http.Request) {
 	sl.PrintHandlerInfo(r)
 

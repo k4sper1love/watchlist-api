@@ -4,7 +4,9 @@ import (
 	"context"
 	"github.com/gorilla/mux"
 	"github.com/k4sper1love/watchlist-api/internal/database/postgres"
+	"log"
 	"net/http"
+	"strings"
 )
 
 // requireAuth ensures that requests have a valid authentication token or are to an excluded path.
@@ -27,7 +29,15 @@ func requireAuth(next http.Handler) http.Handler {
 				// If the path is not authenticated, proceed to the next handler.
 				next.ServeHTTP(w, r)
 				return
+
 			}
+		}
+
+		log.Println(r.Body)
+		// Check if the request path starts with "/swagger/"
+		if strings.HasPrefix(requestPath, "/swagger/") {
+			next.ServeHTTP(w, r)
+			return
 		}
 
 		// Extract the token from the request header.
