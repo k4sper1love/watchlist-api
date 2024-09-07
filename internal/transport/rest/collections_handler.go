@@ -11,9 +11,21 @@ import (
 	"net/http"
 )
 
-// addCollectionHandler adds a new collection to the database and assigns permissions to the user.
-//
-// Returns a JSON response with the created collection or an error if the creation fails.
+// AddCollection godoc
+// @Summary Add new collection
+// @Description Add a new collection. You will be granted the permissions to get, update, and delete it.
+// @Tags collections
+// @Accept json
+// @Produce json
+// @Param collection body swagger.CollectionRequest true "Information about the new collection"
+// @Success 201 {object} swagger.CollectionResponse
+// @Failure 400 {object} swagger.ErrorResponse
+// @Failure 401 {object} swagger.ErrorResponse
+// @Failure 409 {object} swagger.ErrorResponse
+// @Failure 422 {object} swagger.ErrorResponse
+// @Failure 500 {object} swagger.ErrorResponse
+// @Security JWTAuth
+// @Router /collections [post]
 func addCollectionHandler(w http.ResponseWriter, r *http.Request) {
 	sl.PrintHandlerInfo(r)
 
@@ -54,9 +66,20 @@ func addCollectionHandler(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, r, http.StatusCreated, envelope{"collection": collection})
 }
 
-// getCollectionHandler retrieves a collection's details by its ID.
-//
-// Returns a JSON response with the collection details or an error if retrieval fails.
+// GetCollection godoc
+// @Summary Get collection by ID
+// @Description Get the collection by ID. You must have permissions to get this collection.
+// @Tags collections
+// @Accept json
+// @Produce json
+// @Param collection_id path int true "Collection ID"
+// @Success 200 {object} swagger.CollectionResponse
+// @Failure 400 {object} swagger.ErrorResponse
+// @Failure 401 {object} swagger.ErrorResponse
+// @Failure 403 {object} swagger.ErrorResponse
+// @Failure 500 {object} swagger.ErrorResponse
+// @Security JWTAuth
+// @Router /collections/{collection_id} [get]
 func getCollectionHandler(w http.ResponseWriter, r *http.Request) {
 	sl.PrintHandlerInfo(r)
 
@@ -75,9 +98,22 @@ func getCollectionHandler(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, r, http.StatusOK, envelope{"collection": collection})
 }
 
-// getCollectionsHandler retrieves a list of collections for the authenticated user with optional filters.
-//
-// Returns a JSON response with the list of collections and metadata or an error if retrieval fails.
+// GetCollections godoc
+// @Summary Get user collections
+// @Description Get a list of collections by user ID from authentication token. It also returns metadata.
+// @Tags collections
+// @Accept json
+// @Produce json
+// @Param name query string false "Filter by `name`"
+// @Param page query int false "Specify the desired `page`"
+// @Param page_size query int false "Specify the desired `page size`"
+// @Param sort query string false "Sorting by `id`, `name`, `created_at`. Use `-` for desc"
+// @Success 200 {object} swagger.CollectionsResponse
+// @Failure 401 {object} swagger.ErrorResponse
+// @Failure 422 {object} swagger.ErrorResponse
+// @Failure 500 {object} swagger.ErrorResponse
+// @Security JWTAuth
+// @Router /collections [get]
 func getCollectionsHandler(w http.ResponseWriter, r *http.Request) {
 	sl.PrintHandlerInfo(r)
 
@@ -127,9 +163,24 @@ func getCollectionsHandler(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, r, http.StatusOK, envelope{"collections": collections, "metadata": metadata})
 }
 
-// updateCollectionHandler updates the details of an existing collection.
-//
-// Returns a JSON response with the updated collection details or an error if the update fails.
+// UpdateCollection godoc
+// @Summary Update the collection
+// @Description Update the collection by ID. You must have the permissions to update it.
+// @Tags collections
+// @Accept json
+// @Produce json
+// @Param collection_id path int true "Collection ID"
+// @Param film body swagger.CollectionRequest true "New information about the collection"
+// @Success 200 {object} swagger.FilmResponse
+// @Failure 400 {object} swagger.ErrorResponse
+// @Failure 401 {object} swagger.ErrorResponse
+// @Failure 403 {object} swagger.ErrorResponse
+// @Failure 404 {object} swagger.ErrorResponse
+// @Failure 409 {object} swagger.ErrorResponse
+// @Failure 422 {object} swagger.ErrorResponse
+// @Failure 500 {object} swagger.ErrorResponse
+// @Security JWTAuth
+// @Router /collections/{collection_id} [put]
 func updateCollectionHandler(w http.ResponseWriter, r *http.Request) {
 	sl.PrintHandlerInfo(r)
 
@@ -172,9 +223,21 @@ func updateCollectionHandler(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, r, http.StatusOK, envelope{"collection": collection})
 }
 
-// deleteCollectionHandler deletes a collection from the database.
-//
-// Returns a JSON response confirming deletion or an error if the deletion fails.
+// DeleteCollection godoc
+// @Summary Delete the collection
+// @Description Delete the collection by ID. You must have the permissions to delete it.
+// @Tags collections
+// @Accept json
+// @Produce json
+// @Param collection_id path int true "Collection ID"
+// @Success 200 {object} swagger.MessageResponse
+// @Failure 400 {object} swagger.ErrorResponse
+// @Failure 401 {object} swagger.ErrorResponse
+// @Failure 403 {object} swagger.ErrorResponse
+// @Failure 404 {object} swagger.ErrorResponse
+// @Failure 500 {object} swagger.ErrorResponse
+// @Security JWTAuth
+// @Router /collections/{collection_id} [delete]
 func deleteCollectionHandler(w http.ResponseWriter, r *http.Request) {
 	sl.PrintHandlerInfo(r)
 

@@ -10,9 +10,22 @@ import (
 	"net/http"
 )
 
-// addCollectionFilmHandler adds a film to a collection.
-//
-// Returns a JSON response with the created collection-film relationship or an error if the addition fails.
+// AddCollectionFilm godoc
+// @Summary Add film to collection
+// @Description Add a film to the collection. You must have rights to get the film and update the collection.
+// @Tags collectionFilms
+// @Accept json
+// @Produce json
+// @Param collection_id path int true "Collection ID"
+// @Param film_id path int true "Film ID"
+// @Success 201 {object} swagger.CollectionResponse
+// @Failure 400 {object} swagger.ErrorResponse
+// @Failure 401 {object} swagger.ErrorResponse
+// @Failure 403 {object} swagger.ErrorResponse
+// @Failure 409 {object} swagger.ErrorResponse
+// @Failure 500 {object} swagger.ErrorResponse
+// @Security JWTAuth
+// @Router /collections/{collection_id}/films/{film_id} [post]
 func addCollectionFilmHandler(w http.ResponseWriter, r *http.Request) {
 	sl.PrintHandlerInfo(r)
 
@@ -42,9 +55,22 @@ func addCollectionFilmHandler(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, r, http.StatusCreated, envelope{"collection_film": collectionFilm})
 }
 
-// getCollectionFilmHandler retrieves the details of a film in a specific collection.
-//
-// Returns a JSON response with the collection-film relationship or an error if retrieval fails.
+// GetCollectionFilm godoc
+// @Summary Get film from collection by ID
+// @Description Get the film from collection by ID. You must have permissions to get this collection.
+// @Tags collectionFilms
+// @Accept json
+// @Produce json
+// @Param collection_id path int true "Collection ID"
+// @Param film_id path int true "Film ID"
+// @Success 200 {object} swagger.CollectionFilmResponse
+// @Failure 400 {object} swagger.ErrorResponse
+// @Failure 401 {object} swagger.ErrorResponse
+// @Failure 403 {object} swagger.ErrorResponse
+// @Failure 404 {object} swagger.ErrorResponse
+// @Failure 500 {object} swagger.ErrorResponse
+// @Security JWTAuth
+// @Router /collections/{collection_id}/films/{film_id} [get]
 func getCollectionFilmHandler(w http.ResponseWriter, r *http.Request) {
 	sl.PrintHandlerInfo(r)
 
@@ -69,9 +95,25 @@ func getCollectionFilmHandler(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, r, http.StatusOK, envelope{"collection_film": collectionFilm})
 }
 
-// getCollectionFilmsHandler retrieves a list of films in a specific collection with optional filters.
-//
-// Returns a JSON response with the list of collection-films and metadata or an error if retrieval fails.
+// GetCollectionFilms godoc
+// @Summary Get films from collection
+// @Description Get a list of films from collection by collection ID. It also returns metadata.
+// @Description You must have permissions to get this collection.
+// @Tags collectionFilms
+// @Accept json
+// @Produce json
+// @Param collection_id path int true "Collection ID"
+// @Param page query int false "Specify the desired `page`"
+// @Param page_size query int false "Specify the desired `page size`"
+// @Param sort query string false "Sorting by `film_id`, `added_at`. Use `-` for desc"
+// @Success 200 {object} swagger.CollectionFilmsResponse
+// @Failure 400 {object} swagger.ErrorResponse
+// @Failure 401 {object} swagger.ErrorResponse
+// @Failure 403 {object} swagger.ErrorResponse
+// @Failure 422 {object} swagger.ErrorResponse
+// @Failure 500 {object} swagger.ErrorResponse
+// @Security JWTAuth
+// @Router /collections/{collection_id}/films [get]
 func getCollectionFilmsHandler(w http.ResponseWriter, r *http.Request) {
 	sl.PrintHandlerInfo(r)
 
@@ -121,9 +163,23 @@ func getCollectionFilmsHandler(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, r, http.StatusOK, envelope{"collection_films": collectionFilms, "metadata": metadata})
 }
 
-// updateCollectionFilmHandler updates the details of a film in a collection.
-//
-// Returns a JSON response with the updated collection-film relationship or an error if the update fails.
+// UpdateCollectionFilm godoc
+// @Summary Update film in collection
+// @Description Update the film in the collection by ID`s. You must have the permissions to update collection.
+// @Tags collectionFilms
+// @Accept json
+// @Produce json
+// @Param collection_id path int true "Collection ID"
+// @Param film_id path int true "Film ID"
+// @Param film body swagger.CollectionFilmRequest true "New information about the film in the collection"
+// @Success 200 {object} swagger.CollectionFilmResponse
+// @Failure 400 {object} swagger.ErrorResponse
+// @Failure 401 {object} swagger.ErrorResponse
+// @Failure 403 {object} swagger.ErrorResponse
+// @Failure 409 {object} swagger.ErrorResponse
+// @Failure 500 {object} swagger.ErrorResponse
+// @Security JWTAuth
+// @Router /collections/{collection_id}/films/{film_id} [put]
 func updateCollectionFilmHandler(w http.ResponseWriter, r *http.Request) {
 	sl.PrintHandlerInfo(r)
 
@@ -167,9 +223,22 @@ func updateCollectionFilmHandler(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, r, http.StatusOK, envelope{"collection_film": collectionFilm})
 }
 
-// deleteCollectionFilmHandler removes a film from a collection.
-//
-// Returns a JSON response confirming deletion or an error if the deletion fails.
+// DeleteCollectionFilms godoc
+// @Summary Delete film from collection
+// @Description Delete the film from the collection by ID. You must have the permissions to update collection.
+// @Tags collectionFilms
+// @Accept json
+// @Produce json
+// @Param collection_id path int true "Collection ID"
+// @Param film_id path int true "Film ID"
+// @Success 200 {object} swagger.MessageResponse
+// @Failure 400 {object} swagger.ErrorResponse
+// @Failure 401 {object} swagger.ErrorResponse
+// @Failure 403 {object} swagger.ErrorResponse
+// @Failure 404 {object} swagger.ErrorResponse
+// @Failure 500 {object} swagger.ErrorResponse
+// @Security JWTAuth
+// @Router /collections/{collection_id}/films/{films_id} [delete]
 func deleteCollectionFilmHandler(w http.ResponseWriter, r *http.Request) {
 	sl.PrintHandlerInfo(r)
 

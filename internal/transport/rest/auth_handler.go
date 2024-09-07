@@ -8,9 +8,21 @@ import (
 	"net/http"
 )
 
-// registerHandler registers a new user.
-//
-// Returns a JSON response with the created user or an error if registration fails.
+// Register godoc
+// @Summary Register a new user
+// @Description Register a new user using a username, email and password. Returns user information and tokens.
+// @Description Basic permissions are available to you: creating films and collections.
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param credentials body swagger.RegisterRequest true "Information about the new user "
+// @Success 201 {object} swagger.AuthResponse
+// @Failure 400 {object} swagger.ErrorResponse
+// @Failure 404 {object} swagger.ErrorResponse
+// @Failure 409 {object} swagger.ErrorResponse
+// @Failure 422 {object} swagger.ErrorResponse
+// @Failure 500 {object} swagger.ErrorResponse
+// @Router /auth/register [post]
 func registerHandler(w http.ResponseWriter, r *http.Request) {
 	sl.PrintHandlerInfo(r)
 
@@ -45,9 +57,19 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, r, http.StatusCreated, envelope{"user": resp})
 }
 
-// loginHandler logs in a user.
-//
-// Returns a JSON response with user information or an error if login fails.
+// Login godoc
+// @Summary Log in to your account
+// @Description Log in to your account using your email and password. Returns tokens.
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param credentials body swagger.LoginRequest true "Login information"
+// @Success 200 {object} swagger.AuthResponse
+// @Failure 400 {object} swagger.ErrorResponse
+// @Failure 404 {object} swagger.ErrorResponse
+// @Failure 422 {object} swagger.ErrorResponse
+// @Failure 500 {object} swagger.ErrorResponse
+// @Router /auth/login [post]
 func loginHandler(w http.ResponseWriter, r *http.Request) {
 	sl.PrintHandlerInfo(r)
 
@@ -78,9 +100,17 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, r, http.StatusOK, envelope{"user": resp})
 }
 
-// refreshAccessTokenHandler refreshes the access token.
-//
-// Returns a JSON response with a new access token or an error if refresh fails.
+// Refresh godoc
+// @Summary Refresh access token
+// @Description Refresh your access token using the refresh token in the Authorization header.
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Success 200 {object} swagger.AccessTokenResponse
+// @Failure 401 {object} swagger.ErrorResponse
+// @Failure 500 {object} swagger.ErrorResponse
+// @Security JWTAuth
+// @Router /auth/refresh [post]
 func refreshAccessTokenHandler(w http.ResponseWriter, r *http.Request) {
 	sl.PrintHandlerInfo(r)
 
@@ -101,9 +131,17 @@ func refreshAccessTokenHandler(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, r, http.StatusOK, envelope{"access_token": newAccessToken})
 }
 
-// logoutHandler logs out a user by revoking the refresh token.
-//
-// Returns a JSON response confirming token revocation or an error if logout fails.
+// Logout godoc
+// @Summary Log out of your account
+// @Description Log out of your account using your refresh token in the Authorization header.
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Success 200 {object} swagger.MessageResponse
+// @Failure 401 {object} swagger.ErrorResponse
+// @Failure 500 {object} swagger.ErrorResponse
+// @Security JWTAuth
+// @Router /auth/logout [post]
 func logoutHandler(w http.ResponseWriter, r *http.Request) {
 	sl.PrintHandlerInfo(r)
 

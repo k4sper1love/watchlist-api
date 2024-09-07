@@ -12,7 +12,7 @@ import (
 )
 
 // @title Watchlist API
-// @description This is a REST API for saving movies you want to watch.
+// @description This is a REST API for saving films you want to watch.
 
 // @contact.name API Support
 // @contact.email s_yelkin@proton.me
@@ -22,7 +22,7 @@ import (
 // @securityDefinitions.apiKey JWTAuth
 // @in header
 // @name Authorization
-// @description "JWT Authorization header using the Bearer scheme. Example: 'Authorization: Bearer {token}'"
+// @description JWT Authorization header using the Bearer scheme. Example: 'Authorization: Bearer {token}'
 func main() {
 	// Start the application with command-line arguments.
 	watchlist.Run(os.Args)

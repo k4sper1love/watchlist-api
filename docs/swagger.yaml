@@ -1,5 +1,153 @@
 basePath: /api/v1
 definitions:
+  filters.Metadata:
+    properties:
+      current_page:
+        description: The current page number.
+        example: 2
+        type: integer
+      first_page:
+        description: The first page number, usually 1.
+        example: 1
+        type: integer
+      last_page:
+        description: The last page number based on total records and page size.
+        example: 3
+        type: integer
+      page_size:
+        description: The number of items per page.
+        example: 5
+        type: integer
+      total_records:
+        description: The total number of records available.
+        example: 15
+        type: integer
+    type: object
+  models.Collection:
+    properties:
+      created_at:
+        description: Timestamp when the collection was created.
+        example: "2024-09-04T13:37:24.87653+05:00"
+        type: string
+      description:
+        description: Description of the collection; optional, up to 500 characters.
+        example: This is description
+        maxLength: 500
+        type: string
+      id:
+        description: Unique identifier for the collection.
+        example: 1
+        type: integer
+      name:
+        description: Name of the collection; required, between 3 and 100 characters.
+        example: My collection
+        maxLength: 100
+        minLength: 3
+        type: string
+      updated_at:
+        description: Timestamp when the collection was last updated.
+        example: "2024-09-04T13:37:24.87653+05:00"
+        type: string
+      user_id:
+        description: Identifier of the user who created the collection.
+        example: 1
+        type: integer
+    required:
+    - name
+    type: object
+  models.CollectionFilm:
+    properties:
+      added_at:
+        description: Timestamp when the film was added to the collection.
+        example: "2024-09-04T13:37:24.87653+05:00"
+        type: string
+      collection_id:
+        description: Identifier of the collection.
+        example: 1
+        type: integer
+      film_id:
+        description: Identifier of the film.
+        example: 1
+        type: integer
+      updated_at:
+        description: Timestamp when the association was last updated.
+        example: "2024-09-04T13:37:24.87653+05:00"
+        type: string
+    type: object
+  models.Film:
+    properties:
+      comment:
+        description: URL of the film's photo; optional, must be a valid URL.
+        example: This is comment
+        maxLength: 500
+        type: string
+      created_at:
+        description: Timestamp when the film was added.
+        example: "2024-09-04T13:37:24.87653+05:00"
+        type: string
+      description:
+        description: Description of the film; optional, up to 1000 characters.
+        example: This is description
+        maxLength: 1000
+        type: string
+      genre:
+        description: Genre of the film; optional, only alphabetic characters.
+        example: Horror
+        maxLength: 100
+        type: string
+      id:
+        description: Unique identifier for the film.
+        example: 1
+        type: integer
+      is_viewed:
+        description: Indicates if the user has viewed the film.
+        example: false
+        type: boolean
+      photo_url:
+        description: URL of the film's photo; optional, must be a valid URL.
+        example: https://placeimg.com/640/480
+        type: string
+      rating:
+        description: Rating of the film; optional, must be between 1 and 10.
+        example: 6.7
+        maximum: 10
+        minimum: 1
+        type: number
+      review:
+        description: User's review of the film; optional, up to 500 characters.
+        example: This is review
+        maxLength: 500
+        type: string
+      title:
+        description: Title of the film; required, between 3 and 100 characters.
+        example: My film
+        maxLength: 100
+        minLength: 3
+        type: string
+      updated_at:
+        description: Timestamp when the film details were last updated.
+        example: "2024-09-04T13:37:24.87653+05:00"
+        type: string
+      user_id:
+        description: Identifier of the user who added the film.
+        example: 1
+        type: integer
+      user_rating:
+        description: User's rating of the film; optional, between 1 and 10.
+        example: 5.5
+        maximum: 10
+        minimum: 1
+        type: number
+      year:
+        description: Release year of the film; optional, must be between 1888 and
+          2100.
+        example: 2001
+        maximum: 2100
+        minimum: 1888
+        type: integer
+    required:
+    - title
+    type: object
   models.User:
     properties:
       created_at:
@@ -22,10 +170,175 @@ definitions:
     - email
     - username
     type: object
+  swagger.AccessTokenResponse:
+    properties:
+      access_token:
+        example: eyJhbGciOI6IkpXVCJ9.eyJzdk5EbifQ.4CfEaMw6Ur_fszI
+        type: string
+    type: object
+  swagger.AuthResponse:
+    properties:
+      access_token:
+        example: eyJhbGciOiJIUzI1NiIs.eyJzdWIilIn0.iTNuOHMObmeRmKU
+        type: string
+      created_at:
+        description: Timestamp when the user was created.
+        example: "2024-09-04T13:37:24.87653+05:00"
+        type: string
+      email:
+        description: Email address of the user; must be a valid email format.
+        example: john_doe@example.com
+        type: string
+      id:
+        description: Unique identifier for the user.
+        example: 1
+        type: integer
+      refresh_token:
+        example: eyJhbGciOI6IkpXVCJ9.eyJzdk5EbifQ.4CfEaMw6Ur_fszI
+        type: string
+      username:
+        description: Username of the user; must be unique and valid.
+        example: john_doe
+        type: string
+    required:
+    - email
+    - username
+    type: object
+  swagger.CollectionFilmRequest:
+    properties:
+      added_at:
+        example: "2024-09-04T13:37:24.87653+05:00"
+        type: string
+    type: object
+  swagger.CollectionFilmResponse:
+    properties:
+      collection_film:
+        $ref: '#/definitions/models.CollectionFilm'
+    type: object
+  swagger.CollectionFilmsResponse:
+    properties:
+      collection_films:
+        items:
+          $ref: '#/definitions/models.CollectionFilm'
+        type: array
+      metadata:
+        $ref: '#/definitions/filters.Metadata'
+    type: object
+  swagger.CollectionRequest:
+    properties:
+      description:
+        example: This is description
+        type: string
+      name:
+        example: My collection
+        type: string
+    type: object
+  swagger.CollectionResponse:
+    properties:
+      collection:
+        $ref: '#/definitions/models.Collection'
+    type: object
+  swagger.CollectionsResponse:
+    properties:
+      collections:
+        items:
+          $ref: '#/definitions/models.Collection'
+        type: array
+      metadata:
+        $ref: '#/definitions/filters.Metadata'
+    type: object
   swagger.ErrorResponse:
     properties:
       error:
         example: some kind of error
+        type: string
+    type: object
+  swagger.FilmRequest:
+    properties:
+      comment:
+        example: This is comment
+        type: string
+      description:
+        example: This is description
+        type: string
+      genre:
+        example: Horror
+        type: string
+      int:
+        example: 2001
+        type: integer
+      is_viewed:
+        example: true
+        type: boolean
+      photo_url:
+        example: https://placeimg.com/640/480
+        type: string
+      rating:
+        example: 6.7
+        type: number
+      review:
+        example: This is review.
+        type: string
+      title:
+        example: My film
+        type: string
+      user_rating:
+        example: 5.5
+        type: number
+    type: object
+  swagger.FilmResponse:
+    properties:
+      film:
+        $ref: '#/definitions/models.Film'
+    type: object
+  swagger.FilmsResponse:
+    properties:
+      films:
+        items:
+          $ref: '#/definitions/models.Film'
+        type: array
+      metadata:
+        $ref: '#/definitions/filters.Metadata'
+    type: object
+  swagger.HealthCheckResponse:
+    properties:
+      status:
+        example: enabled
+        type: string
+      system_info:
+        $ref: '#/definitions/swagger.systemInfo'
+    type: object
+  swagger.LoginRequest:
+    properties:
+      email:
+        example: john_doe@example.com
+        type: string
+      password:
+        example: Secret1!
+        type: string
+    type: object
+  swagger.MessageResponse:
+    properties:
+      message:
+        example: some kind of success message
+        type: string
+    type: object
+  swagger.RegisterRequest:
+    properties:
+      email:
+        example: john_doe@example.com
+        type: string
+      password:
+        example: Secret1!
+        type: string
+      username:
+        example: john_doe
+        type: string
+    type: object
+  swagger.UpdateUserRequest:
+    properties:
+      username:
+        example: new_username
         type: string
     type: object
   swagger.UserResponse:
@@ -33,31 +346,364 @@ definitions:
       user:
         $ref: '#/definitions/models.User'
     type: object
+  swagger.systemInfo:
+    properties:
+      environment:
+        example: prod
+        type: string
+      version:
+        example: 2024-09-05T02:21:09Z-83438704281d314aae2e1ae-dirty
+        type: string
+    type: object
 info:
   contact:
     email: s_yelkin@proton.me
     name: API Support
-  description: This is a REST API for saving movies you want to watch.
+  description: This is a REST API for saving films you want to watch.
   title: Watchlist API
 paths:
-  /user:
-    delete:
+  /auth/login:
+    post:
       consumes:
       - application/json
-      description: Delete user by ID using an authentication token
+      description: Log in to your account using your email and password. Returns tokens.
+      parameters:
+      - description: Login information
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/swagger.LoginRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/swagger.UserResponse'
+            $ref: '#/definitions/swagger.AuthResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+      summary: Log in to your account
+      tags:
+      - auth
+  /auth/logout:
+    post:
+      consumes:
+      - application/json
+      description: Log out of your account using your refresh token in the Authorization
+        header.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/swagger.MessageResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+      security:
+      - JWTAuth: []
+      summary: Log out of your account
+      tags:
+      - auth
+  /auth/refresh:
+    post:
+      consumes:
+      - application/json
+      description: Refresh your access token using the refresh token in the Authorization
+        header.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/swagger.AccessTokenResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+      security:
+      - JWTAuth: []
+      summary: Refresh access token
+      tags:
+      - auth
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: |-
+        Register a new user using a username, email and password. Returns user information and tokens.
+        Basic permissions are available to you: creating films and collections.
+      parameters:
+      - description: 'Information about the new user '
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/swagger.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/swagger.AuthResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+      summary: Register a new user
+      tags:
+      - auth
+  /collections:
+    get:
+      consumes:
+      - application/json
+      description: Get a list of collections by user ID from authentication token.
+        It also returns metadata.
+      parameters:
+      - description: Filter by `name`
+        in: query
+        name: name
+        type: string
+      - description: Specify the desired `page`
+        in: query
+        name: page
+        type: integer
+      - description: Specify the desired `page size`
+        in: query
+        name: page_size
+        type: integer
+      - description: Sorting by `id`, `name`, `created_at`. Use `-` for desc
+        in: query
+        name: sort
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/swagger.CollectionsResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+      security:
+      - JWTAuth: []
+      summary: Get user collections
+      tags:
+      - collections
+    post:
+      consumes:
+      - application/json
+      description: Add a new collection. You will be granted the permissions to get,
+        update, and delete it.
+      parameters:
+      - description: Information about the new collection
+        in: body
+        name: collection
+        required: true
+        schema:
+          $ref: '#/definitions/swagger.CollectionRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/swagger.CollectionResponse'
         "400":
           description: Bad Request
           schema:
             $ref: '#/definitions/swagger.ErrorResponse'
         "401":
           description: Unauthorized
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+      security:
+      - JWTAuth: []
+      summary: Add new collection
+      tags:
+      - collections
+  /collections/{collection_id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete the collection by ID. You must have the permissions to delete
+        it.
+      parameters:
+      - description: Collection ID
+        in: path
+        name: collection_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/swagger.MessageResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+      security:
+      - JWTAuth: []
+      summary: Delete the collection
+      tags:
+      - collections
+    get:
+      consumes:
+      - application/json
+      description: Get the collection by ID. You must have permissions to get this
+        collection.
+      parameters:
+      - description: Collection ID
+        in: path
+        name: collection_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/swagger.CollectionResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+      security:
+      - JWTAuth: []
+      summary: Get collection by ID
+      tags:
+      - collections
+    put:
+      consumes:
+      - application/json
+      description: Update the collection by ID. You must have the permissions to update
+        it.
+      parameters:
+      - description: Collection ID
+        in: path
+        name: collection_id
+        required: true
+        type: integer
+      - description: New information about the collection
+        in: body
+        name: film
+        required: true
+        schema:
+          $ref: '#/definitions/swagger.CollectionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/swagger.FilmResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+        "403":
+          description: Forbidden
           schema:
             $ref: '#/definitions/swagger.ErrorResponse'
         "404":
@@ -78,15 +724,556 @@ paths:
             $ref: '#/definitions/swagger.ErrorResponse'
       security:
       - JWTAuth: []
+      summary: Update the collection
+      tags:
+      - collections
+  /collections/{collection_id}/films:
+    get:
+      consumes:
+      - application/json
+      description: |-
+        Get a list of films from collection by collection ID. It also returns metadata.
+        You must have permissions to get this collection.
+      parameters:
+      - description: Collection ID
+        in: path
+        name: collection_id
+        required: true
+        type: integer
+      - description: Specify the desired `page`
+        in: query
+        name: page
+        type: integer
+      - description: Specify the desired `page size`
+        in: query
+        name: page_size
+        type: integer
+      - description: Sorting by `film_id`, `added_at`. Use `-` for desc
+        in: query
+        name: sort
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/swagger.CollectionFilmsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+      security:
+      - JWTAuth: []
+      summary: Get films from collection
+      tags:
+      - collectionFilms
+  /collections/{collection_id}/films/{film_id}:
+    get:
+      consumes:
+      - application/json
+      description: Get the film from collection by ID. You must have permissions to
+        get this collection.
+      parameters:
+      - description: Collection ID
+        in: path
+        name: collection_id
+        required: true
+        type: integer
+      - description: Film ID
+        in: path
+        name: film_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/swagger.CollectionFilmResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+      security:
+      - JWTAuth: []
+      summary: Get film from collection by ID
+      tags:
+      - collectionFilms
+    post:
+      consumes:
+      - application/json
+      description: Add a film to the collection. You must have rights to get the film
+        and update the collection.
+      parameters:
+      - description: Collection ID
+        in: path
+        name: collection_id
+        required: true
+        type: integer
+      - description: Film ID
+        in: path
+        name: film_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/swagger.CollectionResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+      security:
+      - JWTAuth: []
+      summary: Add film to collection
+      tags:
+      - collectionFilms
+    put:
+      consumes:
+      - application/json
+      description: Update the film in the collection by ID`s. You must have the permissions
+        to update collection.
+      parameters:
+      - description: Collection ID
+        in: path
+        name: collection_id
+        required: true
+        type: integer
+      - description: Film ID
+        in: path
+        name: film_id
+        required: true
+        type: integer
+      - description: New information about the film in the collection
+        in: body
+        name: film
+        required: true
+        schema:
+          $ref: '#/definitions/swagger.CollectionFilmRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/swagger.CollectionFilmResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+      security:
+      - JWTAuth: []
+      summary: Update film in collection
+      tags:
+      - collectionFilms
+  /collections/{collection_id}/films/{films_id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete the film from the collection by ID. You must have the permissions
+        to update collection.
+      parameters:
+      - description: Collection ID
+        in: path
+        name: collection_id
+        required: true
+        type: integer
+      - description: Film ID
+        in: path
+        name: film_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/swagger.MessageResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+      security:
+      - JWTAuth: []
+      summary: Delete film from collection
+      tags:
+      - collectionFilms
+  /films:
+    get:
+      consumes:
+      - application/json
+      description: Get a list of films by user ID from authentication token. It also
+        returns metadata.
+      parameters:
+      - description: Filter by `title`
+        in: query
+        name: title
+        type: string
+      - description: Filter by `minimum rating`
+        in: query
+        name: rating_min
+        type: number
+      - description: Filter by `maximum rating`
+        in: query
+        name: rating_max
+        type: number
+      - description: Specify the desired `page`
+        in: query
+        name: page
+        type: integer
+      - description: Specify the desired `page size`
+        in: query
+        name: page_size
+        type: integer
+      - description: Sorting by `id`, `title`, `rating`. Use `-` for desc
+        in: query
+        name: sort
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/swagger.FilmsResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+      security:
+      - JWTAuth: []
+      summary: Get user films
+      tags:
+      - films
+    post:
+      consumes:
+      - application/json
+      description: Add a new film. You will be granted the permissions to get, update,
+        and delete it.
+      parameters:
+      - description: Information about the new film
+        in: body
+        name: film
+        required: true
+        schema:
+          $ref: '#/definitions/swagger.FilmRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/swagger.FilmResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+      security:
+      - JWTAuth: []
+      summary: Add new film
+      tags:
+      - films
+  /films/{film_id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete the film by ID. You must have the permissions to delete
+        it.
+      parameters:
+      - description: Film ID
+        in: path
+        name: film_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/swagger.MessageResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+      security:
+      - JWTAuth: []
+      summary: Delete the film
+      tags:
+      - films
+    get:
+      consumes:
+      - application/json
+      description: Get the film by ID. You must have permissions to get this film.
+      parameters:
+      - description: Film ID
+        in: path
+        name: film_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/swagger.FilmResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+      security:
+      - JWTAuth: []
+      summary: Get film by ID
+      tags:
+      - films
+    put:
+      consumes:
+      - application/json
+      description: Update the film by ID. You must have the permissions to update
+        it.
+      parameters:
+      - description: Film ID
+        in: path
+        name: film_id
+        required: true
+        type: integer
+      - description: New information about the film
+        in: body
+        name: film
+        required: true
+        schema:
+          $ref: '#/definitions/swagger.FilmRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/swagger.FilmResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+      security:
+      - JWTAuth: []
+      summary: Update the film
+      tags:
+      - films
+  /healthcheck:
+    get:
+      consumes:
+      - application/json
+      description: Check the API status. Returns status and system information.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/swagger.HealthCheckResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+      summary: Check API status
+      tags:
+      - monitoring
+  /user:
+    delete:
+      consumes:
+      - application/json
+      description: Delete user by ID using an authentication token.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/swagger.MessageResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+      security:
+      - JWTAuth: []
       summary: Delete user account
       tags:
       - user
     get:
       consumes:
       - application/json
-      description: |-
-        Get information about user by ID using an authentication token
-        Authorization is required.
+      description: Get information about user by ID using an authentication token.
       produces:
       - application/json
       responses:
@@ -94,10 +1281,6 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/swagger.UserResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/swagger.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
@@ -118,15 +1301,14 @@ paths:
     put:
       consumes:
       - application/json
-      description: Update information about user by ID using an authentication token
+      description: Update information about user by ID using an authentication token.
       parameters:
-      - description: User information to update
+      - description: New information about the user
         in: body
         name: username
         required: true
         schema:
-          example: "{\n\t\"username\": \"new_username\"\n}"
-          type: string
+          $ref: '#/definitions/swagger.UpdateUserRequest'
       produces:
       - application/json
       responses:
@@ -165,8 +1347,8 @@ paths:
       - user
 securityDefinitions:
   JWTAuth:
-    description: '"JWT Authorization header using the Bearer scheme. Example: ''Authorization:
-      Bearer {token}''"'
+    description: 'JWT Authorization header using the Bearer scheme. Example: ''Authorization:
+      Bearer {token}'''
     in: header
     name: Authorization
     type: apiKey

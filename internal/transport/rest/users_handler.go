@@ -11,12 +11,11 @@ import (
 
 // GetUser godoc
 // @Summary Get user account
-// @Description Get information about user by ID using an authentication token
+// @Description Get information about user by ID using an authentication token.
 // @Tags user
 // @Accept json
 // @Produce json
 // @Success 200 {object} swagger.UserResponse
-// @Failure 400 {object} swagger.ErrorResponse
 // @Failure 401 {object} swagger.ErrorResponse
 // @Failure 404 {object} swagger.ErrorResponse
 // @Failure 500 {object} swagger.ErrorResponse
@@ -41,11 +40,11 @@ func getUserHandler(w http.ResponseWriter, r *http.Request) {
 
 // UpdateUser godoc
 // @Summary Update user account
-// @Description Update information about user by ID using an authentication token
+// @Description Update information about user by ID using an authentication token.
 // @Tags user
 // @Accept json
 // @Produce json
-// @Param username body string true "User information to update" SchemaExample({\n\t"username": "new_username"\n})
+// @Param username body swagger.UpdateUserRequest true "New information about the user"
 // @Success 200 {object} swagger.UserResponse
 // @Failure 400 {object} swagger.ErrorResponse
 // @Failure 401 {object} swagger.ErrorResponse
@@ -99,16 +98,13 @@ func updateUserHandler(w http.ResponseWriter, r *http.Request) {
 
 // DeleteUser godoc
 // @Summary Delete user account
-// @Description Delete user by ID using an authentication token
+// @Description Delete user by ID using an authentication token.
 // @Tags user
 // @Accept json
 // @Produce json
-// @Success 200 {object} swagger.UserResponse
-// @Failure 400 {object} swagger.ErrorResponse
+// @Success 200 {object} swagger.MessageResponse
 // @Failure 401 {object} swagger.ErrorResponse
 // @Failure 404 {object} swagger.ErrorResponse
-// @Failure 409 {object} swagger.ErrorResponse
-// @Failure 422 {object} swagger.ErrorResponse
 // @Failure 500 {object} swagger.ErrorResponse
 // @Security JWTAuth
 // @Router /user [delete]

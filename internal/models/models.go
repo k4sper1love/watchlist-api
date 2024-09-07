@@ -43,8 +43,8 @@ type Film struct {
 	Description string    `json:"description,omitempty" validate:"omitempty,max=1000" example:"This is description"`   // Description of the film; optional, up to 1000 characters.
 	Rating      float64   `json:"rating,omitempty" validate:"omitempty,gte=1,lte=10" example:"6.7"`                    // Rating of the film; optional, must be between 1 and 10.
 	PhotoUrl    string    `json:"photo_url,omitempty" validate:"omitempty,url" example:"https://placeimg.com/640/480"` // URL of the film's photo; optional, must be a valid URL.
-	Comment     string    `json:"comment,omitempty" validate:"omitempty,max=500"`                                      // URL of the film's photo; optional, must be a valid URL.
-	IsViewed    bool      `json:"is_viewed" example:"true"`                                                            // Indicates if the user has viewed the film.
+	Comment     string    `json:"comment,omitempty" validate:"omitempty,max=500" example:"This is comment"`            // URL of the film's photo; optional, must be a valid URL.
+	IsViewed    bool      `json:"is_viewed" example:"false"`                                                           // Indicates if the user has viewed the film.
 	UserRating  float64   `json:"user_rating,omitempty" validate:"omitempty,gte=1,lte=10" example:"5.5"`               // User's rating of the film; optional, between 1 and 10.
 	Review      string    `json:"review,omitempty" validate:"omitempty,max=500" example:"This is review"`              // User's review of the film; optional, up to 500 characters.
 	CreatedAt   time.Time `json:"created_at" example:"2024-09-04T13:37:24.87653+05:00"`                                // Timestamp when the film was added.
@@ -55,6 +55,6 @@ type Film struct {
 type CollectionFilm struct {
 	CollectionId int       `json:"collection_id" example:"1"`                            // Identifier of the collection.
 	FilmId       int       `json:"film_id" example:"1"`                                  // Identifier of the film.
-	CreatedAt    time.Time `json:"added_at" example:"2024-09-04T13:37:24.87653+05:00"`   // Timestamp when the film was added to the collection.
+	AddedAt      time.Time `json:"added_at" example:"2024-09-04T13:37:24.87653+05:00"`   // Timestamp when the film was added to the collection.
 	UpdatedAt    time.Time `json:"updated_at" example:"2024-09-04T13:37:24.87653+05:00"` // Timestamp when the association was last updated.
 }

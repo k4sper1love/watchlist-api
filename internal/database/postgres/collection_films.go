@@ -13,12 +13,12 @@ import (
 //
 // Returns an error if the insertion fails.
 func AddCollectionFilm(c *models.CollectionFilm) error {
-	query := `INSERT INTO collection_films (collection_id, film_id) VALUES ($1, $2) RETURNING created_at, updated_at`
+	query := `INSERT INTO collection_films (collection_id, film_id) VALUES ($1, $2) RETURNING added_at, updated_at`
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	return db.QueryRowContext(ctx, query, c.CollectionId, c.FilmId).Scan(&c.CreatedAt, &c.UpdatedAt)
+	return db.QueryRowContext(ctx, query, c.CollectionId, c.FilmId).Scan(&c.AddedAt, &c.UpdatedAt)
 }
 
 // GetCollectionFilm retrieves the association of a film in a collection by collection ID and film ID.
@@ -31,7 +31,7 @@ func GetCollectionFilm(collectionId, filmId int) (*models.CollectionFilm, error)
 	defer cancel()
 
 	var c models.CollectionFilm
-	err := db.QueryRowContext(ctx, query, collectionId, filmId).Scan(&c.CollectionId, &c.FilmId, &c.CreatedAt, &c.UpdatedAt)
+	err := db.QueryRowContext(ctx, query, collectionId, filmId).Scan(&c.CollectionId, &c.FilmId, &c.AddedAt, &c.UpdatedAt)
 	if err != nil {
 		return nil, err
 	}
@@ -72,7 +72,7 @@ func GetCollectionFilms(collectionId int, f filters.Filters) ([]*models.Collecti
 	var collectionFilms []*models.CollectionFilm
 	for rows.Next() {
 		var c models.CollectionFilm
-		err = rows.Scan(&totalRecords, &c.CollectionId, &c.FilmId, &c.CreatedAt, &c.UpdatedAt)
+		err = rows.Scan(&totalRecords, &c.CollectionId, &c.FilmId, &c.AddedAt, &c.UpdatedAt)
 		if err != nil {
 			return nil, filters.Metadata{}, err
 		}
@@ -94,15 +94,15 @@ func GetCollectionFilms(collectionId int, f filters.Filters) ([]*models.Collecti
 func UpdateCollectionFilm(c *models.CollectionFilm) error {
 	query := `
 			UPDATE collection_films 
-			SET created_at = $4, updated_at = CURRENT_TIMESTAMP
+			SET added_at = $4, updated_at = CURRENT_TIMESTAMP
 			WHERE collection_id = $1 AND film_id = $2 AND updated_at = $3
-			RETURNING created_at, updated_at
+			RETURNING added_at, updated_at
 			`
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	return db.QueryRowContext(ctx, query, c.CollectionId, c.FilmId, c.UpdatedAt, c.CreatedAt).Scan(&c.CreatedAt, &c.UpdatedAt)
+	return db.QueryRowContext(ctx, query, c.CollectionId, c.FilmId, c.UpdatedAt, c.AddedAt).Scan(&c.AddedAt, &c.UpdatedAt)
 }
 
 // DeleteCollectionFilm removes a film from a collection by collection ID and film ID.
