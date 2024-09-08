@@ -248,20 +248,26 @@ func updateFilmHandler(w http.ResponseWriter, r *http.Request) {
 func deleteFilmHandler(w http.ResponseWriter, r *http.Request) {
 	sl.PrintHandlerInfo(r)
 
-	id, err := parseIdParam(r, "filmId")
+	filmId, err := parseIdParam(r, "filmId")
 	if err != nil {
 		badRequestResponse(w, r, err)
 		return
 	}
 
 	// Verify that the film exists in the database.
-	_, err = postgres.GetFilm(id)
+	_, err = postgres.GetFilm(filmId)
 	if err != nil {
 		handleDBError(w, r, err)
 		return
 	}
 
-	err = postgres.DeleteFilm(id)
+	err = postgres.DeleteFilm(filmId)
+	if err != nil {
+		handleDBError(w, r, err)
+		return
+	}
+
+	err = deletePermissionCodes(filmId, "film")
 	if err != nil {
 		handleDBError(w, r, err)
 		return

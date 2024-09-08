@@ -101,3 +101,13 @@ func GetUserPermissions(userId int) (Permissions, error) {
 
 	return permissions, nil
 }
+
+func DeletePermissions(codes ...string) error {
+	query := `DELETE FROM permissions WHERE code = ANY($1)`
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	_, err := db.ExecContext(ctx, query, pq.Array(codes))
+	return err
+}

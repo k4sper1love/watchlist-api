@@ -4,7 +4,6 @@ import (
 	"context"
 	"github.com/gorilla/mux"
 	"github.com/k4sper1love/watchlist-api/internal/database/postgres"
-	"log"
 	"net/http"
 	"strings"
 )
@@ -33,7 +32,6 @@ func requireAuth(next http.Handler) http.Handler {
 			}
 		}
 
-		log.Println(r.Body)
 		// Check if the request path starts with "/swagger/"
 		if strings.HasPrefix(requestPath, "/swagger/") {
 			next.ServeHTTP(w, r)

@@ -119,6 +119,16 @@ func addPermissionAndAssignToUser(userId, objectId int, objectType, action strin
 	return postgres.AddUserPermissions(userId, permission)
 }
 
+func deletePermissionCodes(objectId int, objectType string) error {
+	codes := []string{
+		fmt.Sprintf("%s:%d:%s", objectType, objectId, "read"),
+		fmt.Sprintf("%s:%d:%s", objectType, objectId, "update"),
+		fmt.Sprintf("%s:%d:%s", objectType, objectId, "delete"),
+	}
+
+	return postgres.DeletePermissions(codes...)
+}
+
 // parseQuery is a generic function for parsing query parameters from a URL.Values map.
 // It uses a parsing function to convert the string value into the desired type,
 // and returns the default value if the parameter is missing or cannot be parsed.

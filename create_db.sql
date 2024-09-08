@@ -79,7 +79,7 @@ create table if not exists user_permissions (
     permissions_id int not null,
     primary key (user_id, permissions_id),
     foreign key (user_id) references users(id) on delete cascade,
-    foreign key (permissions_id) references permissions(id)
+    foreign key (permissions_id) references permissions(id) on delete cascade
 );
 
 insert into permissions (code) values ('film:create'), ('collection:create');

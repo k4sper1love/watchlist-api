@@ -14,7 +14,7 @@ package watchlist
 
 import (
 	"fmt"
-	"github.com/k4sper1love/watchlist-api/docs"
+	"github.com/k4sper1love/watchlist-api/api"
 	"github.com/k4sper1love/watchlist-api/internal/config"
 	"github.com/k4sper1love/watchlist-api/internal/database/postgres"
 	"github.com/k4sper1love/watchlist-api/internal/transport/rest"
@@ -68,8 +68,8 @@ func Run(args []string) {
 	}()
 
 	// Configure Swagger documentation.
-	docs.SwaggerInfo.Host = fmt.Sprintf("%s:%d", config.Host, config.Port)
-	docs.SwaggerInfo.Version = vcs.GetVersion()
+	api.SwaggerInfo.Host = fmt.Sprintf("%s:%d", config.Host, config.Port)
+	api.SwaggerInfo.Version = vcs.GetVersion()
 
 	// Start the REST server.
 	err = rest.Serve()

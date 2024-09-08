@@ -2,7 +2,7 @@ package rest
 
 import (
 	"github.com/gorilla/mux"
-	_ "github.com/k4sper1love/watchlist-api/docs"
+	_ "github.com/k4sper1love/watchlist-api/api"
 	httpSwagger "github.com/swaggo/http-swagger"
 	"net/http"
 )

@@ -260,6 +260,12 @@ func deleteCollectionHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	err = deletePermissionCodes(collectionId, "collection")
+	if err != nil {
+		handleDBError(w, r, err)
+		return
+	}
+
 	// Confirm successful deletion with a JSON response.
 	writeJSON(w, r, http.StatusOK, envelope{"message": "collection deleted"})
 }
