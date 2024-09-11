@@ -1,7 +1,7 @@
 /*
-Package config handles configuration for the application, including environment variables and command-line flags.
+Package config handles configuration for the application from command-line flags.
 
-It provides functions to load environment variables from a .env file and parse command-line flags for configuration.
+It provides functions to parse command-line flags for configuration.
 */
 
 package config
@@ -9,34 +9,18 @@ package config
 import (
 	"errors"
 	"github.com/joho/godotenv"
+	"github.com/k4sper1love/watchlist-api/pkg/logger/sl"
 	"github.com/peterbourgon/ff/v4"
-	"os"
+	"log/slog"
 )
 
 var (
-	Host          string // PostgreSQL host.
-	DB            string // PostgreSQL database name.
-	TokenPassword string // Token password for JWT.
-	Port          int    // Port for the API server.
-	Env           string // Environment (local, dev, prod).
-	Migrations    string // Path to migration files.
-	Dsn           string // PostgreSQL DSN.
+	TokenPass  string // Token password for JWT.
+	Port       int    // Port for the API server.
+	Env        string // Environment (local, dev, prod).
+	Migrations string // Path to migration files.
+	Dsn        string // PostgreSQL DSN.
 )
-
-// ParseEnv loads configuration values from a .env file into global variables.
-// It uses the godotenv package to read environment variables from the specified .env file.
-func ParseEnv() error {
-	err := godotenv.Load()
-	if err != nil {
-		return errors.New("error loading .env file")
-	}
-
-	Host = os.Getenv("POSTGRES_HOST")
-	DB = os.Getenv("POSTGRES_DB")
-	TokenPassword = os.Getenv("TOKEN_PASSWORD")
-
-	return nil
-}
 
 // ParseFlags parses command-line flags and sets the corresponding global configuration variables.
 // It uses the ff package to handle flag parsing and environment variable overrides.
@@ -46,6 +30,7 @@ func ParseEnv() error {
 //   - -e, --env: The environment setting (local, dev, prod) (default: local).
 //   - -d, --dsn: The PostgreSQL DSN for database connection.
 //   - -m, --migrations: Path to the folder containing database migration files.
+//   - -s, --secret: The secret password for creating JWT tokens.
 //
 // If an invalid environment value is provided, an error is returned.
 func ParseFlags(args []string) error {
@@ -55,8 +40,14 @@ func ParseFlags(args []string) error {
 	flagSet.StringVar(&Env, 'e', "env", "local", "Environment (local|dev|prod)")
 	flagSet.StringVar(&Dsn, 'd', "dsn", "", "PostgreSQL DSN")
 	flagSet.StringVar(&Migrations, 'm', "migrations", "", "Path to migration files folder. If not provided, migrations do not apply")
+	flagSet.StringVar(&TokenPass, 's', "secret", "secretPass", "Secret password for creating JWT tokens")
 
-	err := ff.Parse(flagSet, args, ff.WithEnvVarPrefix("APP"))
+	err := godotenv.Load("configs/.env")
+	if err != nil {
+		sl.Log.Debug("not found .env file", slog.Any("error", err))
+	}
+
+	err = ff.Parse(flagSet, args, ff.WithEnvVarPrefix("APP"))
 	if err != nil {
 		return err
 	}

@@ -96,7 +96,7 @@ func parseTokenFromHeader(r *http.Request) string {
 func parseTokenClaims(tokenString string) *tokenClaims {
 	claims := &tokenClaims{}
 	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
-		return []byte(config.TokenPassword), nil
+		return []byte(config.TokenPass), nil
 	})
 
 	if err != nil || !token.Valid {

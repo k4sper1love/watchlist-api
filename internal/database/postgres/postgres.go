@@ -53,7 +53,7 @@ func OpenDB() (*sql.DB, error) {
 		}
 
 		// Create a new migration instance with the specified migrations' path.
-		m, err := migrate.NewWithDatabaseInstance(config.Migrations, config.DB, driver)
+		m, err := migrate.NewWithDatabaseInstance(config.Migrations, "postgres", driver)
 		if err != nil {
 			sl.Log.Error("failed to create migration instance", slog.Any("error", err))
 			return nil, err

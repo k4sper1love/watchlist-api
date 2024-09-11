@@ -30,7 +30,7 @@ func generateAccessToken(userId int) (string, error) {
 	token := jwt.NewWithClaims(jwt.GetSigningMethod("HS256"), claims)
 
 	// Sign the token with the secret key and return the token string.
-	return token.SignedString([]byte(config.TokenPassword))
+	return token.SignedString([]byte(config.TokenPass))
 }
 
 // generateAndSaveRefreshToken creates a JWT refresh token for a user with a longer expiration time (24 hours).
@@ -51,7 +51,7 @@ func generateAndSaveRefreshToken(userId int) (string, error) {
 	token := jwt.NewWithClaims(jwt.GetSigningMethod("HS256"), claims)
 
 	// Sign the token with the secret key.
-	tokenString, err := token.SignedString([]byte(config.TokenPassword))
+	tokenString, err := token.SignedString([]byte(config.TokenPass))
 	if err != nil {
 		return "", err
 	}

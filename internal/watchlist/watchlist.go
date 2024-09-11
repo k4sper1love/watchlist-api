@@ -31,17 +31,10 @@ func Run(args []string) {
 	sl.SetupLogger("local", os.Stdout)
 	sl.Log.Info("starting application")
 
-	// Load environment variables from the .env file.
-	err := config.ParseEnv()
-	if err != nil {
-		sl.Log.Error("failed to load .env file", slog.Any("error", err))
-		os.Exit(1) // Exit if loading environment variables fails.
-	}
-
 	sl.Log.Debug("environment variables parsed successfully")
 
 	// Parse command-line flags.
-	err = config.ParseFlags(args[1:])
+	err := config.ParseFlags(args[1:])
 	if err != nil {
 		sl.Log.Error("failed to load flags", slog.Any("error", err))
 		os.Exit(1) // Exit if flag parsing fails.
@@ -68,7 +61,7 @@ func Run(args []string) {
 	}()
 
 	// Configure Swagger documentation.
-	api.SwaggerInfo.Host = fmt.Sprintf("%s:%d", config.Host, config.Port)
+	api.SwaggerInfo.Host = fmt.Sprintf(":%d", config.Port)
 	api.SwaggerInfo.Version = vcs.GetVersion()
 
 	// Start the REST server.

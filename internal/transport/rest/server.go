@@ -17,7 +17,7 @@ import (
 // It listens for incoming HTTP requests and routes them using the configured route handler.
 // Returns an error if the server encounters a problem or fails to shut down gracefully.
 func Serve() error {
-	address := fmt.Sprintf("%s:%d", config.Host, config.Port)
+	address := fmt.Sprintf(":%d", config.Port)
 
 	// Create a new HTTP server with configured address and timeouts.
 	server := &http.Server{
