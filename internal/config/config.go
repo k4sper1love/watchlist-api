@@ -42,7 +42,7 @@ func ParseFlags(args []string) error {
 	flagSet.StringVar(&Migrations, 'm', "migrations", "", "Path to migration files folder. If not provided, migrations do not apply")
 	flagSet.StringVar(&TokenPass, 's', "secret", "secretPass", "Secret password for creating JWT tokens")
 
-	err := godotenv.Load("configs/.env")
+	err := godotenv.Load()
 	if err != nil {
 		sl.Log.Debug("not found .env file", slog.Any("error", err))
 	}

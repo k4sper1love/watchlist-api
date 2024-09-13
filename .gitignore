@@ -22,7 +22,7 @@ go.work
 go.work.sum
 
 # env file
-configs/.env
+.env
 
 # idea files
 .idea/
