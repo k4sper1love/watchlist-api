@@ -57,3 +57,6 @@ jobs:
           POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
         run:
           docker-compose --context remote -f docker-compose.yml up -d
+
+      - name: cleanup
+        run: rm -rf ~/.ssh
