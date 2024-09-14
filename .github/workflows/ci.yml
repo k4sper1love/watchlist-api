@@ -37,6 +37,16 @@ jobs:
           tags: watchlist-app:latest
 
       - name: Run Docker Compose
+        env:
+           APP_PORT: ${{ secrets.APP_PORT }}
+           APP_SECRET: ${{ secrets.APP_SECRET }}
+           APP_ENV: ${{ secrets.APP_ENV }}
+           APP_MIGRATIONS: ${{ secrets.APP_MIGRATIONS }}
+           APP_DSN: ${{ secrets.APP_DSN }}
+           POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+           POSTGRES_PASS: ${{ secrets.POSTGRES_PASS }}
+           POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+           POSTGRES_PORT: ${{ secrets.POSTGRES_PORT }}
         run: |
           docker-compose -f docker-compose.yml up -d
 
