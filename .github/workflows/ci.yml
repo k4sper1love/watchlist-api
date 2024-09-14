@@ -29,6 +29,11 @@ jobs:
       POSTGRES_PORT: ${{ secrets.POSTGRES_PORT }}
 
     steps:
+      - name: Print environment variables
+        run: |
+          echo "APP_PORT=${{ secrets.APP_PORT }}"
+          echo "POSTGRES_PORT=${{ secrets.POSTGRES_PORT }}"
+
       - name: Checkout code
         uses: actions/checkout@v3
 
