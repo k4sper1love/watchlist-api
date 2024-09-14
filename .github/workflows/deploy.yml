@@ -26,14 +26,6 @@ jobs:
           
           scp -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -r ./* ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/home/${{ secrets.SSH_USER }}/watchlist
 
-
-      - name: Run Postman tests
-        env:
-          BASE_URL: http://${{ secrets.SERVER_IP }}:${{ secrets.APP_PORT }}
-        run: |
-          newman run tests/postman/postman_collection.json \
-            --env-var "BASE_URL=$BASE_URL"
-
       - name: Commands to deploy
         run: |
           ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
@@ -84,3 +76,10 @@ jobs:
               echo "Newman is already installed"
             fi
           EOF
+
+      - name: Run Postman tests
+        env:
+          BASE_URL: http://${{ secrets.SERVER_IP }}:${{ secrets.APP_PORT }}
+        run: |
+          newman run tests/postman/postman_collection.json \
+            --env-var "BASE_URL=$BASE_URL"    
