@@ -78,8 +78,5 @@ jobs:
           EOF
 
       - name: Run Postman tests
-        env:
-          BASE_URL: http://${{ secrets.SERVER_IP }}:${{ secrets.APP_PORT }}
         run: |
-          newman run tests/postman/postman_collection.json \
-            --env-var "BASE_URL=$BASE_URL"    
+          newman run tests/postman/postman_collection.json --env-var "BASE_URL=http://${{ secrets.SERVER_IP }}:${{ secrets.APP_PORT }}"
