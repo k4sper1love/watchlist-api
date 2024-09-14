@@ -81,5 +81,5 @@ jobs:
         env:
           BASE_URL: http://${{ secrets.SSH_HOST }}:${{ secrets.APP_PORT }}
         run: |
-          newman run tests/collection.json \
+          newman run tests/postman_collection.json \
             --env-var "BASE_URL=$BASE_URL"
