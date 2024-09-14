@@ -7,7 +7,7 @@ env:
 on:
   workflow_run:
     workflows:
-      - Build
+      - "Build and Push Docker Image"
     types:
       - completed
 
