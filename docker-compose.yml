@@ -5,15 +5,16 @@ services:
       dockerfile: Dockerfile
     environment:
       APP_PORT: ${APP_PORT}
-      APP_SECRET: ${APP_SECRET}
-      APP_ENV: ${APP_ENV}
-      APP_MIGRATIONS: ${APP_MIGRATIONS}
       APP_DSN: ${APP_DSN}
+      APP_MIGRATIONS: ${APP_MIGRATIONS}
+      APP_ENV: ${APP_ENV}
+      APP_SECRET: ${APP_SECRET}
     ports:
       - "${APP_PORT}:${APP_PORT}"
     depends_on:
       db:
         condition: service_healthy
+
 
   db:
     image: postgres:latest
@@ -23,11 +24,11 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASS}
       POSTGRES_DB: ${POSTGRES_DB}
     ports:
-      - "${POSTGRES_PORT}:5432"
+      - "${POSTGRES_PORT}:${POSTGRES_PORT}"
     volumes:
       - pg-data:/var/lib/postgresql/data
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER}" ]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
       interval: 10s
       retries: 5
       start_period: 30s
