@@ -79,7 +79,9 @@ jobs:
 
       - name: Run Postman tests
         env:
-          BASE_URL: http://${{ secrets.SSH_HOST }}:${{ secrets.APP_PORT }}
+          BASE_URL: http://${{ secrets.SERVER_IP }}:${{ secrets.APP_PORT }}
         run: |
-          newman run tests/postman_collection.json \
-            --env-var "BASE_URL=$BASE_URL"
+          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
+            newman run /home/${{ secrets.SERVER_USER }}/watchlist/tests/postman_collection.json \
+              --env-var "BASE_URL=$BASE_URL"
+          EOF
