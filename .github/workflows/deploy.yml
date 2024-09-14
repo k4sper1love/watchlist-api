@@ -28,28 +28,27 @@ jobs:
           EOF
           scp -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -r ./* ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:/home/${{ secrets.SERVER_USER }}/watchlist
 
-      - name: Check and Install Docker and Docker Compose
+      - name: Check and Install Docker
         run: |
-          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
-            # Check and install Docker
-            if ! command -v docker &> /dev/null; then
-              echo "Docker not found, installing..."
-              curl -fsSL https://get.docker.com -o get-docker.sh
-              sudo sh get-docker.sh
-              sudo usermod -aG docker $USER
-            else
-              echo "Docker is already installed"
-            fi
+          if ! [-x "$(command -v docker"]; then
+           echo "Docker is not installed. Installing Docker..."
+           curl -fsSL https://get.docker.com -o get-docker.sh
+          sh get-docker.sh
+           sudo usermod -aG docker $USER
+          else
+            echo "Docker is already installed."
+          fi
 
-            # Check and install Docker Compose
-            if ! command -v docker-compose &> /dev/null; then
-              echo "Docker Compose not found, installing..."
-              sudo curl -L "https://github.com/docker/compose/releases/download/$(curl -s https://api.github.com/repos/docker/compose/releases/latest | grep '"tag_name"' | sed -E 's/.*"([^"]+)".*/\1/')" -o /usr/local/bin/docker-compose
-              sudo chmod +x /usr/local/bin/docker-compose
-            else
-              echo "Docker Compose is already installed"
-            fi
-          EOF
+      - name: Check and Install Docker Compose
+        run: |
+          if ! [-x "$(command -v docker-compose)"]; then
+            echo "Docker Compose is not installed. Installing Docker Compose..."
+            sudo curl -L "https://github.com/docker/compose/releases/download/$(curl -s https://api.github.com/repos/docker/compose/releases/latest | grep '"tag_name"' | sed -E 's/.*"([^"]+)".*/\1/')" \
+            -o /usr/local/bin/docker-compose
+            sudo chmod +x /usr/local/bin/docker-compose
+          else 
+            echo "Docker Compose is already installed."
+          fi
 
       - name: Commands to deploy
         run: |
