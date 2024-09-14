@@ -1,8 +1,8 @@
 services:
   app:
-    image: ${IMAGE_REF}
-    container_name: watchlist
-    restart: always
+    build:
+      context: .
+      dockerfile: Dockerfile
     environment:
       APP_PORT: ${APP_PORT}
       APP_DSN: ${APP_DSN}
