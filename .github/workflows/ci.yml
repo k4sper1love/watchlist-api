@@ -12,24 +12,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    services:
-      docker:
-        image: docker:20.10-dind
-        options: --privileged
-        ports:
-          - 5432:5432
-
-    env:
-      APP_PORT: ${{ secrets.APP_PORT }}
-      APP_SECRET: ${{ secrets.APP_SECRET }}
-      APP_ENV: ${{ secrets.APP_ENV }}
-      APP_MIGRATIONS: ${{ secrets.APP_MIGRATIONS }}
-      APP_DSN: ${{ secrets.APP_DSN }}
-      POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
-      POSTGRES_PASS: ${{ secrets.POSTGRES_PASS }}
-      POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
-      POSTGRES_PORT: ${{ secrets.POSTGRES_PORT }}
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -42,17 +24,26 @@ jobs:
           sudo curl -L "https://github.com/docker/compose/releases/download/v2.20.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
           sudo chmod +x /usr/local/bin/docker-compose    
 
-      - name: Build and push Docker images
+      - name: Print environment variables
+        run: |
+          echo "APP_PORT=${{ secrets.APP_PORT }}"
+          echo "POSTGRES_PORT=${{ secrets.POSTGRES_PORT }}"
+
+      - name: Build Docker images
         uses: docker/build-push-action@v4
         with:
           context: .
           push: false
-          tags: |
-            watchlist-app:latest
+          tags: watchlist-app:latest
 
       - name: Run Docker Compose
         run: |
           docker-compose -f docker-compose.yml up -d
+
+      - name: Run tests
+        run: |
+          # Замените на команду для запуска тестов
+          docker-compose exec -T app go test ./...
 
       - name: Shutdown Docker Compose
         run: |
