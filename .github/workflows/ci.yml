@@ -3,10 +3,10 @@ name: CI Watchlist
 on:
   push:
     branches:
-      - main
+      - ci/cd
   pull_request:
     branches:
-      - main
+      - ci/cd
 
 jobs:
   build:
@@ -20,7 +20,7 @@ jobs:
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
           POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
         ports:
-          - ${{ secrets.POSTGRES_PORT }}:5432
+          - 5432:5432
         options: >-
           --health-cmd="pg_isready"
           --health-interval=10s
