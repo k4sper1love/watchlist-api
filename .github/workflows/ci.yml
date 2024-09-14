@@ -51,7 +51,3 @@ jobs:
 
       - name: Run Docker Compose
         run: docker-compose -f docker-compose.yml up -d
-
-      - name: Stop and remove Docker Compose containers
-        run: |
-          docker-compose -f docker-compose.yml down
