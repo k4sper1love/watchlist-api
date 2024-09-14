@@ -5,10 +5,7 @@ env:
   IMAGE_NAME: ${{ github.repository }}
 
 on:
-  workflow_run:
-    workflows: ["build"]
-    types:
-      - completed
+  workflow_dispatch:
 
 jobs:
   deploy:
