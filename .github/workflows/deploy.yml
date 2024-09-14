@@ -21,13 +21,6 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      - name: Copy project to server
-        run: |
-          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
-            mkdir -p /home/${{ secrets.SERVER_USER }}/watchlist
-          EOF
-          scp -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -r ./* ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:/home/${{ secrets.SERVER_USER }}/watchlist
-
       - name: Check and Install Docker
         run: |
           if ! [ -x "$(command -v docker)" ]; then
@@ -38,18 +31,25 @@ jobs:
           else
             echo "Docker is already installed."
           fi
-    
 
-      - name: Check and Install Docker Compose
+
+      - name: Check Docker Compose installation
+        id: check-docker-compose
         run: |
-          if ! [ -x "$(command -v docker-compose)" ]; then
-            echo "Docker Compose is not installed. Installing Docker Compose..."
-            sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-            sudo chmod +x /usr/local/bin/docker-compose
-          else 
+          if ! command -v docker-compose &> /dev/null; then
+            echo "Docker Compose not found, installing..."
+            sudo apt-get update
+            sudo apt-get install -y docker-compose
+          else
             echo "Docker Compose is already installed."
           fi
-      
+
+      - name: Copy project to server
+        run: |
+          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
+            mkdir -p /home/${{ secrets.SERVER_USER }}/watchlist
+          EOF
+          scp -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -r ./* ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:/home/${{ secrets.SERVER_USER }}/watchlist
 
       - name: Commands to deploy
         run: |
