@@ -1,4 +1,4 @@
-name: Deploy to Server
+name: Deploy
 
 env:
   REGISTRY: ghcr.io
@@ -6,8 +6,7 @@ env:
 
 on:
   workflow_run:
-    workflows:
-      - Build and Push Docker Image
+    workflows: ["Build"]
     types:
       - completed
 
