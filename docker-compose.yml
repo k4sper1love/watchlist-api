@@ -3,8 +3,12 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    env_file:
-      - .env
+    environment:
+      APP_PORT: ${APP_PORT}
+      APP_SECRET: ${APP_SECRET}
+      APP_ENV: ${APP_ENV}
+      APP_MIGRATIONS: ${APP_MIGRATIONS}
+      APP_DSN: ${APP_DSN}
     ports:
       - "${APP_PORT}:${APP_PORT}"
     depends_on:
@@ -13,8 +17,10 @@ services:
   db:
     image: postgres:latest
     restart: always
-    env_file:
-      - .env
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASS}
+      POSTGRES_ DB: ${POSTGRES_DB}
     ports:
       - "${POSTGRES_PORT}:5432"
     volumes:

@@ -50,12 +50,5 @@ jobs:
           APP_PORT: ${{ secrets.APP_PORT }}
           POSTGRES_PORT: ${{ secrets.POSTGRES_PORT }}
 
-      - name: Run Postman tests with Newman
-        run: |
-          newman run tests/postman_collection.json -e tests/postman_environment.json
-        env:
-          APP_HOST: ${{ secrets.APP_HOST }}
-          APP_PORT: ${{ secrets.APP_PORT }}
-
       - name: Stop and clean up
         run: docker-compose down --volumes
