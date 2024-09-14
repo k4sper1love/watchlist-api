@@ -5,7 +5,9 @@ env:
   IMAGE_NAME: ${{ github.repository }}
 
 on:
-  workflow_dispatch
+  push:
+    branches:
+      - ci/cd
 
 jobs:
   deploy:
