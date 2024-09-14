@@ -1,14 +1,61 @@
-name: Test
+name: Deploy
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
 
 on:
-  push:
-    branches:
-      - ci/cd
+  workflow_run:
+    workflows: ["Build"]
+    types:
+      - completed
 
 jobs:
-  test:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Print Hello World
-        run: echo "Hello, world!"
+      - name: Checkout code
+        uses: actions/checkout@v4.1.1
+        env:
+          GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
+        with:
+          fetch-depth: 0
+
+      - name: Install ssh keys
+        run: |
+          install -m 600 -D /dev/null ~/.ssh/id_rsa
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.SSH_HOST }} > ~/.ssh/known_hosts
+          docker context create remote --docker host=ssh://${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@9ec57ed1fcdbf14dcef7dfbe97b2010124a938b7
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3.0.0
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GIT_TOKEN }}
+
+      - name: Docker compose
+        env:
+          IMAGE_REF: ${{ steps.meta.outputs.tags }}
+          APP_PORT: ${{ secrets.APP_PORT }}
+          APP_SECRET: ${{ secrets.APP_SECRET }}
+          APP_ENV: ${{ secrets.APP_ENV }}
+          APP_MIGRATIONS: ${{ secrets.APP_MIGRATIONS }}
+          APP_DSN: ${{ secrets.APP_DSN }}
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+          POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
+        run:
+          docker-compose --context remote -f docker-compose.yml up -d
+
+      - name: cleanup
+        run: rm -rf ~/.ssh
