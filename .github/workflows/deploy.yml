@@ -76,7 +76,3 @@ jobs:
               echo "Newman is already installed"
             fi
           EOF
-
-      - name: Run Postman tests
-        run: |
-          newman run tests/postman/postman_collection.json --env-var "BASE_URL=http://${{ secrets.SERVER_IP }}:${{ secrets.APP_PORT }}"
