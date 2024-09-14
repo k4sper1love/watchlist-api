@@ -44,6 +44,14 @@ jobs:
             echo "Docker Compose is already installed."
           fi
 
+      - name: Debug Docker Compose
+        run: |
+          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
+          docker-compose version
+          docker version
+          docker info
+          EOF
+
       - name: Copy project to server
         run: |
           ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
