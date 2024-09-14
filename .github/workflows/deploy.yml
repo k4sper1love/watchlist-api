@@ -3,10 +3,7 @@ name: Deploy to Server
 on:
   push:
     branches:
-      - ci/cd
-  pull_request:
-    branches:
-      - ci/cd
+      - main
 
 jobs:
   deploy:
@@ -17,19 +14,32 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Set up SSH
-        uses: webfactory/ssh-agent@v0.6.0
+        uses: webfactory/ssh-agent@v0.7.0
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
       - name: Copy Docker files to server
         run: |
-          scp -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -r ./* username@server_ip:/home/root/watchlist
+          scp -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -r ./* ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:/home/root/watchlist
 
       - name: SSH commands to deploy
         run: |
-          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no username@server_ip << 'EOF'
-          cd /home/root/watchlist
-          docker-compose down
-          docker-compose build --no-cache
-          docker-compose up -d
+          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
+            cd /home/root/watchlist
+          
+            # Export environment variables
+            export APP_PORT=${{ secrets.APP_PORT }}
+            export APP_SECRET=${{ secrets.APP_SECRET }}
+            export APP_ENV=${{ secrets.APP_ENV }}
+            export APP_MIGRATIONS=${{ secrets.APP_MIGRATIONS }}
+            export APP_DSN=${{ secrets.APP_DSN }}
+            export POSTGRES_USER=${{ secrets.POSTGRES_USER }}
+            export POSTGRES_PASS=${{ secrets.POSTGRES_PASS }}
+            export POSTGRES_DB=${{ secrets.POSTGRES_DB }}
+            export POSTGRES_PORT=${{ secrets.POSTGRES_PORT }}
+
+            # Deploy with Docker Compose
+            docker-compose down
+            docker-compose build --no-cache
+            docker-compose up -d
           EOF
