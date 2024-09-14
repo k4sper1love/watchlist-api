@@ -26,18 +26,13 @@ jobs:
           
           scp -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -r ./* ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/home/${{ secrets.SSH_USER }}/watchlist
 
-      - name: Copy Postman collection to server
-        run: |
-          scp -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no tests/postman/postman_collection.json ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/home/${{ secrets.SSH_USER }}/watchlist/tests/postman_collection.json
 
       - name: Run Postman tests
         env:
           BASE_URL: http://${{ secrets.SERVER_IP }}:${{ secrets.APP_PORT }}
         run: |
-          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
-            newman run /home/${{ secrets.SSH_USER }}/watchlist/tests/postman_collection.json \
-              --env-var "BASE_URL=$BASE_URL"
-          EOF
+          newman run tests/postman/collection.json \
+            --env-var "BASE_URL=$BASE_URL"
 
       - name: Commands to deploy
         run: |
