@@ -28,7 +28,7 @@ jobs:
 
       - name: Copy Postman collection to server
         run: |
-          scp -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no tests/postman_collection.json ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/home/${{ secrets.SSH_USER }}/watchlist/tests/postman_collection.json
+          scp -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no tests/postman/postman_collection.json ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/home/${{ secrets.SSH_USER }}/watchlist/tests/postman_collection.json
 
       - name: Run Postman tests
         env:
