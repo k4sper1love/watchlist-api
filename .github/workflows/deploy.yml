@@ -38,7 +38,7 @@ jobs:
             export APP_MIGRATIONS=${{ secrets.APP_MIGRATIONS }}  
             export APP_DSN=${{ secrets.APP_DSN }}  
             export POSTGRES_USER=${{ secrets.POSTGRES_USER }}  
-            export POSTGRES_PASS=${{ secrets.POSTGRES_PASS }}  
+            export POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}  
             export POSTGRES_DB=${{ secrets.POSTGRES_DB }}  
             export POSTGRES_PORT=${{ secrets.POSTGRES_PORT }}
           
