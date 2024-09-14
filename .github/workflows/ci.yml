@@ -51,3 +51,10 @@ jobs:
 
       - name: Run Docker Compose
         run: docker-compose -f docker-compose.yml up -d
+
+      - name: Wait for application to start
+        run: sleep 10
+
+      - name: Check application health
+        run: |
+          curl -f http://localhost:${{ secrets.APP_PORT }}/apv/v1/healthcheck || exit 1
