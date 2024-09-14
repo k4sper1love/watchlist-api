@@ -40,13 +40,17 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
-      - name: Build and push Docker images
+      - name: Install Docker Compose
         run: |
-          docker-compose -f docker-compose.yml build --no-cache
+          sudo curl -L "https://github.com/docker/compose/releases/download/$(curl -s https://api.github.com/repos/docker/compose/releases/latest | grep 'tag_name' | cut -d\" -f4)/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+          sudo chmod +x /usr/local/bin/docker-compose
+          docker-compose --version
+
+      - name: Build Docker images
+        run: docker-compose -f docker-compose.yml build --no-cache
 
       - name: Run Docker Compose
-        run: |
-          docker-compose -f docker-compose.yml up -d
+        run: docker-compose -f docker-compose.yml up -d
 
       - name: Stop and remove Docker Compose containers
         run: |
