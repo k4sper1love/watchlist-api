@@ -5,9 +5,8 @@ env:
   IMAGE_NAME: ${{ github.repository }}
 
 on:
-  push:
-    branches:
-      - ci/cd
+  workflow_dispatch
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
