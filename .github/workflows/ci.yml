@@ -57,4 +57,4 @@ jobs:
 
       - name: Check application health
         run: |
-          curl -f http://localhost:${{ secrets.APP_PORT }}/apv/v1/healthcheck || exit 1
+          curl -f http://localhost:${{ secrets.APP_PORT }}/api/v1/healthcheck || exit 1
