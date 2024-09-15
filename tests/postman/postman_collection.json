@@ -2,7 +2,7 @@
 	"info": {
 		"_postman_id": "cd48afb6-52bc-4ae3-8f8e-7ecdf4792a7f",
 		"name": "wishlist-api",
-		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "37771019"
 	},
 	"item": [
@@ -56,7 +56,17 @@
 					"request": {
 						"method": "GET",
 						"header": [],
-						"url": "{{BASE_URL}}/api/v1/healthcheck"
+						"url": {
+							"raw": "{{BASE_URL}}/api/v1/healthcheck",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"healthcheck"
+							]
+						}
 					},
 					"response": []
 				}
@@ -77,9 +87,9 @@
 									"    var refreshToken = pm.response.json().user.refresh_token;",
 									"    var email = pm.response.json().user.email",
 									"",
-									"    pm.collectionVariables.set(\"ACCESS_TOKEN\", accessToken);",
-									"    pm.collectionVariables.set(\"REFRESH_TOKEN\", refreshToken);",
-									"    pm.collectionVariables.set(\"EMAIL\", email)",
+									"    pm.environment.set(\"ACCESS_TOKEN\", accessToken);",
+									"    pm.environment.set(\"REFRESH_TOKEN\", refreshToken);",
+									"    pm.environment.set(\"EMAIL\", email)",
 									"}",
 									"pm.test(\"Response status code is 201\", function () {",
 									"    pm.response.to.have.status(201);",
@@ -138,7 +148,18 @@
 								}
 							}
 						},
-						"url": "{{BASE_URL}}/api/v1/auth/register"
+						"url": {
+							"raw": "{{BASE_URL}}/api/v1/auth/register",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"register"
+							]
+						}
 					},
 					"response": []
 				},
@@ -149,11 +170,11 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (pm.response.code === 200) {\r",
-									"    var accessToken = pm.response.json().access_token;\r",
-									"\r",
-									"    pm.collectionVariables.set(\"ACCESS_TOKEN\", accessToken);\r",
-									"}\r",
+									"if (pm.response.code === 200) {",
+									"    var accessToken = pm.response.json().access_token;",
+									"",
+									"    pm.environment.set(\"ACCESS_TOKEN\", accessToken);",
+									"}",
 									"",
 									"pm.test(\"Response status code is 200\", function () {",
 									"    pm.expect(pm.response.code).to.equal(200);",
@@ -183,22 +204,46 @@
 									"  pm.expect(pm.response.responseTime).to.be.below(500);",
 									"});"
 								],
-								"type": "text/javascript"
+								"type": "text/javascript",
+								"packages": {}
 							}
 						}
 					],
 					"request": {
 						"auth": {
 							"type": "oauth2",
-							"oauth2": {
-								"headerPrefix": "Bearer",
-								"tokenType": "",
-								"addTokenTo": "header"
-							}
+							"oauth2": [
+								{
+									"key": "headerPrefix",
+									"value": "Bearer",
+									"type": "string"
+								},
+								{
+									"key": "tokenType",
+									"value": "",
+									"type": "string"
+								},
+								{
+									"key": "addTokenTo",
+									"value": "header",
+									"type": "string"
+								}
+							]
 						},
 						"method": "POST",
 						"header": [],
-						"url": "{{BASE_URL}}/api/v1/auth/refresh"
+						"url": {
+							"raw": "{{BASE_URL}}/api/v1/auth/refresh",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"refresh"
+							]
+						}
 					},
 					"response": []
 				},
@@ -247,15 +292,38 @@
 					"request": {
 						"auth": {
 							"type": "oauth2",
-							"oauth2": {
-								"headerPrefix": "Bearer",
-								"tokenType": "",
-								"addTokenTo": "header"
-							}
+							"oauth2": [
+								{
+									"key": "headerPrefix",
+									"value": "Bearer",
+									"type": "string"
+								},
+								{
+									"key": "tokenType",
+									"value": "",
+									"type": "string"
+								},
+								{
+									"key": "addTokenTo",
+									"value": "header",
+									"type": "string"
+								}
+							]
 						},
 						"method": "POST",
 						"header": [],
-						"url": "{{BASE_URL}}/api/v1/auth/logout"
+						"url": {
+							"raw": "{{BASE_URL}}/api/v1/auth/logout",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"logout"
+							]
+						}
 					},
 					"response": []
 				},
@@ -266,14 +334,14 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (pm.response.code == 200) {\r",
-									"    var accessToken = pm.response.json().user.access_token;\r",
-									"    var refreshToken = pm.response.json().user.refresh_token;\r",
-									"\r",
-									"    pm.collectionVariables.set(\"ACCESS_TOKEN\", accessToken);\r",
-									"    pm.collectionVariables.set(\"REFRESH_TOKEN\", refreshToken);\r",
-									"\r",
-									"    console.log(accessToken, refreshToken) ;\r",
+									"if (pm.response.code == 200) {",
+									"    var accessToken = pm.response.json().user.access_token;",
+									"    var refreshToken = pm.response.json().user.refresh_token;",
+									"",
+									"    pm.environment.set(\"ACCESS_TOKEN\", accessToken);",
+									"    pm.environment.set(\"REFRESH_TOKEN\", refreshToken);",
+									"",
+									"    console.log(accessToken, refreshToken) ;",
 									"}",
 									"pm.test(\"Response status code is 200\", function () {",
 									"    pm.response.to.have.status(200);",
@@ -313,7 +381,8 @@
 									"  pm.expect(responseData.user.refresh_token).to.be.a('string').and.to.have.lengthOf.at.least(1, \"Refresh token should not be empty\");",
 									"});"
 								],
-								"type": "text/javascript"
+								"type": "text/javascript",
+								"packages": {}
 							}
 						}
 					],
@@ -329,7 +398,18 @@
 								}
 							}
 						},
-						"url": "{{BASE_URL}}/api/v1/auth/login"
+						"url": {
+							"raw": "{{BASE_URL}}/api/v1/auth/login",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"login"
+							]
+						}
 					},
 					"response": []
 				},
@@ -375,16 +455,42 @@
 					"request": {
 						"auth": {
 							"type": "oauth2",
-							"oauth2": {
-								"headerPrefix": "Bearer",
-								"tokenType": "",
-								"accessToken": "",
-								"addTokenTo": "header"
-							}
+							"oauth2": [
+								{
+									"key": "headerPrefix",
+									"value": "Bearer",
+									"type": "string"
+								},
+								{
+									"key": "tokenType",
+									"value": "",
+									"type": "string"
+								},
+								{
+									"key": "accessToken",
+									"value": "",
+									"type": "string"
+								},
+								{
+									"key": "addTokenTo",
+									"value": "header",
+									"type": "string"
+								}
+							]
 						},
 						"method": "GET",
 						"header": [],
-						"url": "{{BASE_URL}}/api/v1/user"
+						"url": {
+							"raw": "{{BASE_URL}}/api/v1/user",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"user"
+							]
+						}
 					},
 					"response": []
 				},
@@ -430,11 +536,23 @@
 					"request": {
 						"auth": {
 							"type": "oauth2",
-							"oauth2": {
-								"tokenType": "",
-								"accessToken": "",
-								"addTokenTo": "header"
-							}
+							"oauth2": [
+								{
+									"key": "tokenType",
+									"value": "",
+									"type": "string"
+								},
+								{
+									"key": "accessToken",
+									"value": "",
+									"type": "string"
+								},
+								{
+									"key": "addTokenTo",
+									"value": "header",
+									"type": "string"
+								}
+							]
 						},
 						"method": "PUT",
 						"header": [],
@@ -447,7 +565,17 @@
 								}
 							}
 						},
-						"url": "{{BASE_URL}}/api/v1/user"
+						"url": {
+							"raw": "{{BASE_URL}}/api/v1/user",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"user"
+							]
+						}
 					},
 					"response": []
 				}
@@ -466,7 +594,7 @@
 									"if (pm.response.code == 201) {\r",
 									"    var jsonData = pm.response.json().film.id;\r",
 									"\r",
-									"    pm.collectionVariables.set(\"FILM_ID\", jsonData);\r",
+									"    pm.environment.set(\"FILM_ID\", jsonData);\r",
 									"}\r",
 									"\r",
 									"pm.test(\"Response status code is 201\", function () {\r",
@@ -509,10 +637,18 @@
 					"request": {
 						"auth": {
 							"type": "oauth2",
-							"oauth2": {
-								"tokenType": "",
-								"addTokenTo": "header"
-							}
+							"oauth2": [
+								{
+									"key": "tokenType",
+									"value": "",
+									"type": "string"
+								},
+								{
+									"key": "addTokenTo",
+									"value": "header",
+									"type": "string"
+								}
+							]
 						},
 						"method": "POST",
 						"header": [],
@@ -525,7 +661,17 @@
 								}
 							}
 						},
-						"url": "{{BASE_URL}}/api/v1/films"
+						"url": {
+							"raw": "{{BASE_URL}}/api/v1/films",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"films"
+							]
+						}
 					},
 					"response": []
 				},
@@ -594,15 +740,37 @@
 					"request": {
 						"auth": {
 							"type": "oauth2",
-							"oauth2": {
-								"tokenType": "",
-								"accessToken": "",
-								"addTokenTo": "header"
-							}
+							"oauth2": [
+								{
+									"key": "tokenType",
+									"value": "",
+									"type": "string"
+								},
+								{
+									"key": "accessToken",
+									"value": "",
+									"type": "string"
+								},
+								{
+									"key": "addTokenTo",
+									"value": "header",
+									"type": "string"
+								}
+							]
 						},
 						"method": "GET",
 						"header": [],
-						"url": "{{BASE_URL}}/api/v1/films"
+						"url": {
+							"raw": "{{BASE_URL}}/api/v1/films",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"films"
+							]
+						}
 					},
 					"response": []
 				},
@@ -666,11 +834,23 @@
 					"request": {
 						"auth": {
 							"type": "oauth2",
-							"oauth2": {
-								"tokenType": "",
-								"accessToken": "",
-								"addTokenTo": "header"
-							}
+							"oauth2": [
+								{
+									"key": "tokenType",
+									"value": "",
+									"type": "string"
+								},
+								{
+									"key": "accessToken",
+									"value": "",
+									"type": "string"
+								},
+								{
+									"key": "addTokenTo",
+									"value": "header",
+									"type": "string"
+								}
+							]
 						},
 						"method": "GET",
 						"header": [],
@@ -762,15 +942,38 @@
 					"request": {
 						"auth": {
 							"type": "oauth2",
-							"oauth2": {
-								"headerPrefix": "Bearer",
-								"tokenType": "",
-								"addTokenTo": "header"
-							}
+							"oauth2": [
+								{
+									"key": "headerPrefix",
+									"value": "Bearer",
+									"type": "string"
+								},
+								{
+									"key": "tokenType",
+									"value": "",
+									"type": "string"
+								},
+								{
+									"key": "addTokenTo",
+									"value": "header",
+									"type": "string"
+								}
+							]
 						},
 						"method": "GET",
 						"header": [],
-						"url": "{{BASE_URL}}/api/v1/films/{{FILM_ID}}"
+						"url": {
+							"raw": "{{BASE_URL}}/api/v1/films/{{FILM_ID}}",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"films",
+								"{{FILM_ID}}"
+							]
+						}
 					},
 					"response": []
 				},
@@ -825,10 +1028,18 @@
 					"request": {
 						"auth": {
 							"type": "oauth2",
-							"oauth2": {
-								"tokenType": "",
-								"addTokenTo": "header"
-							}
+							"oauth2": [
+								{
+									"key": "tokenType",
+									"value": "",
+									"type": "string"
+								},
+								{
+									"key": "addTokenTo",
+									"value": "header",
+									"type": "string"
+								}
+							]
 						},
 						"method": "PUT",
 						"header": [],
@@ -841,7 +1052,18 @@
 								}
 							}
 						},
-						"url": "{{BASE_URL}}/api/v1/films/{{FILM_ID}}"
+						"url": {
+							"raw": "{{BASE_URL}}/api/v1/films/{{FILM_ID}}",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"films",
+								"{{FILM_ID}}"
+							]
+						}
 					},
 					"response": []
 				}
@@ -859,7 +1081,7 @@
 								"exec": [
 									"if (pm.response.code === 201) {\r",
 									"    var jsonData = pm.response.json().collection.id;\r",
-									"    pm.collectionVariables.set(\"COLLECTION_ID\", jsonData);\r",
+									"    pm.environment.set(\"COLLECTION_ID\", jsonData);\r",
 									"}\r",
 									"\r",
 									"pm.test(\"Response status code is 201\", function () {\r",
@@ -900,10 +1122,18 @@
 					"request": {
 						"auth": {
 							"type": "oauth2",
-							"oauth2": {
-								"tokenType": "",
-								"addTokenTo": "header"
-							}
+							"oauth2": [
+								{
+									"key": "tokenType",
+									"value": "",
+									"type": "string"
+								},
+								{
+									"key": "addTokenTo",
+									"value": "header",
+									"type": "string"
+								}
+							]
 						},
 						"method": "POST",
 						"header": [],
@@ -916,7 +1146,17 @@
 								}
 							}
 						},
-						"url": "{{BASE_URL}}/api/v1/collections"
+						"url": {
+							"raw": "{{BASE_URL}}/api/v1/collections",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"collections"
+							]
+						}
 					},
 					"response": []
 				},
@@ -976,10 +1216,18 @@
 					"request": {
 						"auth": {
 							"type": "oauth2",
-							"oauth2": {
-								"tokenType": "",
-								"addTokenTo": "header"
-							}
+							"oauth2": [
+								{
+									"key": "tokenType",
+									"value": "",
+									"type": "string"
+								},
+								{
+									"key": "addTokenTo",
+									"value": "header",
+									"type": "string"
+								}
+							]
 						},
 						"method": "GET",
 						"header": [],
@@ -1059,10 +1307,18 @@
 					"request": {
 						"auth": {
 							"type": "oauth2",
-							"oauth2": {
-								"tokenType": "",
-								"addTokenTo": "header"
-							}
+							"oauth2": [
+								{
+									"key": "tokenType",
+									"value": "",
+									"type": "string"
+								},
+								{
+									"key": "addTokenTo",
+									"value": "header",
+									"type": "string"
+								}
+							]
 						},
 						"method": "GET",
 						"header": [],
@@ -1142,14 +1398,33 @@
 					"request": {
 						"auth": {
 							"type": "oauth2",
-							"oauth2": {
-								"tokenType": "",
-								"addTokenTo": "header"
-							}
+							"oauth2": [
+								{
+									"key": "tokenType",
+									"value": "",
+									"type": "string"
+								},
+								{
+									"key": "addTokenTo",
+									"value": "header",
+									"type": "string"
+								}
+							]
 						},
 						"method": "GET",
 						"header": [],
-						"url": "{{BASE_URL}}/api/v1/collections/{{COLLECTION_ID}}"
+						"url": {
+							"raw": "{{BASE_URL}}/api/v1/collections/{{COLLECTION_ID}}",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"collections",
+								"{{COLLECTION_ID}}"
+							]
+						}
 					},
 					"response": []
 				},
@@ -1207,10 +1482,18 @@
 					"request": {
 						"auth": {
 							"type": "oauth2",
-							"oauth2": {
-								"tokenType": "",
-								"addTokenTo": "header"
-							}
+							"oauth2": [
+								{
+									"key": "tokenType",
+									"value": "",
+									"type": "string"
+								},
+								{
+									"key": "addTokenTo",
+									"value": "header",
+									"type": "string"
+								}
+							]
 						},
 						"method": "PUT",
 						"header": [],
@@ -1223,7 +1506,18 @@
 								}
 							}
 						},
-						"url": "{{BASE_URL}}/api/v1/collections/{{COLLECTION_ID}}"
+						"url": {
+							"raw": "{{BASE_URL}}/api/v1/collections/{{COLLECTION_ID}}",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"collections",
+								"{{COLLECTION_ID}}"
+							]
+						}
 					},
 					"response": []
 				}
@@ -1279,10 +1573,18 @@
 					"request": {
 						"auth": {
 							"type": "oauth2",
-							"oauth2": {
-								"tokenType": "",
-								"addTokenTo": "header"
-							}
+							"oauth2": [
+								{
+									"key": "tokenType",
+									"value": "",
+									"type": "string"
+								},
+								{
+									"key": "addTokenTo",
+									"value": "header",
+									"type": "string"
+								}
+							]
 						},
 						"method": "POST",
 						"header": [],
@@ -1295,7 +1597,20 @@
 								}
 							}
 						},
-						"url": "{{BASE_URL}}/api/v1/collections/{{COLLECTION_ID}}/films/{{FILM_ID}}"
+						"url": {
+							"raw": "{{BASE_URL}}/api/v1/collections/{{COLLECTION_ID}}/films/{{FILM_ID}}",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"collections",
+								"{{COLLECTION_ID}}",
+								"films",
+								"{{FILM_ID}}"
+							]
+						}
 					},
 					"response": []
 				},
@@ -1351,14 +1666,34 @@
 					"request": {
 						"auth": {
 							"type": "oauth2",
-							"oauth2": {
-								"tokenType": "",
-								"addTokenTo": "header"
-							}
+							"oauth2": [
+								{
+									"key": "tokenType",
+									"value": "",
+									"type": "string"
+								},
+								{
+									"key": "addTokenTo",
+									"value": "header",
+									"type": "string"
+								}
+							]
 						},
 						"method": "GET",
 						"header": [],
-						"url": "{{BASE_URL}}/api/v1/collections/{{COLLECTION_ID}}/films"
+						"url": {
+							"raw": "{{BASE_URL}}/api/v1/collections/{{COLLECTION_ID}}/films",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"collections",
+								"{{COLLECTION_ID}}",
+								"films"
+							]
+						}
 					},
 					"response": []
 				},
@@ -1412,10 +1747,18 @@
 					"request": {
 						"auth": {
 							"type": "oauth2",
-							"oauth2": {
-								"tokenType": "",
-								"addTokenTo": "header"
-							}
+							"oauth2": [
+								{
+									"key": "tokenType",
+									"value": "",
+									"type": "string"
+								},
+								{
+									"key": "addTokenTo",
+									"value": "header",
+									"type": "string"
+								}
+							]
 						},
 						"method": "GET",
 						"header": [],
@@ -1507,14 +1850,35 @@
 					"request": {
 						"auth": {
 							"type": "oauth2",
-							"oauth2": {
-								"tokenType": "",
-								"addTokenTo": "header"
-							}
+							"oauth2": [
+								{
+									"key": "tokenType",
+									"value": "",
+									"type": "string"
+								},
+								{
+									"key": "addTokenTo",
+									"value": "header",
+									"type": "string"
+								}
+							]
 						},
 						"method": "GET",
 						"header": [],
-						"url": "{{BASE_URL}}/api/v1/collections/{{COLLECTION_ID}}/films/{{FILM_ID}}"
+						"url": {
+							"raw": "{{BASE_URL}}/api/v1/collections/{{COLLECTION_ID}}/films/{{FILM_ID}}",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"collections",
+								"{{COLLECTION_ID}}",
+								"films",
+								"{{FILM_ID}}"
+							]
+						}
 					},
 					"response": []
 				},
@@ -1571,10 +1935,18 @@
 					"request": {
 						"auth": {
 							"type": "oauth2",
-							"oauth2": {
-								"tokenType": "",
-								"addTokenTo": "header"
-							}
+							"oauth2": [
+								{
+									"key": "tokenType",
+									"value": "",
+									"type": "string"
+								},
+								{
+									"key": "addTokenTo",
+									"value": "header",
+									"type": "string"
+								}
+							]
 						},
 						"method": "PUT",
 						"header": [],
@@ -1587,7 +1959,20 @@
 								}
 							}
 						},
-						"url": "{{BASE_URL}}/api/v1/collections/{{COLLECTION_ID}}/films/{{FILM_ID}}"
+						"url": {
+							"raw": "{{BASE_URL}}/api/v1/collections/{{COLLECTION_ID}}/films/{{FILM_ID}}",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"collections",
+								"{{COLLECTION_ID}}",
+								"films",
+								"{{FILM_ID}}"
+							]
+						}
 					},
 					"response": []
 				}
@@ -1643,14 +2028,35 @@
 					"request": {
 						"auth": {
 							"type": "oauth2",
-							"oauth2": {
-								"tokenType": "",
-								"addTokenTo": "header"
-							}
+							"oauth2": [
+								{
+									"key": "tokenType",
+									"value": "",
+									"type": "string"
+								},
+								{
+									"key": "addTokenTo",
+									"value": "header",
+									"type": "string"
+								}
+							]
 						},
 						"method": "DELETE",
 						"header": [],
-						"url": "{{BASE_URL}}/api/v1/collections/{{COLLECTION_ID}}/films/{{FILM_ID}}"
+						"url": {
+							"raw": "{{BASE_URL}}/api/v1/collections/{{COLLECTION_ID}}/films/{{FILM_ID}}",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"collections",
+								"{{COLLECTION_ID}}",
+								"films",
+								"{{FILM_ID}}"
+							]
+						}
 					},
 					"response": []
 				},
@@ -1699,14 +2105,33 @@
 					"request": {
 						"auth": {
 							"type": "oauth2",
-							"oauth2": {
-								"tokenType": "",
-								"addTokenTo": "header"
-							}
+							"oauth2": [
+								{
+									"key": "tokenType",
+									"value": "",
+									"type": "string"
+								},
+								{
+									"key": "addTokenTo",
+									"value": "header",
+									"type": "string"
+								}
+							]
 						},
 						"method": "DELETE",
 						"header": [],
-						"url": "{{BASE_URL}}/api/v1/collections/{{COLLECTION_ID}}"
+						"url": {
+							"raw": "{{BASE_URL}}/api/v1/collections/{{COLLECTION_ID}}",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"collections",
+								"{{COLLECTION_ID}}"
+							]
+						}
 					},
 					"response": []
 				},
@@ -1756,14 +2181,33 @@
 					"request": {
 						"auth": {
 							"type": "oauth2",
-							"oauth2": {
-								"tokenType": "",
-								"addTokenTo": "header"
-							}
+							"oauth2": [
+								{
+									"key": "tokenType",
+									"value": "",
+									"type": "string"
+								},
+								{
+									"key": "addTokenTo",
+									"value": "header",
+									"type": "string"
+								}
+							]
 						},
 						"method": "DELETE",
 						"header": [],
-						"url": "{{BASE_URL}}/api/v1/films/{{FILM_ID}}"
+						"url": {
+							"raw": "{{BASE_URL}}/api/v1/films/{{FILM_ID}}",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"films",
+								"{{FILM_ID}}"
+							]
+						}
 					},
 					"response": []
 				},
@@ -1813,15 +2257,37 @@
 					"request": {
 						"auth": {
 							"type": "oauth2",
-							"oauth2": {
-								"tokenType": "",
-								"accessToken": "",
-								"addTokenTo": "header"
-							}
+							"oauth2": [
+								{
+									"key": "tokenType",
+									"value": "",
+									"type": "string"
+								},
+								{
+									"key": "accessToken",
+									"value": "",
+									"type": "string"
+								},
+								{
+									"key": "addTokenTo",
+									"value": "header",
+									"type": "string"
+								}
+							]
 						},
 						"method": "DELETE",
 						"header": [],
-						"url": "{{BASE_URL}}/api/v1/user"
+						"url": {
+							"raw": "{{BASE_URL}}/api/v1/user",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"user"
+							]
+						}
 					},
 					"response": []
 				}
@@ -1852,44 +2318,16 @@
 	],
 	"variable": [
 		{
-			"key": "BASE_URL",
-			"value": "http://localhost:8001",
-			"type": "string"
-		},
-		{
 			"key": "ACCESS_TOKEN",
-			"value": "",
-			"type": "string"
+			"value": ""
 		},
 		{
 			"key": "REFRESH_TOKEN",
-			"value": "",
-			"type": "string"
-		},
-		{
-			"key": "FILM_ID",
-			"value": "1",
-			"type": "string"
-		},
-		{
-			"key": "COLLECTION_ID",
-			"value": "1",
-			"type": "string"
-		},
-		{
-			"key": "COLLECTION_FILM_ID",
-			"value": "1",
-			"type": "string"
-		},
-		{
-			"key": "USERNAME",
-			"value": "",
-			"type": "string"
+			"value": ""
 		},
 		{
 			"key": "EMAIL",
-			"value": "",
-			"type": "string"
+			"value": ""
 		}
 	]
 }
