@@ -15,6 +15,7 @@ services:
       dockerfile: Dockerfile
     <<: *default-logging
     environment:
+      SERVER_IP: ${SERVER_IP:-localhost}
       APP_PORT: ${APP_PORT}
       APP_DSN: ${APP_DSN}
       APP_MIGRATIONS: ${APP_MIGRATIONS}

@@ -16,7 +16,6 @@ import (
 // Serve starts the HTTP server and handles graceful shutdown on receiving termination signals.
 // It listens for incoming HTTP requests and routes them using the configured route handler.
 // Returns an error if the server encounters a problem or fails to shut down gracefully.
-
 func Serve() error {
 	address := fmt.Sprintf(":%d", config.Port)
 

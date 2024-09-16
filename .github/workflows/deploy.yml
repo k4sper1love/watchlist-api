@@ -50,6 +50,7 @@ jobs:
             cd /home/${{ secrets.SSH_USER }}/watchlist
           
             # Export environment variables 
+            export SERVER_IP=${{ secrets.SSH_HOST }}
             export APP_PORT=${{ secrets.APP_PORT }}
             export APP_SECRET=${{ secrets.APP_SECRET }}  
             export APP_ENV=${{ secrets.APP_ENV }}  
