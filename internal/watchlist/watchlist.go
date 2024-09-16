@@ -28,7 +28,7 @@ import (
 // logging, database connection, and server startup.
 func Run(args []string) {
 	// Set up logging for the application, outputting to standard output.
-	sl.SetupLogger("local", os.Stdout)
+	sl.SetupLogger("dev")
 	sl.Log.Info("starting application")
 
 	sl.Log.Debug("environment variables parsed successfully")
@@ -43,7 +43,7 @@ func Run(args []string) {
 	sl.Log.Debug("command-line flags parsed successfully")
 
 	// Reconfigure logger based on the environment.
-	sl.SetupLogger(config.Env, os.Stdout)
+	sl.SetupLogger(config.Env)
 
 	// Open a connection to the database.
 	db, err := postgres.OpenDB()

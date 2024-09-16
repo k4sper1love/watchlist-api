@@ -33,6 +33,15 @@ jobs:
           git tag -a "v${VERSION}" -m "Release version ${VERSION}"
           git push origin "v${VERSION}"
 
+      - name: Install Docker plugin for Loki
+        run: |
+          if ! docker plugin ls --filter name=loki | grep -q loki; then
+            echo "Loki plugin not found. Installing..."
+            docker plugin install grafana/loki-docker-driver:2.9.4 --alias loki --grant-all-permissions
+          else
+            echo "Loki plugin already installed."
+          fi
+
       - name: Copy project to server
         run: |
           ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
@@ -60,6 +69,7 @@ jobs:
             export POSTGRES_DB=${{ secrets.POSTGRES_DB }}  
             export POSTGRES_PORT=${{ secrets.POSTGRES_PORT }}
             export VERSION=${{ env.VERSION }}
+            export GRAFANA_PASSWORD=${{ secrets.GRAFANA_PASSWORD }}
           
             # Deploy with Docker Compose
             docker-compose down
