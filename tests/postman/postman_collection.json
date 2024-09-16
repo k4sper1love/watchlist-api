@@ -2315,19 +2315,5 @@
 				]
 			}
 		}
-	],
-	"variable": [
-		{
-			"key": "ACCESS_TOKEN",
-			"value": ""
-		},
-		{
-			"key": "REFRESH_TOKEN",
-			"value": ""
-		},
-		{
-			"key": "EMAIL",
-			"value": ""
-		}
 	]
 }
