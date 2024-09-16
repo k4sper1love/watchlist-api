@@ -45,7 +45,13 @@ jobs:
           
             # Deploy with Docker Compose
             docker-compose down
-            docker-compose build --no-cache
+          
+            # If FULL_REBUILD = true, then use --no-cache
+            if [[ "${{ secrets.FULL_REBUILD }}" == "true" ]]; then
+              docker-compose build --no-cache
+            else 
+              docker-compose build
+          
             docker-compose up -d
           EOF
 
