@@ -91,6 +91,7 @@ jobs:
         run: |
           ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
             cd /home/${{ secrets.SSH_USER }}/watchlist/tests/postman
-            
+          
             newman run postman_collection.json --environment postman_environment.json
+          
           EOF
