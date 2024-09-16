@@ -1,24 +1,80 @@
+x-def-logging: &default-logging
+  logging:
+    driver: "loki"
+    options:
+      loki-url: "http://localhost:3100/loki/api/v1/push"
+      loki-batch-size: "100"
+      loki-retries: 2
+      loki-max-backoff: 1000ms
+      loki-timeout: 1s
+
 services:
   app:
     build:
       context: .
       dockerfile: Dockerfile
-    env_file:
-      - .env
+    <<: *default-logging
+    environment:
+      SERVER_IP: ${SERVER_IP:-localhost}
+      APP_PORT: ${APP_PORT}
+      APP_DSN: ${APP_DSN}
+      APP_MIGRATIONS: ${APP_MIGRATIONS}
+      APP_ENV: ${APP_ENV}
+      APP_SECRET: ${APP_SECRET}
+      VERSION: ${VERSION}
     ports:
       - "${APP_PORT}:${APP_PORT}"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
 
   db:
     image: postgres:latest
     restart: always
-    env_file:
-      - .env
+    <<: *default-logging
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     ports:
-      - "${POSTGRES_PORT}:5432"
+      - "${POSTGRES_PORT}:${POSTGRES_PORT}"
     volumes:
       - pg-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+      timeout: 5s
+
+  loki:
+    hostname: loki
+    image: grafana/loki:2.9.0
+    volumes:
+      - ./grafana/loki/retention-config.yaml:/etc/grafana/loki/retention-config.yaml
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/grafana/loki/retention-config.yaml
+    networks:
+      - logging
+
+  grafana:
+    hostname: grafana
+    environment:
+      - GF_PATHS_PROVISIONING=/etc/grafana/provisioning
+      - GF_AUTH_ANONYMOUS_ENABLED=false
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
+    volumes:
+      - ./grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    networks:
+      - logging
 
 volumes:
   pg-data:
+
+networks:
+  logging:
+    driver: bridge

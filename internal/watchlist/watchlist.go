@@ -19,7 +19,7 @@ import (
 	"github.com/k4sper1love/watchlist-api/internal/database/postgres"
 	"github.com/k4sper1love/watchlist-api/internal/transport/rest"
 	"github.com/k4sper1love/watchlist-api/pkg/logger/sl"
-	"github.com/k4sper1love/watchlist-api/pkg/vcs"
+	"github.com/k4sper1love/watchlist-api/pkg/version"
 	"log/slog"
 	"os"
 )
@@ -28,7 +28,7 @@ import (
 // logging, database connection, and server startup.
 func Run(args []string) {
 	// Set up logging for the application, outputting to standard output.
-	sl.SetupLogger("local", os.Stdout)
+	sl.SetupLogger("dev")
 	sl.Log.Info("starting application")
 
 	sl.Log.Debug("environment variables parsed successfully")
@@ -43,7 +43,7 @@ func Run(args []string) {
 	sl.Log.Debug("command-line flags parsed successfully")
 
 	// Reconfigure logger based on the environment.
-	sl.SetupLogger(config.Env, os.Stdout)
+	sl.SetupLogger(config.Env)
 
 	// Open a connection to the database.
 	db, err := postgres.OpenDB()
@@ -61,8 +61,8 @@ func Run(args []string) {
 	}()
 
 	// Configure Swagger documentation.
-	api.SwaggerInfo.Host = fmt.Sprintf(":%d", config.Port)
-	api.SwaggerInfo.Version = vcs.GetVersion()
+	api.SwaggerInfo.Host = fmt.Sprintf("%s:%d", os.Getenv("SERVER_IP"), config.Port)
+	api.SwaggerInfo.Version = version.GetVersion()
 
 	// Start the REST server.
 	err = rest.Serve()

@@ -13,7 +13,7 @@ type AuthResponse struct {
 
 type systemInfo struct {
 	Environment string `json:"environment" example:"prod"`
-	Version     string `json:"version" example:"2024-09-05T02:21:09Z-83438704281d314aae2e1ae-dirty"`
+	Version     string `json:"version" example:"20240916192353"`
 }
 type HealthCheckResponse struct {
 	Status     string     `json:"status" example:"enabled"`

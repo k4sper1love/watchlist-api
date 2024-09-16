@@ -11,7 +11,7 @@ package rest
 import (
 	"github.com/k4sper1love/watchlist-api/internal/config"
 	"github.com/k4sper1love/watchlist-api/pkg/logger/sl"
-	"github.com/k4sper1love/watchlist-api/pkg/vcs"
+	"github.com/k4sper1love/watchlist-api/pkg/version"
 	"net/http"
 )
 
@@ -31,8 +31,8 @@ func healthcheckHandler(w http.ResponseWriter, r *http.Request) {
 	message := envelope{
 		"status": "enabled",
 		"system_info": envelope{
-			"environment": config.Env,       // Current environment (e.g., dev, prod).
-			"version":     vcs.GetVersion(), // Current version of the API.
+			"environment": config.Env,           // Current environment (e.g., dev, prod).
+			"version":     version.GetVersion(), // Current version of the API.
 		},
 	}
 

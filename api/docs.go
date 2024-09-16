@@ -1994,7 +1994,7 @@ const docTemplate = `{
                 },
                 "version": {
                     "type": "string",
-                    "example": "2024-09-05T02:21:09Z-83438704281d314aae2e1ae-dirty"
+                    "example": "20240916192353"
                 }
             }
         }
