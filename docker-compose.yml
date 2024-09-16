@@ -2,11 +2,11 @@ x-def-logging: &default-logging
   logging:
     driver: "loki"
     options:
-      loki-url: "http://localhost:3100/loki/api/v1/push"
+      loki-url: "http://loki:3100/loki/api/v1/push"
       loki-batch-size: "100"
-      loki-retries: 2
-      loki-max-backoff: 1000ms
-      loki-timeout: 1s
+      loki-retries: "2"
+      loki-max-backoff: "1000ms"
+      loki-timeout: "1s"
 
 services:
   app:
@@ -27,6 +27,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    networks:
+      - logging
 
   db:
     image: postgres:latest
@@ -46,12 +48,15 @@ services:
       retries: 5
       start_period: 30s
       timeout: 5s
+    networks:
+      - logging
 
   loki:
     hostname: loki
     image: grafana/loki:2.9.0
     volumes:
       - ./grafana/loki/retention-config.yaml:/etc/grafana/loki/retention-config.yaml
+      - loki-data:/loki
     ports:
       - "3100:3100"
     command: -config.file=/etc/grafana/loki/retention-config.yaml
@@ -66,6 +71,7 @@ services:
       - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
     volumes:
       - ./grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
+      - grafana-data:/var/lib/grafana
     image: grafana/grafana:latest
     ports:
       - "3000:3000"
@@ -74,6 +80,8 @@ services:
 
 volumes:
   pg-data:
+  grafana-data:
+  loki-data:
 
 networks:
   logging:
