@@ -18,19 +18,11 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      - name: Get VCS information
-        id: vcs_info
+      - name: Create and push tag
         run: |
-          echo "VCS_TIME=$(date -u +"%Y-%m-%dT%H:%M:%SZ")" >> $GITHUB_ENV
-          
-          if git describe --tags >/dev/null 2>&1; then
-            echo "VCS_REVISION=$(git describe --tags)" >> $GITHUB_ENV
-          else
-            echo "VCS_REVISION=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
-          fi
-
-          MODIFIED_COUNT=$(git status --porcelain | wc -l)
-          echo "VCS_MODIFIED=${MODIFIED_COUNT}" >> $GITHUB_ENV      
+          VERSION=$(date +'%Y%m%d%H%M%S')
+          git tag -a "v${VERSION}" -m "Release version ${VERSION}"
+          git push origin "v${VERSION}"
 
       - name: Copy project to server
         run: |
@@ -47,11 +39,6 @@ jobs:
         run: |
           ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
             cd /home/${{ secrets.SSH_USER }}/watchlist
-            
-            # Export VCS information
-            export VCS_TIME=${{ env.VCS_TIME }}
-            export VCS_REVISION=${{ env.VCS_REVISION }}
-            export VCS_MODIFIED=${{ env.VCS_MODIFIED }}
           
             # Export environment variables 
             export APP_PORT=${{ secrets.APP_PORT }}
@@ -63,6 +50,7 @@ jobs:
             export POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}  
             export POSTGRES_DB=${{ secrets.POSTGRES_DB }}  
             export POSTGRES_PORT=${{ secrets.POSTGRES_PORT }}
+            export VERSION=${{ env.VERSION }}
           
             # Deploy with Docker Compose
             docker-compose down

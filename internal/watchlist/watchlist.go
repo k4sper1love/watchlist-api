@@ -19,7 +19,7 @@ import (
 	"github.com/k4sper1love/watchlist-api/internal/database/postgres"
 	"github.com/k4sper1love/watchlist-api/internal/transport/rest"
 	"github.com/k4sper1love/watchlist-api/pkg/logger/sl"
-	"github.com/k4sper1love/watchlist-api/pkg/vcs"
+	"github.com/k4sper1love/watchlist-api/pkg/version"
 	"log/slog"
 	"os"
 )
@@ -62,7 +62,7 @@ func Run(args []string) {
 
 	// Configure Swagger documentation.
 	api.SwaggerInfo.Host = fmt.Sprintf(":%d", config.Port)
-	api.SwaggerInfo.Version = vcs.GetVersion()
+	api.SwaggerInfo.Version = version.GetVersion()
 
 	// Start the REST server.
 	err = rest.Serve()

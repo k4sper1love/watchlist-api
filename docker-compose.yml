@@ -9,6 +9,7 @@ services:
       APP_MIGRATIONS: ${APP_MIGRATIONS}
       APP_ENV: ${APP_ENV}
       APP_SECRET: ${APP_SECRET}
+      VERSION: ${VERSION}
     ports:
       - "${APP_PORT}:${APP_PORT}"
     depends_on:
