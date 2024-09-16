@@ -36,7 +36,9 @@ jobs:
       - name: Install Docker plugin for Loki
         run: |
           ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
-            # Проверка наличия плагина Loki
+            echo "Listing installed Docker plugins..."
+            docker plugin ls
+            echo "Checking for Loki plugin..."
             if docker plugin ls | grep -q 'grafana/loki-docker-driver'; then
               echo "Loki plugin already installed."
             else
