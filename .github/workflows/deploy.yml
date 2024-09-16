@@ -35,12 +35,14 @@ jobs:
 
       - name: Install Docker plugin for Loki
         run: |
-          if ! docker plugin ls --filter name=loki | grep -q loki; then
-            echo "Loki plugin not found. Installing..."
-            docker plugin install grafana/loki-docker-driver:2.9.4 --alias loki --grant-all-permissions
-          else
-            echo "Loki plugin already installed."
-          fi
+          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
+            if ! docker plugin ls --filter name=loki | grep -q loki; then
+              echo "Loki plugin not found. Installing..."
+              docker plugin install grafana/loki-docker-driver:2.9.4 --alias loki --grant-all-permissions
+            else
+              echo "Loki plugin already installed."
+            fi
+          EOF
 
       - name: Copy project to server
         run: |
