@@ -108,5 +108,4 @@ jobs:
             cd /home/${{ secrets.SSH_USER }}/watchlist/tests/postman
           
             newman run postman_collection.json --environment postman_environment.json
-          
           EOF
