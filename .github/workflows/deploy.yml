@@ -4,9 +4,6 @@ on:
   push:
     branches:
       - main
-  pull_request:
-    branches:
-      - main
 
 permissions:
   contents: write
@@ -39,9 +36,6 @@ jobs:
       - name: Copy project to server
         run: |
           ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
-            if [ -d /home/${{ secrets.SSH_USER }}/watchlist ]; then
-              rm -rf /home/${{ secrets.SSH_USER }}/watchlist
-            fi
             mkdir -p /home/${{ secrets.SSH_USER }}/watchlist
           EOF
           
