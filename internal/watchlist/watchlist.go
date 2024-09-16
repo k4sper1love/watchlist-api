@@ -21,6 +21,7 @@ import (
 	"github.com/k4sper1love/watchlist-api/pkg/logger/sl"
 	"github.com/k4sper1love/watchlist-api/pkg/version"
 	"log/slog"
+	"net"
 	"os"
 )
 
@@ -60,8 +61,15 @@ func Run(args []string) {
 		sl.Log.Info("database connection closed")
 	}()
 
+	// Getting a local IP address
+	ip, err := getLocalIP()
+	if err != nil {
+		fmt.Println("Error getting IP address:", err)
+		return
+	}
+
 	// Configure Swagger documentation.
-	api.SwaggerInfo.Host = fmt.Sprintf(":%d", config.Port)
+	api.SwaggerInfo.Host = fmt.Sprintf("%s:%d", ip, config.Port)
 	api.SwaggerInfo.Version = version.GetVersion()
 
 	// Start the REST server.
@@ -69,4 +77,20 @@ func Run(args []string) {
 	if err != nil {
 		os.Exit(1) // Exit if server startup fails.
 	}
+}
+
+// Function for getting a local IP address
+func getLocalIP() (string, error) {
+	addrs, err := net.InterfaceAddrs()
+	if err != nil {
+		return "", err
+	}
+
+	for _, addr := range addrs {
+		if ipnet, ok := addr.(*net.IPNet); ok && !ipnet.IP.IsLoopback() && ipnet.IP.To4() != nil {
+			return ipnet.IP.String(), nil
+		}
+	}
+
+	return "", fmt.Errorf("no valid IP address found")
 }
