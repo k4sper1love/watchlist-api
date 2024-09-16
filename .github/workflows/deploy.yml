@@ -18,6 +18,13 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
+      - name: Get VCS information
+        id: vcs_info
+        run: |
+          echo "VCS_TIME=$(date -u +"%Y-%m-%dT%H:%M:%SZ")" >> $GITHUB_ENV
+          echo "VCS_REVISION=$(git describe --tags)" >> $GITHUB_ENV
+          echo "VCS_MODIFIED=$(git status --porcelain | wc -l)" >> $GITHUB_ENV      
+
       - name: Copy project to server
         run: |
           ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
@@ -33,6 +40,11 @@ jobs:
         run: |
           ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
             cd /home/${{ secrets.SSH_USER }}/watchlist
+            
+            # Export VCS information
+            export VCS_TIME=${{ env.VCS_TIME }}
+            export VCS_REVISION=${{ env.VCS_REVISION }}
+            export VCS_MODIFIED=${{ env.VCS_MODIFIED }}
           
             # Export environment variables 
             export APP_PORT=${{ secrets.APP_PORT }}
