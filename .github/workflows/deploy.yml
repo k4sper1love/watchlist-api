@@ -27,8 +27,6 @@ jobs:
           git config --global user.name "Your Name"
           
       - name: Create and push tag
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Используем токен для аутентификации
         run: |
           VERSION=$(date +'%Y%m%d%H%M%S')
           git tag -a "v${VERSION}" -m "Release version ${VERSION}"
