@@ -86,3 +86,11 @@ jobs:
               echo "Newman is already installed"
             fi
           EOF
+
+      - name: Run Postman tests
+        run: |
+          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
+            cd /home/${{ secrets.SSH_USER }}/watchlist/tests/postman
+            
+            newman run postman_collection.json --environment postman_environment.json
+          EOF

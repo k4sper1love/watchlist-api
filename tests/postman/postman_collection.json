@@ -87,6 +87,11 @@
 									"    var refreshToken = pm.response.json().user.refresh_token;",
 									"    var email = pm.response.json().user.email",
 									"",
+									"    console.log(\"Access Token: \", accessToken);",
+									"    console.log(\"Refresh Token: \", refreshToken);",
+									"    console.log(\"Email: \", email);",
+									"",
+									"",
 									"    pm.environment.set(\"ACCESS_TOKEN\", accessToken);",
 									"    pm.environment.set(\"REFRESH_TOKEN\", refreshToken);",
 									"    pm.environment.set(\"EMAIL\", email)",
@@ -210,28 +215,14 @@
 						}
 					],
 					"request": {
-						"auth": {
-							"type": "oauth2",
-							"oauth2": [
-								{
-									"key": "headerPrefix",
-									"value": "Bearer",
-									"type": "string"
-								},
-								{
-									"key": "tokenType",
-									"value": "",
-									"type": "string"
-								},
-								{
-									"key": "addTokenTo",
-									"value": "header",
-									"type": "string"
-								}
-							]
-						},
 						"method": "POST",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{REFRESH_TOKEN}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{BASE_URL}}/api/v1/auth/refresh",
 							"host": [
@@ -290,28 +281,14 @@
 						}
 					],
 					"request": {
-						"auth": {
-							"type": "oauth2",
-							"oauth2": [
-								{
-									"key": "headerPrefix",
-									"value": "Bearer",
-									"type": "string"
-								},
-								{
-									"key": "tokenType",
-									"value": "",
-									"type": "string"
-								},
-								{
-									"key": "addTokenTo",
-									"value": "header",
-									"type": "string"
-								}
-							]
-						},
 						"method": "POST",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{REFRESH_TOKEN}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{BASE_URL}}/api/v1/auth/logout",
 							"host": [
@@ -453,33 +430,14 @@
 						}
 					],
 					"request": {
-						"auth": {
-							"type": "oauth2",
-							"oauth2": [
-								{
-									"key": "headerPrefix",
-									"value": "Bearer",
-									"type": "string"
-								},
-								{
-									"key": "tokenType",
-									"value": "",
-									"type": "string"
-								},
-								{
-									"key": "accessToken",
-									"value": "",
-									"type": "string"
-								},
-								{
-									"key": "addTokenTo",
-									"value": "header",
-									"type": "string"
-								}
-							]
-						},
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{ACCESS_TOKEN}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{BASE_URL}}/api/v1/user",
 							"host": [
@@ -534,28 +492,14 @@
 						}
 					],
 					"request": {
-						"auth": {
-							"type": "oauth2",
-							"oauth2": [
-								{
-									"key": "tokenType",
-									"value": "",
-									"type": "string"
-								},
-								{
-									"key": "accessToken",
-									"value": "",
-									"type": "string"
-								},
-								{
-									"key": "addTokenTo",
-									"value": "header",
-									"type": "string"
-								}
-							]
-						},
 						"method": "PUT",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{ACCESS_TOKEN}}",
+								"type": "text"
+							}
+						],
 						"body": {
 							"mode": "raw",
 							"raw": "{\r\n\t\"username\": \"{{$randomUserName}}\"\r\n}",
@@ -635,23 +579,14 @@
 						}
 					],
 					"request": {
-						"auth": {
-							"type": "oauth2",
-							"oauth2": [
-								{
-									"key": "tokenType",
-									"value": "",
-									"type": "string"
-								},
-								{
-									"key": "addTokenTo",
-									"value": "header",
-									"type": "string"
-								}
-							]
-						},
 						"method": "POST",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{ACCESS_TOKEN}}",
+								"type": "text"
+							}
+						],
 						"body": {
 							"mode": "raw",
 							"raw": "{\r\n    \"title\": \"{{$randomWords}}\",\r\n    \"year\": 2010,\r\n    \"genre\": \"Action\",\r\n    \"description\": \"{{$randomPhrase}}\",\r\n    \"rating\": 7.1,\r\n    \"photo_url\": \"{{$randomImageUrl}}\",\r\n    \"comment\": \"{{$randomPhrase}}\"\r\n}",
@@ -738,28 +673,14 @@
 						}
 					],
 					"request": {
-						"auth": {
-							"type": "oauth2",
-							"oauth2": [
-								{
-									"key": "tokenType",
-									"value": "",
-									"type": "string"
-								},
-								{
-									"key": "accessToken",
-									"value": "",
-									"type": "string"
-								},
-								{
-									"key": "addTokenTo",
-									"value": "header",
-									"type": "string"
-								}
-							]
-						},
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{ACCESS_TOKEN}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{BASE_URL}}/api/v1/films",
 							"host": [
@@ -832,28 +753,14 @@
 						}
 					],
 					"request": {
-						"auth": {
-							"type": "oauth2",
-							"oauth2": [
-								{
-									"key": "tokenType",
-									"value": "",
-									"type": "string"
-								},
-								{
-									"key": "accessToken",
-									"value": "",
-									"type": "string"
-								},
-								{
-									"key": "addTokenTo",
-									"value": "header",
-									"type": "string"
-								}
-							]
-						},
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{ACCESS_TOKEN}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{BASE_URL}}/api/v1/films?rating_min=5&sort=-id&page=1&page_size=1",
 							"host": [
@@ -940,28 +847,14 @@
 						}
 					],
 					"request": {
-						"auth": {
-							"type": "oauth2",
-							"oauth2": [
-								{
-									"key": "headerPrefix",
-									"value": "Bearer",
-									"type": "string"
-								},
-								{
-									"key": "tokenType",
-									"value": "",
-									"type": "string"
-								},
-								{
-									"key": "addTokenTo",
-									"value": "header",
-									"type": "string"
-								}
-							]
-						},
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{ACCESS_TOKEN}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{BASE_URL}}/api/v1/films/{{FILM_ID}}",
 							"host": [
@@ -1026,23 +919,14 @@
 						}
 					],
 					"request": {
-						"auth": {
-							"type": "oauth2",
-							"oauth2": [
-								{
-									"key": "tokenType",
-									"value": "",
-									"type": "string"
-								},
-								{
-									"key": "addTokenTo",
-									"value": "header",
-									"type": "string"
-								}
-							]
-						},
 						"method": "PUT",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{ACCESS_TOKEN}}",
+								"type": "text"
+							}
+						],
 						"body": {
 							"mode": "raw",
 							"raw": "{\r\n    \"is_viewed\": true,\r\n    \"user_rating\":1,\r\n    \"review\": \"{{$randomPhrase}}\"\r\n}",
@@ -1120,23 +1004,14 @@
 						}
 					],
 					"request": {
-						"auth": {
-							"type": "oauth2",
-							"oauth2": [
-								{
-									"key": "tokenType",
-									"value": "",
-									"type": "string"
-								},
-								{
-									"key": "addTokenTo",
-									"value": "header",
-									"type": "string"
-								}
-							]
-						},
 						"method": "POST",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{ACCESS_TOKEN}}",
+								"type": "text"
+							}
+						],
 						"body": {
 							"mode": "raw",
 							"raw": "{\r\n    \"name\": \"{{$randomWords}}\",\r\n    \"description\": \"{{$randomPhrase}}\"\r\n}",
@@ -1214,23 +1089,14 @@
 						}
 					],
 					"request": {
-						"auth": {
-							"type": "oauth2",
-							"oauth2": [
-								{
-									"key": "tokenType",
-									"value": "",
-									"type": "string"
-								},
-								{
-									"key": "addTokenTo",
-									"value": "header",
-									"type": "string"
-								}
-							]
-						},
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{ACCESS_TOKEN}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{BASE_URL}}/api/v1/collections?page_size=10&sort=-created_at",
 							"host": [
@@ -1305,23 +1171,14 @@
 						}
 					],
 					"request": {
-						"auth": {
-							"type": "oauth2",
-							"oauth2": [
-								{
-									"key": "tokenType",
-									"value": "",
-									"type": "string"
-								},
-								{
-									"key": "addTokenTo",
-									"value": "header",
-									"type": "string"
-								}
-							]
-						},
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{ACCESS_TOKEN}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{BASE_URL}}/api/v1/collections?page_size=10&page=1&sort=-name",
 							"host": [
@@ -1396,23 +1253,14 @@
 						}
 					],
 					"request": {
-						"auth": {
-							"type": "oauth2",
-							"oauth2": [
-								{
-									"key": "tokenType",
-									"value": "",
-									"type": "string"
-								},
-								{
-									"key": "addTokenTo",
-									"value": "header",
-									"type": "string"
-								}
-							]
-						},
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{ACCESS_TOKEN}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{BASE_URL}}/api/v1/collections/{{COLLECTION_ID}}",
 							"host": [
@@ -1480,23 +1328,14 @@
 						}
 					],
 					"request": {
-						"auth": {
-							"type": "oauth2",
-							"oauth2": [
-								{
-									"key": "tokenType",
-									"value": "",
-									"type": "string"
-								},
-								{
-									"key": "addTokenTo",
-									"value": "header",
-									"type": "string"
-								}
-							]
-						},
 						"method": "PUT",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{ACCESS_TOKEN}}",
+								"type": "text"
+							}
+						],
 						"body": {
 							"mode": "raw",
 							"raw": "{\r\n    \"name\": \"{{$randomWords}}\",\r\n    \"description\": \"{{$randomPhrase}}\"\r\n}",
@@ -1571,23 +1410,14 @@
 						}
 					],
 					"request": {
-						"auth": {
-							"type": "oauth2",
-							"oauth2": [
-								{
-									"key": "tokenType",
-									"value": "",
-									"type": "string"
-								},
-								{
-									"key": "addTokenTo",
-									"value": "header",
-									"type": "string"
-								}
-							]
-						},
 						"method": "POST",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{ACCESS_TOKEN}}",
+								"type": "text"
+							}
+						],
 						"body": {
 							"mode": "raw",
 							"raw": "",
@@ -1664,23 +1494,14 @@
 						}
 					],
 					"request": {
-						"auth": {
-							"type": "oauth2",
-							"oauth2": [
-								{
-									"key": "tokenType",
-									"value": "",
-									"type": "string"
-								},
-								{
-									"key": "addTokenTo",
-									"value": "header",
-									"type": "string"
-								}
-							]
-						},
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{ACCESS_TOKEN}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{BASE_URL}}/api/v1/collections/{{COLLECTION_ID}}/films",
 							"host": [
@@ -1745,23 +1566,14 @@
 						}
 					],
 					"request": {
-						"auth": {
-							"type": "oauth2",
-							"oauth2": [
-								{
-									"key": "tokenType",
-									"value": "",
-									"type": "string"
-								},
-								{
-									"key": "addTokenTo",
-									"value": "header",
-									"type": "string"
-								}
-							]
-						},
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{ACCESS_TOKEN}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{BASE_URL}}/api/v1/collections/{{COLLECTION_ID}}/films?page_size=10&page=1&sort=-film_id",
 							"host": [
@@ -1848,23 +1660,14 @@
 						}
 					],
 					"request": {
-						"auth": {
-							"type": "oauth2",
-							"oauth2": [
-								{
-									"key": "tokenType",
-									"value": "",
-									"type": "string"
-								},
-								{
-									"key": "addTokenTo",
-									"value": "header",
-									"type": "string"
-								}
-							]
-						},
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{ACCESS_TOKEN}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{BASE_URL}}/api/v1/collections/{{COLLECTION_ID}}/films/{{FILM_ID}}",
 							"host": [
@@ -1933,23 +1736,14 @@
 						}
 					],
 					"request": {
-						"auth": {
-							"type": "oauth2",
-							"oauth2": [
-								{
-									"key": "tokenType",
-									"value": "",
-									"type": "string"
-								},
-								{
-									"key": "addTokenTo",
-									"value": "header",
-									"type": "string"
-								}
-							]
-						},
 						"method": "PUT",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{ACCESS_TOKEN}}",
+								"type": "text"
+							}
+						],
 						"body": {
 							"mode": "raw",
 							"raw": "{\r\n    \"added_at\": \"2024-06-25T15:18:27.599064Z\"\r\n}",
@@ -2026,23 +1820,14 @@
 						}
 					],
 					"request": {
-						"auth": {
-							"type": "oauth2",
-							"oauth2": [
-								{
-									"key": "tokenType",
-									"value": "",
-									"type": "string"
-								},
-								{
-									"key": "addTokenTo",
-									"value": "header",
-									"type": "string"
-								}
-							]
-						},
 						"method": "DELETE",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{ACCESS_TOKEN}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{BASE_URL}}/api/v1/collections/{{COLLECTION_ID}}/films/{{FILM_ID}}",
 							"host": [
@@ -2103,23 +1888,14 @@
 						}
 					],
 					"request": {
-						"auth": {
-							"type": "oauth2",
-							"oauth2": [
-								{
-									"key": "tokenType",
-									"value": "",
-									"type": "string"
-								},
-								{
-									"key": "addTokenTo",
-									"value": "header",
-									"type": "string"
-								}
-							]
-						},
 						"method": "DELETE",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{ACCESS_TOKEN}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{BASE_URL}}/api/v1/collections/{{COLLECTION_ID}}",
 							"host": [
@@ -2179,23 +1955,14 @@
 						}
 					],
 					"request": {
-						"auth": {
-							"type": "oauth2",
-							"oauth2": [
-								{
-									"key": "tokenType",
-									"value": "",
-									"type": "string"
-								},
-								{
-									"key": "addTokenTo",
-									"value": "header",
-									"type": "string"
-								}
-							]
-						},
 						"method": "DELETE",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{ACCESS_TOKEN}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{BASE_URL}}/api/v1/films/{{FILM_ID}}",
 							"host": [
@@ -2255,28 +2022,14 @@
 						}
 					],
 					"request": {
-						"auth": {
-							"type": "oauth2",
-							"oauth2": [
-								{
-									"key": "tokenType",
-									"value": "",
-									"type": "string"
-								},
-								{
-									"key": "accessToken",
-									"value": "",
-									"type": "string"
-								},
-								{
-									"key": "addTokenTo",
-									"value": "header",
-									"type": "string"
-								}
-							]
-						},
 						"method": "DELETE",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{ACCESS_TOKEN}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{BASE_URL}}/api/v1/user",
 							"host": [
