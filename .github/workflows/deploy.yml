@@ -21,7 +21,9 @@ jobs:
       - name: Copy project to server
         run: |
           ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
-            rm -rf /home/${{ secrets.SSH_USER }}/watchlist
+            if [ -d /home/${{ secrets.SSH_USER }}/watchlist ]; then
+              rm -rf /home/${{ secrets.SSH_USER }}/watchlist
+            fi
             mkdir -p /home/${{ secrets.SSH_USER }}/watchlist
           EOF
           
@@ -51,6 +53,7 @@ jobs:
               docker-compose build --no-cache
             else 
               docker-compose build
+            fi
           
             docker-compose up -d
           EOF
