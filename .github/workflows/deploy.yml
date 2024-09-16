@@ -5,6 +5,9 @@ on:
     branches:
       - ci/cd
 
+permissions:
+  contents: write
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -18,11 +21,15 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      - name: Create and push tag
+      - name: Configure Git user
         run: |
           git config --global user.email "elkin_serega.2004@mail.ru"
-          git config --global user.name "k4sper1love"
+          git config --global user.name "Your Name"
           
+      - name: Create and push tag
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Используем токен для аутентификации
+        run: |
           VERSION=$(date +'%Y%m%d%H%M%S')
           git tag -a "v${VERSION}" -m "Release version ${VERSION}"
           git push origin "v${VERSION}"
