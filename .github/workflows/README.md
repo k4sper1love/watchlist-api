@@ -65,7 +65,7 @@ nano ~/.ssh/authorized_keys
 
    docker-compose --version
    ```
-7. Install Loki Docker Driver
+7. Install Loki Docker Driver:
 
    ```bash
    docker plugin install grafana/loki-docker-driver:2.9.4 --alias loki --grant-all-permissions
