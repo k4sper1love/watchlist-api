@@ -4,8 +4,8 @@
 
 ## 🔴 Live Server
 - **Healthcheck Endpoint**: [http://91.243.71.175:8001/api/v1/healthcheck](http://91.243.71.175:8001/api/v1/healthcheck)
-- **Swagger Documentation**: [http://91.243.71.175:8001/swagger/index.html#/monitoring/get_healthcheck](http://91.243.71.175:8001/swagger/index.html)
-- **Grafana Dashboards**: [http://91.243.71.175:3000/dashboards](http://91.243.71.175:3000)
+- **Swagger Documentation**: [http://91.243.71.175:8001/swagger/index.html](http://91.243.71.175:8001/swagger/index.html)
+- **Grafana Dashboards**: [http://91.243.71.175:3000](http://91.243.71.175:3000/public-dashboards/6e330a613ece4935aa007d47968adcac)
 
 ## 🔎 Navigation
 - [Main Features](#-main-features)
@@ -139,14 +139,14 @@ docker-compose up --build
 ```
 ❗**Note:** Use the `--env-file` flag if your `.env` file is not in the root directory.
 
-## 📚 API Documentation
+## 📋 API Documentation
 You can find the Swagger documents and test the API functionality at
 ```bash
 http://localhost:8001/swagger/index.html
 ```
 ❗**Note:** Use the port on which your application is running.
 
-## 🧪 Testing with Postman
+## 👨🏻‍💻 Testing with Postman
 Watchlist API uses Postman for automated API testing.
 
 ### Postman Tests
