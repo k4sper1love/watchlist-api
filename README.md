@@ -218,5 +218,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE.txt) 
 ## 📫 Contact
 For any questions or feedback, please contact:
 - **Email**: s_yelkin@proton.me
-- **Telegram**: [k4sper1love](t.me/k4sper1love)
+- **Telegram**: [k4sper1love](https://t.me/k4sper1love)
 - **GitHub**: [k4sper1love](https://github.com/k4sper1love)
