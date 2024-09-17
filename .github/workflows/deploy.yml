@@ -13,18 +13,22 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # Uploading project files to GitHub Runner
       - name: Checkout code
         uses: actions/checkout@v3
 
+      # Set up a private SSH key
       - name: Set up SSH
         uses: webfactory/ssh-agent@v0.7.0
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      - name: Set VERSION environment variable
+      # Creating a version based on the current date and time
+      - name: Set VERSION to environment
         run: echo "VERSION=$(date +'%Y%m%d%H%M%S')" >> $GITHUB_ENV
 
-      - name: Create and push Version tag
+      # Creating a new tag containing the current version
+      - name: Create and push VERSION tag
         run: |
           git config --global user.email "elkin_serega.2004@mail.ru"
           git config --global user.name "Your Name"
@@ -33,6 +37,7 @@ jobs:
           git tag -a "v${VERSION}" -m "Release version ${VERSION}"
           git push origin "v${VERSION}"
 
+      # Copying project files to the server storage
       - name: Copy project to server
         run: |
           ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
@@ -41,7 +46,8 @@ jobs:
           
           scp -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -r ./* ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/home/${{ secrets.SSH_USER }}/watchlist
 
-      - name: Commands to deploy
+      # Exporting environment variables and running docker compose
+      - name: Deploy using Docker Compose
         run: |
           ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -o ServerAliveInterval=60 -o ServerAliveCountMax=5 ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
             cd /home/${{ secrets.SSH_USER }}/watchlist
@@ -73,6 +79,7 @@ jobs:
             docker-compose up -d
           EOF
 
+      # Installing dependencies (node.js, npm, newman) to run Postman tests if they are not already installed
       - name: Install Node.js, npm, and Newman
         run: |
           ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
@@ -102,6 +109,7 @@ jobs:
             fi
           EOF
 
+      # Running tests from Postman located in the tests/postman folder
       - name: Run Postman tests
         run: |
           ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'

@@ -1,3 +1,4 @@
+# Automatically adds a Data Source with the address http://loki:3100 at Grafana
 apiVersion: 1
 datasources:
   - name: Loki
