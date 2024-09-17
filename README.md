@@ -71,9 +71,9 @@ Authorization: Bearer <JWT_TOKEN>
 ## 🔄 GitHub Actions (CI/CD)
 The project uses **GitHub Actions** to automate testing, building, and deployment processes on remote server.
 
-You can find detailed instructions on setting up the workflows in the file located at `.github/workflows/readme.md`.
+[Instructions on setting up the workflows](.github/workflows/README.md)
 
-❗**Note:** If you are not using GitHub Actions for deployment, you can safely remove the `.github/workflows/deploy.yml` file to streamline your setup.
+❗**Note:** If you are not using GitHub Actions for deployment, you can safely remove the [.github/workflows/deploy.yml](.github/workflows/deploy.yml) file.
 
 
 ## 🛠️ Installation and Setup
