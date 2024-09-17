@@ -73,7 +73,7 @@ The project uses **GitHub Actions** to automate testing, building, and deploymen
 
 [Instructions on setting up the workflows](.github/workflows/README.md)
 
-❗**Note:** If you are not using GitHub Actions for deployment, you can safely remove the [.github/workflows/deploy.yml](.github/workflows/deploy.yml) file.
+❗**Note:** If you are not using GitHub Actions, you can remove the [.github/workflows/deploy.yml](.github/workflows/deploy.yml).
 
 
 ## 🛠️ Installation and Setup
