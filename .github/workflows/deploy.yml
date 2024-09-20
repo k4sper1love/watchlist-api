@@ -100,8 +100,7 @@ jobs:
             # Deploy with Docker Compose
           
             #Stop running containers
-            docker-compose down
-            docker system prune -a
+            docker-compose down --rmi all
 
             # If FULL_REBUILD = true, then use --no-cache
             if [[ "${{ secrets.FULL_REBUILD }}" == "true" ]]; then
