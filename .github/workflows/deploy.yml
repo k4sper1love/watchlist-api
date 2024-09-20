@@ -160,7 +160,7 @@ jobs:
             fi
           
             # Update postman_environment.json with BASE_URL
-            jq --arg url "$BASE_URL" '.values[] |= if .key == "BASE_URL" then .value = $url else . end' postman_environment.json > temp.json && mv temp.json postman_environment.json
+            jq --arg url "$BASE_URL" '.values[] |= if .key == "ggdsgds" then .value = $url else . end' postman_environment.json > temp.json && mv temp.json postman_environment.json
 
             newman run postman_collection.json --environment postman_environment.json
           EOF
