@@ -162,6 +162,7 @@ jobs:
               BASE_URL="http://${{ secrets.SSH_HOST }}:${{ secrets.APP_PORT }}"
             fi
           
+            # Starting with the determinated BASE_URL
             newman run postman_collection.json --environment postman_environment.json --env-var "BASE_URL=$BASE_URL"
 
           EOF
