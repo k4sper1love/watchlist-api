@@ -31,8 +31,8 @@ func healthcheckHandler(w http.ResponseWriter, r *http.Request) {
 	message := envelope{
 		"status": "enabled",
 		"system_info": envelope{
-			"environmыыыent": config.Env,           // Current environment (e.g., dev, prod).
-			"version":        version.GetVersion(), // Current version of the API.
+			"environment": config.Env,           // Current environment (e.g., dev, prod).
+			"version":     version.GetVersion(), // Current version of the API.
 		},
 	}
 

@@ -75,6 +75,14 @@ jobs:
               echo "Cron job for certificate renewal is already set up"
             fi
           EOF
+          
+
+      - name: Stop and remove all containers
+        run: |
+          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
+            cd /home/${{ secrets.SSH_USER }}/watchlist-api
+            docker-compose down --rmi all
+          EOF
 
       # Exporting environment variables and running docker compose
       - name: Deploy using Docker Compose
@@ -99,9 +107,6 @@ jobs:
           
             # Deploy with Docker Compose
           
-            #Stop running containers
-            docker-compose down --rmi all
-
             # If FULL_REBUILD = true, then use --no-cache
             if [[ "${{ secrets.FULL_REBUILD }}" == "true" ]]; then
               docker-compose build --no-cache
