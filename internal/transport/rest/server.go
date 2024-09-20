@@ -13,9 +13,10 @@ import (
 	"time"
 )
 
-// Serve starts the HTTP server and handles graceful shutdown on receiving termination signals.
-// It listens for incoming HTTP requests and routes them using the configured route handler.
-// Returns an error if the server encounters a problem or fails to shut down gracefully.
+// Serve initializes and starts the HTTP(S) server, handling both HTTP requests
+// and graceful shutdown when termination signals are received. It dynamically
+// decides whether to start an HTTP or HTTPS server based on the USE_HTTPS
+// environment variable. In HTTPS mode, it also sets up a server for HTTP to HTTPS redirection.
 func Serve() error {
 	httpAddr := fmt.Sprintf(":%d", config.Port)
 
@@ -28,6 +29,7 @@ func Serve() error {
 		IdleTimeout:  time.Minute,
 	}
 
+	// Create a new HTTPS server with configured address and timeouts.
 	httpsServer := &http.Server{
 		Addr:         ":433",
 		Handler:      route(),
@@ -53,7 +55,7 @@ func Serve() error {
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
 
-		// Attempt to shut down the server gracefully.
+		// Attempt to shut down the servers gracefully.
 		shutdownErr <- httpServer.Shutdown(ctx)
 		shutdownErr <- httpsServer.Shutdown(ctx)
 	}()
