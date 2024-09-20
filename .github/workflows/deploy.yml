@@ -110,7 +110,6 @@ jobs:
           
             # Deploy with Docker Compose
             docker-compose down
-            sudo docker kill $(docker ps -q)
           
             # If FULL_REBUILD = true, then use --no-cache
             if [[ "${{ secrets.FULL_REBUILD }}" == "true" ]]; then
@@ -119,7 +118,7 @@ jobs:
               docker-compose build
             fi
           
-            docker-compose up -d
+            docker-compose up
           EOF
 
       # Installing dependencies (node.js, npm, newman) to run Postman tests if they are not already installed
