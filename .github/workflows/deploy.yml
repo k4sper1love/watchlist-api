@@ -82,8 +82,8 @@ jobs:
             fi
             
             mkdir -p /home/${{ secrets.SSH_USER }}/watchlist-api/certs
-            cp /etc/letsencrypt/live/k4sper1love.kz/fullchain.pem /home/${{ secrets.SSH_USER }}/watchlist-api/certs/fullchain.pem
-            cp /etc/letsencrypt/live/k4sper1love.kz/privkey.pem /home/${{ secrets.SSH_USER }}/watchlist-api/certs/privkey.pem
+            cp /etc/letsencrypt/live/${{ secrets.SSH_HOST }}/fullchain.pem /home/${{ secrets.SSH_USER }}/watchlist-api/certs/fullchain.pem
+            cp /etc/letsencrypt/live/${{ secrets.SSH_HOST }}/privkey.pem /home/${{ secrets.SSH_USER }}/watchlist-api/certs/privkey.pem
           
           EOF
 
