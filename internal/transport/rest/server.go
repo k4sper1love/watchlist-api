@@ -84,6 +84,8 @@ func Serve() error {
 			target := "https://" + r.Host + r.RequestURI
 			http.Redirect(w, r, target, http.StatusMovedPermanently)
 		})
+	} else {
+		httpServer.Handler = route()
 	}
 
 	sl.Log.Info("starting HTTP server", slog.String("address", httpServer.Addr))
