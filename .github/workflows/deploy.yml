@@ -151,6 +151,9 @@ jobs:
         run: |
           ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
             cd /home/${{ secrets.SSH_USER }}/watchlist-api/tests/postman
+            
+            # Clearing the cache
+            sudo systemd-resolve --flush-caches
           
             # Determine BASE_URL based on USE_HTTPS
             if [ "${{ secrets.USE_HTTPS }}" == "true" ]; then
@@ -159,8 +162,6 @@ jobs:
               BASE_URL="http://${{ secrets.SSH_HOST }}:${{ secrets.APP_PORT }}"
             fi
           
-            # Update postman_environment.json with BASE_URL
-            jq --arg url "$BASE_URL" '.values[] |= if .key == "ggdsgds" then .value = $url else . end' postman_environment.json > temp.json && mv temp.json postman_environment.json
+            newman run postman_collection.json --environment postman_environment.json --env-var "BASE_URL=$BASE_URL"
 
-            newman run postman_collection.json --environment postman_environment.json
           EOF
