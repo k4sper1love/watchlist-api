@@ -40,19 +40,33 @@ jobs:
       - name: Copy project to server
         run: |
           ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
-            mkdir -p /home/${{ secrets.SSH_USER }}/watchlist
+            mkdir -p /home/${{ secrets.SSH_USER }}/watchlist-api
           EOF
           
-          scp -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -r ./* ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/home/${{ secrets.SSH_USER }}/watchlist
+          scp -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -r ./* ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/home/${{ secrets.SSH_USER }}/watchlist-api
+
+      - name: Install Certbot and obtain SSL certificates
+        run: |
+          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
+            # Install Certbot
+            sudo apt-get update
+            sudo apt-get intall -y certbot
+          
+            # Obtain SSL cetificates
+            sudo certbot certonly --standalone --non-interactive --agree-tos -m ${{ secrets.YOUR_EMAIL }} -d ${{ secrets.SSH_HOST }}
+            
+            # Set up a cron job for automatic renewal          
+            (crontab -l ; echo "0 0,12 * * * certbot renew --post-hook 'systemctl restart nginx'") | crontab -
+          EOF
 
       # Exporting environment variables and running docker compose
       - name: Deploy using Docker Compose
         run: |
           ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -o ServerAliveInterval=60 -o ServerAliveCountMax=5 ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
-            cd /home/${{ secrets.SSH_USER }}/watchlist
+            cd /home/${{ secrets.SSH_USER }}/watchlist-api
           
             # Export environment variables 
-            export SERVER_IP=${{ secrets.SSH_HOST }}
+            export SERVER_HOST=${{ secrets.SSH_HOST }}
             export APP_PORT=${{ secrets.APP_PORT }}
             export APP_SECRET=${{ secrets.APP_SECRET }}  
             export APP_ENV=${{ secrets.APP_ENV }}  
@@ -64,6 +78,7 @@ jobs:
             export POSTGRES_PORT=${{ secrets.POSTGRES_PORT }}
             export VERSION=${{ env.VERSION }}
             export GRAFANA_PASSWORD=${{ secrets.GRAFANA_PASSWORD }}
+            export USE_HTTPS=true
           
             # Deploy with Docker Compose
             docker-compose down
@@ -112,7 +127,7 @@ jobs:
       - name: Run Postman tests
         run: |
           ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
-            cd /home/${{ secrets.SSH_USER }}/watchlist/tests/postman
+            cd /home/${{ secrets.SSH_USER }}/watchlist-api/tests/postman
           
             newman run postman_collection.json --environment postman_environment.json
           EOF

@@ -17,11 +17,19 @@ import (
 // It listens for incoming HTTP requests and routes them using the configured route handler.
 // Returns an error if the server encounters a problem or fails to shut down gracefully.
 func Serve() error {
-	address := fmt.Sprintf(":%d", config.Port)
+	httpAddr := fmt.Sprintf(":%d", config.Port)
 
 	// Create a new HTTP server with configured address and timeouts.
-	server := &http.Server{
-		Addr:         address,
+	httpServer := &http.Server{
+		Addr:         httpAddr,
+		Handler:      route(),
+		ReadTimeout:  10 * time.Second,
+		WriteTimeout: 30 * time.Second,
+		IdleTimeout:  time.Minute,
+	}
+
+	httpsServer := &http.Server{
+		Addr:         ":433",
 		Handler:      route(),
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 30 * time.Second,
@@ -46,15 +54,40 @@ func Serve() error {
 		defer cancel()
 
 		// Attempt to shut down the server gracefully.
-		shutdownErr <- server.Shutdown(ctx)
+		shutdownErr <- httpServer.Shutdown(ctx)
+		shutdownErr <- httpsServer.Shutdown(ctx)
 	}()
 
-	sl.Log.Info("starting server", slog.String("address", server.Addr))
+	// Getting the value of the USE_HTTPS environment variable
+	useHTTPS := os.Getenv("USE_HTTPS")
 
-	// Start the server and listen for incoming requests.
-	err := server.ListenAndServe()
-	if !errors.Is(err, http.ErrServerClosed) {
-		sl.Log.Error("server error", slog.Any("error", err))
+	// Checking if HTTPS is enabled
+	if useHTTPS == "true" {
+		sl.Log.Info("starting HTTPS server", slog.String("address", httpsServer.Addr))
+
+		// Creating paths to the SSL certificate and key based on SERVER_HOST
+		certFile := fmt.Sprintf("/etc/letsencrypt/live/%s/fullchain.pem", os.Getenv("SERVER_HOST"))
+		keyFile := fmt.Sprintf("/etc/letsencrypt/live/%s/privkey.pem", os.Getenv("SERVER_HOST"))
+
+		// Launching an HTTPS server in goroutine
+		go func() {
+			err := httpsServer.ListenAndServeTLS(certFile, keyFile)
+			if err != nil && !errors.Is(err, http.ErrServerClosed) {
+				sl.Log.Error("https server error", slog.Any("error", err))
+			}
+		}()
+
+		// HTTP handler for redirecting to HTTPS
+		httpServer.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			target := "https://" + r.Host + r.RequestURI
+			http.Redirect(w, r, target, http.StatusMovedPermanently)
+		})
+	}
+
+	sl.Log.Info("starting HTTP server", slog.String("address", httpServer.Addr))
+	err := httpServer.ListenAndServe()
+	if err != nil && !errors.Is(err, http.ErrServerClosed) {
+		sl.Log.Error("http server error", slog.Any("error", err))
 		return err
 	}
 
@@ -65,7 +98,7 @@ func Serve() error {
 		return err
 	}
 
-	sl.Log.Info("stopped server on", slog.String("address", server.Addr))
+	sl.Log.Info("stopped server gracefully")
 
 	return nil
 }

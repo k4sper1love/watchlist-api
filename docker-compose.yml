@@ -15,13 +15,14 @@ services:
       dockerfile: Dockerfile
     <<: *default-logging
     environment:
-      SERVER_IP: ${SERVER_IP:-localhost}
+      SERVER_HOST: ${SERVER_HOST:-localhost}
       APP_PORT: ${APP_PORT}
       APP_DSN: ${APP_DSN}
       APP_MIGRATIONS: ${APP_MIGRATIONS}
       APP_ENV: ${APP_ENV}
       APP_SECRET: ${APP_SECRET}
       VERSION: ${VERSION}
+      USE_HTTPS: ${USE_HTTPS:-false}
     ports:
       - "${APP_PORT}:${APP_PORT}"
     depends_on:
