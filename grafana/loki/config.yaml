@@ -33,3 +33,10 @@ table_manager:
 
 analytics:
   reporting_enabled: false
+
+shipper:
+  enabled: true
+  flush_interval: 1s
+  max_chunk_size: 1048576
+
+log_level: debug
