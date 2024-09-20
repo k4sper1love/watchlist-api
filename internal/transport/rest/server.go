@@ -31,7 +31,7 @@ func Serve() error {
 
 	// Create a new HTTPS server with configured address and timeouts.
 	httpsServer := &http.Server{
-		Addr:         ":433",
+		Addr:         ":443",
 		Handler:      route(),
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 30 * time.Second,
