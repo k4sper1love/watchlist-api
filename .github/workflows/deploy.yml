@@ -44,35 +44,40 @@ jobs:
           EOF
           
           scp -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -r ./* ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/home/${{ secrets.SSH_USER }}/watchlist-api
-      
-      # Obtaining SSL certificates for HTTPS
+
+      # Obtaining SSL certificates for HTTPS (only if USE_HTTP=true)
       - name: Install Certbot and obtain SSL certificates
         run: |
           ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
-            # Check if Certbot is installed
-            if ! command -v certbot &> /dev/null; then
-              echo "Certbot not found, installing..."
-              sudo apt-get update
-              sudo apt-get install -y certbot
+            # Check if USE_HTTPS is true
+            if [ "${{ secrets.USE_HTTPS }}" = "true" ]; then
+              # Check if Certbot is installed
+              if ! command -v certbot &> /dev/null; then
+                echo "Certbot not found, installing..."
+                sudo apt-get update
+                sudo apt-get install -y certbot
+              else
+                echo "Certbot is already installed"
+              fi
+      
+              # Check if SSL certificates already exist
+              CERT_PATH="/etc/letsencrypt/live/${{ secrets.SSH_HOST }}/fullchain.pem"
+              if [ -f "$CERT_PATH" ]; then
+                echo "SSL certificates already exist, skipping certificate issuance"
+              else
+                echo "SSL certificates not found, obtaining new certificates..."
+                sudo certbot certonly --standalone --non-interactive --agree-tos -m ${{ secrets.GIT_USER_EMAIL }} -d ${{ secrets.SSH_HOST }}
+              fi
+      
+              # Ensure a cron job exists for automatic certificate renewal
+              if ! crontab -l | grep -q "certbot renew"; then
+                echo "Setting up a cron job for automatic certificate renewal..."
+                (crontab -l ; echo "0 0,12 * * * certbot renew --post-hook 'systemctl restart nginx'") | crontab -
+              else
+                echo "Cron job for certificate renewal is already set up"
+              fi
             else
-              echo "Certbot is already installed"
-            fi
-          
-            # Check if SSL certificates already exist
-            CERT_PATH="/etc/letsencrypt/live/${{ secrets.SSH_HOST }}/fullchain.pem"
-            if [ -f "$CERT_PATH" ]; then
-              echo "SSL certificates already exist, skipping certificate issuance"
-            else
-              echo "SSL certificates not found, obtaining new certificates..."
-              sudo certbot certonly --standalone --non-interactive --agree-tos -m ${{ secrets.GIT_USER_EMAIL }} -d ${{ secrets.SSH_HOST }}
-            fi
-          
-            # Ensure a cron job exists for automatic certificate renewal
-            if ! crontab -l | grep -q "certbot renew"; then
-              echo "Setting up a cron job for automatic certificate renewal..."
-              (crontab -l ; echo "0 0,12 * * * certbot renew --post-hook 'systemctl restart nginx'") | crontab -
-            else
-              echo "Cron job for certificate renewal is already set up"
+              echo "HTTPS is disabled, skipping SSL certificate setup."
             fi
           EOF
 
@@ -95,7 +100,7 @@ jobs:
             export POSTGRES_PORT=${{ secrets.POSTGRES_PORT }}
             export VERSION=${{ env.VERSION }}
             export GRAFANA_PASSWORD=${{ secrets.GRAFANA_PASSWORD }}
-            export USE_HTTPS=true
+            export USE_HTTPS=${{ secrets.USE_HTTPS }}
           
             # Deploy with Docker Compose
             docker-compose down
@@ -147,5 +152,15 @@ jobs:
           ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
             cd /home/${{ secrets.SSH_USER }}/watchlist-api/tests/postman
           
+            # Determine BASE_URL based on USE_HTTPS
+            if [ "${{ secrets.USE_HTTPS }}" == "true" ]; then
+              BASE_URL="https://${{ secrets.SSH_HOST }}:${{ secrets.APP_PORT }}"
+            else
+              BASE_URL="http://${{ secrets.SSH_HOST }}:${{ secrets.APP_PORT }}"
+            fi
+          
+            # Update postman_environment.json with BASE_URL
+            jq --arg url "$BASE_URL" '.values[] |= if .key == "BASE_URL" then .value = $url else . end' postman_environment.json > temp.json && mv temp.json postman_environment.json
+
             newman run postman_collection.json --environment postman_environment.json
           EOF

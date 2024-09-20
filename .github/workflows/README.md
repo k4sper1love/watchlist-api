@@ -77,6 +77,12 @@ To prepare your repository for CI/CD, you need to set up GitHub Secrets. Follow 
 2. Add the following secrets:
 
    ```txt
+   GIT_USER_NAME: Your name is on GitHub
+   
+   GIT_USER_EMAIL: Your email is on GitHub 
+   
+   USE_HTTPS: Set "true" only if you have a domain
+   
    SSH_PRIVATE_KEY: The private key for SSH access.
    
    SSH_HOST: The hostname of your server.
