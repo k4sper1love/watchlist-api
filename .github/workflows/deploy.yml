@@ -29,8 +29,8 @@ jobs:
       # Creating a new tag containing the current version
       - name: Create and push VERSION tag
         run: |
-          git config --global user.email "elkin_serega.2004@mail.ru"
-          git config --global user.name "Your Name"
+          git config --global user.email "${{ secrets.GIT_USER_EMAIL }}"
+          git config --global user.name ""${{ secrets.GIT_USER_NAME }}"
           
           VERSION=$(date +'%Y%m%d%H%M%S')
           git tag -a "v${VERSION}" -m "Release version ${VERSION}"
@@ -64,7 +64,7 @@ jobs:
               echo "SSL certificates already exist, skipping certificate issuance"
             else
               echo "SSL certificates not found, obtaining new certificates..."
-              sudo certbot certonly --standalone --non-interactive --agree-tos -m ${{ secrets.YOUR_EMAIL }} -d ${{ secrets.SSH_HOST }}
+              sudo certbot certonly --standalone --non-interactive --agree-tos -m ${{ secrets.GIT_USER_EMAIL }} -d ${{ secrets.SSH_HOST }}
             fi
           
             # Ensure a cron job exists for automatic certificate renewal
@@ -99,6 +99,8 @@ jobs:
           
             # Deploy with Docker Compose
             docker-compose down
+          
+            docker system prune -a
           
             # If FULL_REBUILD = true, then use --no-cache
             if [[ "${{ secrets.FULL_REBUILD }}" == "true" ]]; then
