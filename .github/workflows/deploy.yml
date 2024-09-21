@@ -100,7 +100,7 @@ jobs:
           
             # Export environment variables 
             export SERVER_HOST=${{ secrets.SSH_HOST }}
-            export SSH_USER=${{ secrets.SSH_USER }}
+            export SERVER_USER=${{ secrets.SSH_USER }}
             export APP_PORT=${{ secrets.APP_PORT }}
             export APP_SECRET=${{ secrets.APP_SECRET }}  
             export APP_ENV=${{ secrets.APP_ENV }}  

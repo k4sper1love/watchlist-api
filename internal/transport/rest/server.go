@@ -68,8 +68,8 @@ func Serve() error {
 		sl.Log.Info("starting HTTPS server", slog.String("address", httpsServer.Addr))
 
 		// Creating paths to the SSL certificate and key based on SERVER_HOST
-		certFile := "certs/fullchain.pem"
-		keyFile := "certs/privkey.pem"
+		certFile := fmt.Sprintf("/etc/letsencrypt/live/%s/fullchain.pem", os.Getenv("SERVER_USER"))
+		keyFile := fmt.Sprintf("/etc/letsencrypt/live/%s/privkey.pem", os.Getenv("SERVER_USER"))
 
 		// Launching an HTTPS server in goroutine
 		go func() {

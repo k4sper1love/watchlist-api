@@ -16,6 +16,7 @@ services:
     <<: *default-logging
     environment:
       SERVER_HOST: ${SERVER_HOST:-localhost}
+      SERVER_USER: ${SERVER_USER:-root}
       APP_PORT: ${APP_PORT}
       APP_DSN: ${APP_DSN}
       APP_MIGRATIONS: ${APP_MIGRATIONS}
