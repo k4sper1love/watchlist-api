@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"time"
 )
 
@@ -85,7 +86,13 @@ func Serve() error {
 
 		// HTTP handler for redirecting to HTTPS
 		httpServer.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			target := "https://" + r.Host + r.RequestURI
+			host := r.Host
+
+			// Cutting off the port
+			if i := strings.Index(host, ":"); i != -1 {
+				host = host[:i]
+			}
+			target := "https://" + host + r.RequestURI
 
 			http.Redirect(w, r, target, http.StatusMovedPermanently)
 		})

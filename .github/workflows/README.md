@@ -118,7 +118,6 @@ USE_HTTPS: true
 
 The HTTPS server will operate on port `443`, while the HTTP server will utilize the port specified in `APP_PORT` for redirection.
 
-❗**Note:** For proper redirection, set `APP_PORT = 80`.
 
 ## 🔄 GitHub Actions Workflow
 By default, the CI/CD workflows are configured to run on pushes to the `main` branch.
