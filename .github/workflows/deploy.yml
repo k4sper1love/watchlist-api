@@ -52,6 +52,7 @@ jobs:
             cd /home/${{ secrets.SSH_USER }}/watchlist-api
           
             # Export environment variables 
+            export USE_HTTPS=${{ secrets.USE_HTTPS }}
             export SERVER_HOST=${{ secrets.SSH_HOST }}
             export APP_PORT=${{ secrets.APP_PORT }}
             export APP_SECRET=${{ secrets.APP_SECRET }}  
@@ -64,7 +65,6 @@ jobs:
             export POSTGRES_PORT=${{ secrets.POSTGRES_PORT }}
             export VERSION=${{ env.VERSION }}
             export GRAFANA_PASSWORD=${{ secrets.GRAFANA_PASSWORD }}
-            export USE_HTTPS=${{ secrets.USE_HTTPS }}
           
             # Deploy with Docker Compose
             docker-compose down

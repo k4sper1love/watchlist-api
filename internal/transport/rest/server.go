@@ -30,6 +30,7 @@ func Serve() error {
 		IdleTimeout:  time.Minute,
 	}
 
+	// Create a new HTTPS server with configured address and timeouts.
 	httpsServer := &http.Server{
 		Addr:         ":443",
 		Handler:      route(),
@@ -65,8 +66,6 @@ func Serve() error {
 
 	// Checking if HTTPS is enabled
 	if useHTTPS == "true" {
-		sl.Log.Info("starting HTTPS server with autocert")
-
 		// Setting up autocert for automatic HTTPS
 		m := autocert.Manager{
 			Prompt:     autocert.AcceptTOS,
@@ -74,20 +73,23 @@ func Serve() error {
 			Cache:      autocert.DirCache("certs"),
 		}
 
-		// HTTP handler for redirecting to HTTPS
-		httpServer.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			target := "https://" + r.Host + r.RequestURI
-			http.Redirect(w, r, target, http.StatusMovedPermanently)
-		})
-
 		// Launching an HTTPS server in goroutine
 		go func() {
 			sl.Log.Info("starting HTTPS server", slog.String("address", httpsServer.Addr))
+
 			err := httpsServer.Serve(m.Listener())
 			if err != nil && !errors.Is(err, http.ErrServerClosed) {
 				sl.Log.Error("https server error", slog.Any("error", err))
 			}
 		}()
+
+		// HTTP handler for redirecting to HTTPS
+		httpServer.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			target := "https://" + r.Host + r.RequestURI
+
+			http.Redirect(w, r, target, http.StatusMovedPermanently)
+		})
+
 	}
 
 	sl.Log.Info("starting HTTP server", slog.String("address", httpServer.Addr))
