@@ -73,14 +73,16 @@ func Serve() error {
 		m := autocert.Manager{
 			Prompt:     autocert.AcceptTOS,
 			HostPolicy: autocert.HostWhitelist(serverHost),
-			Cache:      autocert.DirCache("certs"),
+			Cache:      autocert.DirCache("/etc/letsencrypt/live"),
 		}
+
+		httpsServer.TLSConfig = m.TLSConfig()
 
 		// Launching an HTTPS server in goroutine
 		go func() {
 			sl.Log.Info("starting HTTPS server", slog.String("address", httpsServer.Addr))
 
-			err := httpsServer.Serve(m.Listener())
+			err := httpsServer.ListenAndServeTLS("", "")
 			if err != nil && !errors.Is(err, http.ErrServerClosed) {
 				sl.Log.Error("https server error", slog.Any("error", err))
 			}
