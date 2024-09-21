@@ -119,7 +119,11 @@ jobs:
             sudo systemd-resolve --flush-cachesя
           
             # Determine BASE_URL based on USE_HTTPS
-            BASE_URL="http://${{ secrets.SSH_HOST }}:${{ secrets.APP_PORT }}"
+            if [ "${{ secrets.USE_HTTPS }}" == "true" ]; then
+              BASE_URL="https://${{ secrets.SSH_HOST }}"
+            else
+              BASE_URL="http://${{ secrets.SSH_HOST }}:${{ secrets.APP_PORT }}"
+            fi
           
             # Starting with the determinated BASE_URL
             newman run postman_collection.json --environment postman_environment.json --env-var "BASE_URL=$BASE_URL"

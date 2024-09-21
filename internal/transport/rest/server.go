@@ -68,18 +68,19 @@ func Serve() error {
 
 	//Checking if HTTPS is enabled
 	if useHTTPS == "true" {
-		//	// Setting up autocert for automatic HTTPS
-		//	m := autocert.Manager{
-		//		Prompt:     autocert.AcceptTOS,
-		//		HostPolicy: autocert.HostWhitelist(serverHost),
-		//		Cache:      autocert.DirCache("/etc/letsencrypt/live"),
-		//	}
-		//	httpsServer.TLSConfig = m.TLSConfig()
+		// Setting up autocert for automatic HTTPS
+		//m := autocert.Manager{
+		//	Prompt:     autocert.AcceptTOS,
+		//	HostPolicy: autocert.HostWhitelist(serverHost),
+		//	Cache:      autocert.DirCache("/etc/letsencrypt/live"),
+		//}
+		//httpsServer.TLSConfig = m.TLSConfig()
 
 		// Launching an HTTPS server in goroutine
 		go func() {
 			sl.Log.Info("starting HTTPS server", slog.String("address", httpsServer.Addr))
 
+			// TODO delete file paths
 			err := httpsServer.ListenAndServeTLS("/etc/letsencrypt/live/fullchain.pem", "/etc/letsencrypt/live/privkey.pem")
 			if err != nil && !errors.Is(err, http.ErrServerClosed) {
 				sl.Log.Error("https server error", slog.Any("error", err))
