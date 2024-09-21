@@ -22,8 +22,17 @@ func Serve() error {
 	httpAddr := fmt.Sprintf(":%d", config.Port)
 
 	// Create a new HTTP server with configured address and timeouts.
-	server := &http.Server{
+	httpServer := &http.Server{
 		Addr:         httpAddr,
+		Handler:      route(),
+		ReadTimeout:  10 * time.Second,
+		WriteTimeout: 30 * time.Second,
+		IdleTimeout:  time.Minute,
+	}
+
+	httpsServer := &http.Server{
+		Addr:         ":443",
+		Handler:      route(),
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 30 * time.Second,
 		IdleTimeout:  time.Minute,
@@ -47,7 +56,8 @@ func Serve() error {
 		defer cancel()
 
 		// Attempt to shut down the servers gracefully.
-		shutdownErr <- server.Shutdown(ctx)
+		shutdownErr <- httpServer.Shutdown(ctx)
+		shutdownErr <- httpsServer.Shutdown(ctx)
 	}()
 
 	// Getting the value of the USE_HTTPS environment variable
@@ -65,23 +75,23 @@ func Serve() error {
 		}
 
 		// HTTP handler for redirecting to HTTPS
-		server.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		httpServer.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			target := "https://" + r.Host + r.RequestURI
 			http.Redirect(w, r, target, http.StatusMovedPermanently)
 		})
 
 		// Launching an HTTPS server in goroutine
 		go func() {
-			err := server.Serve(m.Listener())
+			sl.Log.Info("starting HTTPS server", slog.String("address", httpsServer.Addr))
+			err := httpsServer.Serve(m.Listener())
 			if err != nil && !errors.Is(err, http.ErrServerClosed) {
 				sl.Log.Error("https server error", slog.Any("error", err))
 			}
 		}()
 	}
 
-	sl.Log.Info("starting HTTP server", slog.String("address", server.Addr))
-	server.Handler = route()
-	err := server.ListenAndServe()
+	sl.Log.Info("starting HTTP server", slog.String("address", httpServer.Addr))
+	err := httpServer.ListenAndServe()
 	if err != nil && !errors.Is(err, http.ErrServerClosed) {
 		sl.Log.Error("http server error", slog.Any("error", err))
 		return err
