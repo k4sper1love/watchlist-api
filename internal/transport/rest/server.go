@@ -73,7 +73,7 @@ func Serve() error {
 		m := autocert.Manager{
 			Prompt:     autocert.AcceptTOS,
 			HostPolicy: autocert.HostWhitelist(serverHost),
-			Cache:      autocert.DirCache("certs"),
+			Cache:      autocert.DirCache("/certs"),
 		}
 
 		// Launching an HTTPS server in goroutine
