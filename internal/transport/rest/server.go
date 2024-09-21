@@ -66,10 +66,11 @@ func Serve() error {
 
 	// Checking if HTTPS is enabled
 	if useHTTPS == "true" {
+		serverHost := os.Getenv("SERVER_HOST")
 		// Setting up autocert for automatic HTTPS
 		m := autocert.Manager{
 			Prompt:     autocert.AcceptTOS,
-			HostPolicy: autocert.HostWhitelist(os.Getenv("SERVER_HOST")),
+			HostPolicy: autocert.HostWhitelist(serverHost),
 			Cache:      autocert.DirCache("certs"),
 		}
 
@@ -85,7 +86,7 @@ func Serve() error {
 
 		// HTTP handler for redirecting to HTTPS
 		httpServer.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			target := "https://" + os.Getenv("SERVER_HOST") + ":443" + r.RequestURI
+			target := "https://" + serverHost + r.RequestURI
 			http.Redirect(w, r, target, http.StatusMovedPermanently)
 		})
 
