@@ -23,13 +23,9 @@ services:
       APP_SECRET: ${APP_SECRET}
       VERSION: ${VERSION}
       USE_HTTPS: ${USE_HTTPS:-false}
-      TLS_CERT: ${TLS_CERT:-}
-      TLS_KEY: ${TLS_KEY:-}
     ports:
       - "${APP_PORT}:${APP_PORT}"
       - "443:443"
-    volumes:
-      - /etc/letsencrypt/live/${SERVER_HOST:-localhost}:/etc/letsencrypt/live/${SERVER_HOST:-localhost}
     depends_on:
       db:
         condition: service_healthy
