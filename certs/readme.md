@@ -1,0 +1,1 @@
+This directory is needed for SSL certificates if you use HTTPS.

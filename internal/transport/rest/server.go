@@ -4,8 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/k4sper1love/watchlist-api/api"
 	"github.com/k4sper1love/watchlist-api/internal/config"
 	"github.com/k4sper1love/watchlist-api/pkg/logger/sl"
+	"golang.org/x/crypto/acme/autocert"
 	"log/slog"
 	"net/http"
 	"os"
@@ -18,11 +20,13 @@ import (
 // decides whether to start an HTTP or HTTPS server based on the USE_HTTPS
 // environment variable. In HTTPS mode, it also sets up a server for HTTP to HTTPS redirection.
 func Serve() error {
-	httpAddr := fmt.Sprintf(":%d", config.Port)
+	serverHost := os.Getenv("SERVER_HOST")
+	httpPort := fmt.Sprint(config.Port)
+	httpsPort := "443"
 
 	// Create a new HTTP server with configured address and timeouts.
 	httpServer := &http.Server{
-		Addr:         httpAddr,
+		Addr:         ":" + httpPort,
 		Handler:      route(),
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 30 * time.Second,
@@ -31,7 +35,7 @@ func Serve() error {
 
 	// Create a new HTTPS server with configured address and timeouts.
 	httpsServer := &http.Server{
-		Addr:         ":443",
+		Addr:         ":" + httpsPort,
 		Handler:      route(),
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 30 * time.Second,
@@ -65,19 +69,18 @@ func Serve() error {
 
 	// Checking if HTTPS is enabled
 	if useHTTPS == "true" {
-		serverHost := os.Getenv("SERVER_HOST")
 		// Setting up autocert for automatic HTTPS
-		//m := autocert.Manager{
-		//	Prompt:     autocert.AcceptTOS,
-		//	HostPolicy: autocert.HostWhitelist(serverHost),
-		//	Cache:      autocert.DirCache("certs"),
-		//}
+		m := autocert.Manager{
+			Prompt:     autocert.AcceptTOS,
+			HostPolicy: autocert.HostWhitelist(serverHost),
+			Cache:      autocert.DirCache("certs"),
+		}
 
 		// Launching an HTTPS server in goroutine
 		go func() {
 			sl.Log.Info("starting HTTPS server", slog.String("address", httpsServer.Addr))
 
-			err := httpsServer.ListenAndServeTLS("/certs/fullchain.pem", "/certs/privkey.pem")
+			err := httpsServer.Serve(m.Listener())
 			if err != nil && !errors.Is(err, http.ErrServerClosed) {
 				sl.Log.Error("https server error", slog.Any("error", err))
 			}
@@ -89,6 +92,13 @@ func Serve() error {
 			http.Redirect(w, r, target, http.StatusMovedPermanently)
 		})
 
+		// If HTTPS is enabled, set the host and scheme for Swagger to use HTTPS.
+		api.SwaggerInfo.Host = fmt.Sprintf("%s", serverHost)
+		api.SwaggerInfo.Schemes = []string{"https"}
+	} else {
+		// If HTTPS is not enabled, set the host and scheme for Swagger to use HTTP.
+		api.SwaggerInfo.Host = fmt.Sprintf("%s:%s", serverHost, httpPort)
+		api.SwaggerInfo.Schemes = []string{"http"}
 	}
 
 	sl.Log.Info("starting HTTP server", slog.String("address", httpServer.Addr))

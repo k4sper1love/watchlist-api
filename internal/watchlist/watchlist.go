@@ -13,7 +13,6 @@ The Run function is the entry point for starting the application and manages the
 package watchlist
 
 import (
-	"fmt"
 	"github.com/k4sper1love/watchlist-api/api"
 	"github.com/k4sper1love/watchlist-api/internal/config"
 	"github.com/k4sper1love/watchlist-api/internal/database/postgres"
@@ -60,8 +59,7 @@ func Run(args []string) {
 		sl.Log.Info("database connection closed")
 	}()
 
-	// Configure Swagger documentation.
-	api.SwaggerInfo.Host = fmt.Sprintf("%s:%d", os.Getenv("SERVER_HOST"), config.Port)
+	// Configuring the API version for Swagger documentation.
 	api.SwaggerInfo.Version = version.GetVersion()
 
 	// Start the REST server.
