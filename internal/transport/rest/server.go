@@ -85,7 +85,7 @@ func Serve() error {
 
 		// HTTP handler for redirecting to HTTPS
 		httpServer.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			target := "https://" + r.Host + r.RequestURI
+			target := "https://" + os.Getenv("SERVER_HOST") + ":443" + r.RequestURI
 			http.Redirect(w, r, target, http.StatusMovedPermanently)
 		})
 
