@@ -77,7 +77,7 @@ func Serve() error {
 		go func() {
 			sl.Log.Info("starting HTTPS server", slog.String("address", httpsServer.Addr))
 
-			err := httpsServer.ListenAndServeTLS("certs/fullchain.pem", "certs/privkey.pem")
+			err := httpsServer.ListenAndServeTLS("./certs/fullchain.pem", "./certs/privkey.pem")
 			if err != nil && !errors.Is(err, http.ErrServerClosed) {
 				sl.Log.Error("https server error", slog.Any("error", err))
 			}
