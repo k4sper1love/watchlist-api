@@ -29,8 +29,8 @@ jobs:
       # Creating a new tag containing the current version
       - name: Create and push VERSION tag
         run: |
-          git config --global user.email "elkin_serega.2004@mail.ru"
-          git config --global user.name "Your Name"
+          git config --global user.email "${{ secrets.GIT_USER_EMAIL }}"
+          git config --global user.name "${{ secrets.GIT_USER_NAME }}"
           
           VERSION=$(date +'%Y%m%d%H%M%S')
           git tag -a "v${VERSION}" -m "Release version ${VERSION}"
@@ -40,19 +40,20 @@ jobs:
       - name: Copy project to server
         run: |
           ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
-            mkdir -p /home/${{ secrets.SSH_USER }}/watchlist
+            mkdir -p /home/${{ secrets.SSH_USER }}/watchlist-api
           EOF
           
-          scp -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -r ./* ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/home/${{ secrets.SSH_USER }}/watchlist
+          scp -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -r ./* ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/home/${{ secrets.SSH_USER }}/watchlist-api
 
-      # Exporting environment variables and running docker compose
+        # Exporting environment variables and running docker compose
       - name: Deploy using Docker Compose
         run: |
           ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -o ServerAliveInterval=60 -o ServerAliveCountMax=5 ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
-            cd /home/${{ secrets.SSH_USER }}/watchlist
+            cd /home/${{ secrets.SSH_USER }}/watchlist-api
           
             # Export environment variables 
-            export SERVER_IP=${{ secrets.SSH_HOST }}
+            export USE_HTTPS=${{ secrets.USE_HTTPS }}
+            export SERVER_HOST=${{ secrets.SSH_HOST }}
             export APP_PORT=${{ secrets.APP_PORT }}
             export APP_SECRET=${{ secrets.APP_SECRET }}  
             export APP_ENV=${{ secrets.APP_ENV }}  
@@ -112,7 +113,19 @@ jobs:
       - name: Run Postman tests
         run: |
           ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
-            cd /home/${{ secrets.SSH_USER }}/watchlist/tests/postman
+            cd /home/${{ secrets.SSH_USER }}/watchlist-api/tests/postman
+            
+            # Clearing the cache
+            sudo systemd-resolve --flush-cachesя
           
-            newman run postman_collection.json --environment postman_environment.json
+            # Determine BASE_URL based on USE_HTTPS
+            if [ "${{ secrets.USE_HTTPS }}" == "true" ]; then
+              BASE_URL="https://${{ secrets.SSH_HOST }}"
+            else
+              BASE_URL="http://${{ secrets.SSH_HOST }}:${{ secrets.APP_PORT }}"
+            fi
+          
+            # Starting with the determinated BASE_URL
+            newman run postman_collection.json --environment postman_environment.json --env-var "BASE_URL=$BASE_URL"
+
           EOF

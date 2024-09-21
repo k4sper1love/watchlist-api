@@ -61,7 +61,7 @@ func Run(args []string) {
 	}()
 
 	// Configure Swagger documentation.
-	api.SwaggerInfo.Host = fmt.Sprintf("%s:%d", os.Getenv("SERVER_IP"), config.Port)
+	api.SwaggerInfo.Host = fmt.Sprintf("%s:%d", os.Getenv("SERVER_HOST"), config.Port)
 	api.SwaggerInfo.Version = version.GetVersion()
 
 	// Start the REST server.

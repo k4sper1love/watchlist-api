@@ -15,7 +15,8 @@ services:
       dockerfile: Dockerfile
     <<: *default-logging
     environment:
-      SERVER_IP: ${SERVER_IP:-localhost}
+      USE_HTTPS: ${USE_HTTPS:-false}
+      SERVER_HOST: ${SERVER_HOST:-localhost}
       APP_PORT: ${APP_PORT}
       APP_DSN: ${APP_DSN}
       APP_MIGRATIONS: ${APP_MIGRATIONS}
@@ -24,6 +25,7 @@ services:
       VERSION: ${VERSION}
     ports:
       - "${APP_PORT}:${APP_PORT}"
+      - "443:443"
     depends_on:
       db:
         condition: service_healthy

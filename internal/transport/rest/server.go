@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/k4sper1love/watchlist-api/internal/config"
 	"github.com/k4sper1love/watchlist-api/pkg/logger/sl"
+	"golang.org/x/crypto/acme/autocert"
 	"log/slog"
 	"net/http"
 	"os"
@@ -13,15 +14,25 @@ import (
 	"time"
 )
 
-// Serve starts the HTTP server and handles graceful shutdown on receiving termination signals.
-// It listens for incoming HTTP requests and routes them using the configured route handler.
-// Returns an error if the server encounters a problem or fails to shut down gracefully.
+// Serve initializes and starts the HTTP(S) server, handling both HTTP requests
+// and graceful shutdown when termination signals are received. It dynamically
+// decides whether to start an HTTP or HTTPS server based on the USE_HTTPS
+// environment variable. In HTTPS mode, it also sets up a server for HTTP to HTTPS redirection.
 func Serve() error {
-	address := fmt.Sprintf(":%d", config.Port)
+	httpAddr := fmt.Sprintf(":%d", config.Port)
 
 	// Create a new HTTP server with configured address and timeouts.
-	server := &http.Server{
-		Addr:         address,
+	httpServer := &http.Server{
+		Addr:         httpAddr,
+		Handler:      route(),
+		ReadTimeout:  10 * time.Second,
+		WriteTimeout: 30 * time.Second,
+		IdleTimeout:  time.Minute,
+	}
+
+	// Create a new HTTPS server with configured address and timeouts.
+	httpsServer := &http.Server{
+		Addr:         ":443",
 		Handler:      route(),
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 30 * time.Second,
@@ -45,16 +56,46 @@ func Serve() error {
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
 
-		// Attempt to shut down the server gracefully.
-		shutdownErr <- server.Shutdown(ctx)
+		// Attempt to shut down the servers gracefully.
+		shutdownErr <- httpServer.Shutdown(ctx)
+		shutdownErr <- httpsServer.Shutdown(ctx)
 	}()
 
-	sl.Log.Info("starting server", slog.String("address", server.Addr))
+	// Getting the value of the USE_HTTPS environment variable
+	useHTTPS := os.Getenv("USE_HTTPS")
 
-	// Start the server and listen for incoming requests.
-	err := server.ListenAndServe()
-	if !errors.Is(err, http.ErrServerClosed) {
-		sl.Log.Error("server error", slog.Any("error", err))
+	// Checking if HTTPS is enabled
+	if useHTTPS == "true" {
+		// Setting up autocert for automatic HTTPS
+		m := autocert.Manager{
+			Prompt:     autocert.AcceptTOS,
+			HostPolicy: autocert.HostWhitelist(os.Getenv("SERVER_HOST")),
+			Cache:      autocert.DirCache("certs"),
+		}
+
+		// Launching an HTTPS server in goroutine
+		go func() {
+			sl.Log.Info("starting HTTPS server", slog.String("address", httpsServer.Addr))
+
+			err := httpsServer.Serve(m.Listener())
+			if err != nil && !errors.Is(err, http.ErrServerClosed) {
+				sl.Log.Error("https server error", slog.Any("error", err))
+			}
+		}()
+
+		// HTTP handler for redirecting to HTTPS
+		httpServer.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			target := "https://" + r.Host + r.RequestURI
+
+			http.Redirect(w, r, target, http.StatusMovedPermanently)
+		})
+
+	}
+
+	sl.Log.Info("starting HTTP server", slog.String("address", httpServer.Addr))
+	err := httpServer.ListenAndServe()
+	if err != nil && !errors.Is(err, http.ErrServerClosed) {
+		sl.Log.Error("http server error", slog.Any("error", err))
 		return err
 	}
 
@@ -65,7 +106,7 @@ func Serve() error {
 		return err
 	}
 
-	sl.Log.Info("stopped server on", slog.String("address", server.Addr))
+	sl.Log.Info("stopped server gracefully")
 
 	return nil
 }
