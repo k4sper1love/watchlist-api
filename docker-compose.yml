@@ -27,7 +27,7 @@ services:
       - "${APP_PORT}:${APP_PORT}"
       - "443:443"
     volumes:
-      - ./certs:/certs
+      - ./certs:certs
     depends_on:
       db:
         condition: service_healthy
