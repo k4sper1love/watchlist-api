@@ -3,7 +3,7 @@ name: Deploy to Server
 on:
   push:
     branches:
-      - https
+      - main
 permissions:
   contents: write
 
