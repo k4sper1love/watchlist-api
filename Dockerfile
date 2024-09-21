@@ -16,7 +16,11 @@ RUN apk --no-cache add ca-certificates
 
 WORKDIR /root/
 
+
 COPY --from=builder /app/watchlist-app .
 COPY --from=builder /app/migrations ./migrations
+
+COPY certs/fullchain.pem /etc/letsencrypt/live/fullchain.pem
+COPY certs/privkey.pem /etc/letsencrypt/live/privkey.pem
 
 CMD ["./watchlist-app"]

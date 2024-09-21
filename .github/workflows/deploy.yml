@@ -49,9 +49,7 @@ jobs:
       - name: Install Certbot and obtain SSL certificates
         run: |
           ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
-            # Check if USE_HTTPS is true
             if [ "${{ secrets.USE_HTTPS }}" = "true" ]; then
-              # Check if Certbot is installed
               if ! command -v certbot &> /dev/null; then
                 echo "Certbot not found, installing..."
                 sudo apt-get update
@@ -59,8 +57,7 @@ jobs:
               else
                 echo "Certbot is already installed"
               fi
-      
-              # Check if SSL certificates already exist
+
               CERT_PATH="/etc/letsencrypt/live/${{ secrets.SSH_HOST }}/fullchain.pem"
               if [ -f "$CERT_PATH" ]; then
                 echo "SSL certificates already exist, skipping certificate issuance"
@@ -68,19 +65,16 @@ jobs:
                 echo "SSL certificates not found, obtaining new certificates..."
                 sudo certbot certonly --standalone --non-interactive --agree-tos -m ${{ secrets.GIT_USER_EMAIL }} -d ${{ secrets.SSH_HOST }}
               fi
-      
-              # Ensure a cron job exists for automatic certificate renewal
+
               if ! crontab -l | grep -q "certbot renew"; then
                 echo "Setting up a cron job for automatic certificate renewal..."
                 (crontab -l ; echo "0 0,12 * * * certbot renew --post-hook 'systemctl restart nginx'") | crontab -
               else
                 echo "Cron job for certificate renewal is already set up"
               fi
-          
             else
               echo "HTTPS is disabled, skipping SSL certificate setup."
             fi
-          
           EOF
 
       # Exporting environment variables and running docker compose
@@ -89,7 +83,6 @@ jobs:
           ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -o ServerAliveInterval=60 -o ServerAliveCountMax=5 ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
             cd /home/${{ secrets.SSH_USER }}/watchlist-api
           
-            # Export environment variables 
             export SERVER_HOST=${{ secrets.SSH_HOST }}
             export APP_PORT=${{ secrets.APP_PORT }}
             export APP_SECRET=${{ secrets.APP_SECRET }}  
@@ -103,11 +96,11 @@ jobs:
             export VERSION=${{ env.VERSION }}
             export GRAFANA_PASSWORD=${{ secrets.GRAFANA_PASSWORD }}
             export USE_HTTPS=${{ secrets.USE_HTTPS }}
-          
-            # Deploy with Docker Compose
+            export TLS_CERT="/etc/letsencrypt/live/${{ secrets.SSH_HOST }}/fullchain.pem"
+            export TLS_KEY="/etc/letsencrypt/live/${{ secrets.SSH_HOST }}/privkey.pem"
+
             docker-compose down
           
-            # If FULL_REBUILD = true, then use --no-cache
             if [[ "${{ secrets.FULL_REBUILD }}" == "true" ]]; then
               docker-compose build --no-cache
             else 
@@ -121,7 +114,6 @@ jobs:
       - name: Install Node.js, npm, and Newman
         run: |
           ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
-            # Check if Node.js is installed
             if ! command -v node &> /dev/null; then
               echo "Node.js not found, installing..."
               curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
@@ -130,7 +122,6 @@ jobs:
               echo "Node.js is already installed"
             fi
 
-            # Check if npm is installed
             if ! command -v npm &> /dev/null; then
               echo "npm not found, installing..."
               sudo apt-get install -y npm
@@ -138,7 +129,6 @@ jobs:
               echo "npm is already installed"
             fi
 
-            # Check if Newman is installed
             if ! command -v newman &> /dev/null; then
               echo "Newman not found, installing..."
               npm install -g newman
@@ -152,18 +142,15 @@ jobs:
         run: |
           ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
             cd /home/${{ secrets.SSH_USER }}/watchlist-api/tests/postman
-            
-            # Clearing the cache
-            sudo systemd-resolve --flush-cachesя
           
-            # Determine BASE_URL based on USE_HTTPS
+            sudo systemd-resolve --flush-caches
+          
             if [ "${{ secrets.USE_HTTPS }}" == "true" ]; then
               BASE_URL="https://${{ secrets.SSH_HOST }}"
             else
               BASE_URL="http://${{ secrets.SSH_HOST }}:${{ secrets.APP_PORT }}"
             fi
           
-            # Starting with the determinated BASE_URL
             newman run postman_collection.json --environment postman_environment.json --env-var "BASE_URL=$BASE_URL"
 
           EOF
