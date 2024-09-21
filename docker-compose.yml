@@ -25,6 +25,8 @@ services:
       USE_HTTPS: ${USE_HTTPS:-false}
     ports:
       - "${APP_PORT}:${APP_PORT}"
+    volumes:
+     - /etc/letsencrypt/live/${SERVER_HOST}:/etc/letsencrypt/live/${SERVER_HOST}
     depends_on:
       db:
         condition: service_healthy
