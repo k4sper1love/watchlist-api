@@ -118,7 +118,7 @@ jobs:
               docker-compose build
             fi
           
-            docker-compose up
+            docker-compose up -d
           EOF
 
       # Installing dependencies (node.js, npm, newman) to run Postman tests if they are not already installed
