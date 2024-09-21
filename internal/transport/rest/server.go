@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"github.com/k4sper1love/watchlist-api/internal/config"
 	"github.com/k4sper1love/watchlist-api/pkg/logger/sl"
-	"golang.org/x/crypto/acme/autocert"
 	"log/slog"
 	"net/http"
 	"os"
@@ -68,17 +67,17 @@ func Serve() error {
 	if useHTTPS == "true" {
 		serverHost := os.Getenv("SERVER_HOST")
 		// Setting up autocert for automatic HTTPS
-		m := autocert.Manager{
-			Prompt:     autocert.AcceptTOS,
-			HostPolicy: autocert.HostWhitelist(serverHost),
-			Cache:      autocert.DirCache("certs"),
-		}
+		//m := autocert.Manager{
+		//	Prompt:     autocert.AcceptTOS,
+		//	HostPolicy: autocert.HostWhitelist(serverHost),
+		//	Cache:      autocert.DirCache("certs"),
+		//}
 
 		// Launching an HTTPS server in goroutine
 		go func() {
 			sl.Log.Info("starting HTTPS server", slog.String("address", httpsServer.Addr))
 
-			err := httpsServer.Serve(m.Listener())
+			err := httpsServer.ListenAndServeTLS("certs/fullchain.pem", "certs/privkey.pem")
 			if err != nil && !errors.Is(err, http.ErrServerClosed) {
 				sl.Log.Error("https server error", slog.Any("error", err))
 			}
