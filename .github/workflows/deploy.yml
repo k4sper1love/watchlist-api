@@ -45,53 +45,6 @@ jobs:
           
           scp -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -r ./* ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/home/${{ secrets.SSH_USER }}/watchlist-api
 
-      # Obtaining SSL certificates for HTTPS (only if USE_HTTP=true)
-      - name: Install Certbot and obtain SSL certificates
-        run: |
-          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
-            # Check if USE_HTTPS is true
-            if [ "${{ secrets.USE_HTTPS }}" = "true" ]; then
-              # Check if Certbot is installed
-              if ! command -v certbot &> /dev/null; then
-                echo "Certbot not found, installing..."
-                sudo apt-get update
-                sudo apt-get install -y certbot
-              else
-                echo "Certbot is already installed"
-              fi
-      
-              # Check if SSL certificates already exist
-              CERT_PATH="/etc/letsencrypt/live/${{ secrets.SSH_HOST }}/fullchain.pem"
-              if [ -f "$CERT_PATH" ]; then
-                echo "SSL certificates already exist, skipping certificate issuance"
-              else
-                echo "SSL certificates not found, obtaining new certificates..."
-                sudo certbot certonly --standalone --non-interactive --agree-tos -m ${{ secrets.GIT_USER_EMAIL }} -d ${{ secrets.SSH_HOST }}
-              fi
-      
-              # Ensure a cron job exists for automatic certificate renewal
-              if ! crontab -l | grep -q "certbot renew"; then
-                echo "Setting up a cron job for automatic certificate renewal..."
-                (crontab -l ; echo "0 0,12 * * * certbot renew --post-hook 'systemctl restart nginx'") | crontab -
-              else
-                echo "Cron job for certificate renewal is already set up"
-              fi
-          
-            else
-              echo "HTTPS is disabled, skipping SSL certificate setup."
-            fi
-          
-          EOF
-          
-      # Copying SSL certificates to the project
-      - name: Copy SSL certificates to project
-        run: |
-          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
-            mkdir -p /home/${{ secrets.SSH_USER }}/watchlist-api/certs
-            cp /etc/letsencrypt/live/${{ secrets.SSH_HOST }}/fullchain.pem /home/${{ secrets.SSH_USER }}/watchlist-api/certs/fullchain.pem
-            cp /etc/letsencrypt/live/${{ secrets.SSH_HOST }}/privkey.pem /home/${{ secrets.SSH_USER }}/watchlist-api/certs/privkey.pem
-          EOF
-
         # Exporting environment variables and running docker compose
       - name: Deploy using Docker Compose
         run: |
