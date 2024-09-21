@@ -81,9 +81,14 @@ jobs:
               echo "HTTPS is disabled, skipping SSL certificate setup."
             fi
             
-            mkdir -p /home/${{ secrets.SSH_USER }}/watchlist-api/certs
+          
             cp /etc/letsencrypt/live/${{ secrets.SSH_HOST }}/fullchain.pem /home/${{ secrets.SSH_USER }}/watchlist-api/certs/fullchain.pem
             cp /etc/letsencrypt/live/${{ secrets.SSH_HOST }}/privkey.pem /home/${{ secrets.SSH_USER }}/watchlist-api/certs/privkey.pem
+            
+            mkdir -p /home/${{ secrets.SSH_USER }}/watchlist-api/certs
+          
+            chmod 644 /home/${{ secrets.SSH_USER }}/watchlist-api/certs/fullchain.pem
+            chmod 644 /home/${{ secrets.SSH_USER }}/watchlist-api/certs/privkey.pem
           
           EOF
 
@@ -95,6 +100,7 @@ jobs:
           
             # Export environment variables 
             export SERVER_HOST=${{ secrets.SSH_HOST }}
+            export SSH_USER=${{ secrets.SSH_USER }}
             export APP_PORT=${{ secrets.APP_PORT }}
             export APP_SECRET=${{ secrets.APP_SECRET }}  
             export APP_ENV=${{ secrets.APP_ENV }}  
@@ -158,7 +164,7 @@ jobs:
             cd /home/${{ secrets.SSH_USER }}/watchlist-api/tests/postman
             
             # Clearing the cache
-            sudo systemd-resolve --flush-caches
+            sudo systemd-resolve --flush-cachesя
           
             # Determine BASE_URL based on USE_HTTPS
             if [ "${{ secrets.USE_HTTPS }}" == "true" ]; then
