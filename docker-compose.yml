@@ -16,7 +16,6 @@ services:
     <<: *default-logging
     environment:
       SERVER_HOST: ${SERVER_HOST:-localhost}
-      SERVER_USER: ${SERVER_USER:-root}
       APP_PORT: ${APP_PORT}
       APP_DSN: ${APP_DSN}
       APP_MIGRATIONS: ${APP_MIGRATIONS}
@@ -26,6 +25,8 @@ services:
       USE_HTTPS: ${USE_HTTPS:-false}
     ports:
       - "${APP_PORT}:${APP_PORT}"
+    volumes:
+     - /etc/letsencrypt/live/${SERVER_HOST}:/etc/letsencrypt/live/${SERVER_HOST}
     depends_on:
       db:
         condition: service_healthy
