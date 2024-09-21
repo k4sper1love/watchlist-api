@@ -75,7 +75,6 @@ func Serve() error {
 			HostPolicy: autocert.HostWhitelist(serverHost),
 			Cache:      autocert.DirCache("/etc/letsencrypt/live"),
 		}
-
 		httpsServer.TLSConfig = m.TLSConfig()
 
 		// Launching an HTTPS server in goroutine
