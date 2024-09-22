@@ -3,9 +3,9 @@
 **Watchlist API** is a REST API that allows you to save and manage a list of films you want to watch. It includes features for registration, managing film collections, adding comments, and leaving feedback.
 
 ## 🔴 Live Server
-- **Healthcheck Endpoint**: [http://91.243.71.175:8001/api/v1/healthcheck](http://91.243.71.175:8001/api/v1/healthcheck)
-- **Swagger Documentation**: [http://91.243.71.175:8001/swagger/index.html](http://91.243.71.175:8001/swagger/index.html)
-- **Grafana Dashboards**: [http://91.243.71.175:3000](http://91.243.71.175:3000/public-dashboards/6e330a613ece4935aa007d47968adcac)
+- **Healthcheck Endpoint**: [https://k4sper1love.kz/api/v1/healthcheck](https://k4sper1love.kz/api/v1/healthcheck)
+- **Swagger Documentation**: [https://k4sper1love.kz/swagger/index.html](https://k4sper1love.kz/swagger/index.html)
+- **Grafana Dashboards**: [http://k4sper1love.kz:3000](http://k4sper1love.kz:3000/public-dashboards/2537938d1d5a4917a3a2264da797a5b5?orgId=1&refresh=auto)
 
 ## 🔎 Navigation
 - [Main Features](#-main-features)
