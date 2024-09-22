@@ -59,7 +59,7 @@ services:
     hostname: loki
     image: grafana/loki:2.9.0
     volumes:
-      - ./grafana/loki/config.yaml:/etc/grafana/loki/config.yaml
+      - ./logs/grafana/loki/config.yaml:/etc/grafana/loki/config.yaml
       - loki-data:/loki
     ports:
       - "3100:3100"
@@ -74,7 +74,7 @@ services:
       - GF_AUTH_ANONYMOUS_ENABLED=false
       - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
     volumes:
-      - ./grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
+      - ./logs/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
       - grafana-data:/var/lib/grafana
     image: grafana/grafana:latest
     ports:
