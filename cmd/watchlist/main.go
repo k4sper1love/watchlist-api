@@ -8,6 +8,7 @@ package main
 
 import (
 	"github.com/k4sper1love/watchlist-api/internal/watchlist"
+	"github.com/k4sper1love/watchlist-api/pkg/logger/sl"
 	"os"
 )
 
@@ -23,7 +24,10 @@ import (
 // @in header
 // @name Authorization
 // @description JWT Authorization header using the Bearer scheme. Example: 'Authorization: Bearer {token}'
+
 func main() {
-	// Start the application with command-line arguments.
-	watchlist.Run(os.Args)
+	if err := watchlist.Run(os.Args); err != nil {
+		sl.Log.Error("application terminated due to an error")
+		os.Exit(1)
+	}
 }

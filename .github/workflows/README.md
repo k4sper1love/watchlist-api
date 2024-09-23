@@ -26,13 +26,13 @@ cat ~/.ssh/id_rsa.pub
 
 cat ~/.ssh/id_rsa # SSH_PRIVATE_KEY
 ```
-3. Access the remote server:
+3. (Optional) Remove old SSH keys:
 ```sh
-ssh `user@host`
+ssh-keygen -R your_host  # Removes old keys for the specified host from the known_hosts file
 ```
-4. (Optional) Remove old keys from the server:
+4. Access the remote server:
 ```sh
-ssh-keygen -R `host`
+ssh your_user@your_host
 ```
 5. Add the public key to the server:
 ```sh
