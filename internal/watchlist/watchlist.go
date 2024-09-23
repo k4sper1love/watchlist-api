@@ -30,16 +30,11 @@ func Run(args []string) {
 	sl.SetupLogger("dev")
 	sl.Log.Info("starting application")
 
-	sl.Log.Debug("environment variables parsed successfully")
-
 	// Parse command-line flags.
 	err := config.ParseFlags(args[1:])
 	if err != nil {
-		sl.Log.Error("failed to load flags", slog.Any("error", err))
 		os.Exit(1) // Exit if flag parsing fails.
 	}
-
-	sl.Log.Debug("command-line flags parsed successfully")
 
 	// Reconfigure logger based on the environment.
 	sl.SetupLogger(config.Env)

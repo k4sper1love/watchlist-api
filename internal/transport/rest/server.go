@@ -7,6 +7,7 @@ import (
 	"github.com/k4sper1love/watchlist-api/api"
 	"github.com/k4sper1love/watchlist-api/internal/config"
 	"github.com/k4sper1love/watchlist-api/pkg/logger/sl"
+	"golang.org/x/crypto/acme/autocert"
 	"log/slog"
 	"net/http"
 	"os"
@@ -69,19 +70,18 @@ func Serve() error {
 	//Checking if HTTPS is enabled
 	if useHTTPS == "true" {
 		// Setting up autocert for automatic HTTPS
-		//m := autocert.Manager{
-		//	Prompt:     autocert.AcceptTOS,
-		//	HostPolicy: autocert.HostWhitelist(serverHost),
-		//	Cache:      autocert.DirCache("/etc/letsencrypt/live"),
-		//}
-		//httpsServer.TLSConfig = m.TLSConfig()
+		m := autocert.Manager{
+			Prompt:     autocert.AcceptTOS,
+			HostPolicy: autocert.HostWhitelist(serverHost),
+			Cache:      autocert.DirCache("/certs"),
+		}
+		httpsServer.TLSConfig = m.TLSConfig()
 
 		// Launching an HTTPS server in goroutine
 		go func() {
-			sl.Log.Info("starting HTTPS server", slog.String("address", httpsServer.Addr))
+			sl.Log.Info("starting HTTPS server", slog.String("address", "https://"+serverHost+httpsServer.Addr))
 
-			// TODO delete file paths
-			err := httpsServer.ListenAndServeTLS("/etc/letsencrypt/live/fullchain.pem", "/etc/letsencrypt/live/privkey.pem")
+			err := httpsServer.ListenAndServeTLS("", "")
 			if err != nil && !errors.Is(err, http.ErrServerClosed) {
 				sl.Log.Error("https server error", slog.Any("error", err))
 			}
@@ -91,6 +91,12 @@ func Serve() error {
 		httpServer.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			target := "https://" + serverHost + r.RequestURI
 			http.Redirect(w, r, target, http.StatusMovedPermanently)
+			sl.Log.Info(
+				"Redirecting to HTTPS",
+				slog.String("original_url", r.URL.String()),
+				slog.String("target_url", "https://"+serverHost+r.RequestURI),
+				slog.String("from", r.RemoteAddr),
+			)
 		})
 
 		// If HTTPS is enabled, set the host and scheme for Swagger to use HTTPS.
@@ -102,7 +108,8 @@ func Serve() error {
 		api.SwaggerInfo.Schemes = []string{"http"}
 	}
 
-	sl.Log.Info("starting HTTP server", slog.String("address", httpServer.Addr))
+	sl.Log.Info("starting HTTP server", slog.String("address", "http://"+serverHost+httpServer.Addr))
+
 	err := httpServer.ListenAndServe()
 	if err != nil && !errors.Is(err, http.ErrServerClosed) {
 		sl.Log.Error("http server error", slog.Any("error", err))
@@ -112,7 +119,7 @@ func Serve() error {
 	// Wait for server shutdown to complete and handle any shutdown errors.
 	err = <-shutdownErr
 	if err != nil {
-		sl.Log.Error("shutdown error", slog.Any("error", err))
+		sl.Log.Warn("shutdown error", slog.Any("error", err))
 		return err
 	}
 
