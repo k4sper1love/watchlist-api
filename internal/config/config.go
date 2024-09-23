@@ -7,7 +7,6 @@ It provides functions to parse command-line flags for configuration.
 package config
 
 import (
-	"errors"
 	"github.com/joho/godotenv"
 	"github.com/k4sper1love/watchlist-api/pkg/logger/sl"
 	"github.com/peterbourgon/ff/v4"
@@ -49,12 +48,15 @@ func ParseFlags(args []string) error {
 
 	err = ff.Parse(flagSet, args, ff.WithEnvVarPrefix("APP"))
 	if err != nil {
+		sl.Log.Error("Error parsing flags", slog.Any("error", err))
 		return err
 	}
 
 	if Env != "local" && Env != "dev" && Env != "prod" {
-		return errors.New("invalid env value")
+		sl.Log.Warn("Invalid environment value; defaulting to 'local'", slog.Any("env", Env))
+		Env = "local"
 	}
 
+	sl.Log.Debug("Parsed flags successfully", slog.String("env", Env), slog.Int("port", Port))
 	return nil
 }

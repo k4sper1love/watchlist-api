@@ -44,5 +44,26 @@ func PrintHandlerInfo(r *http.Request) {
 		slog.String("from", r.RemoteAddr),
 		slog.String("to", r.Host),
 	)
+}
 
+func PrintHandlerError(msg string, err interface{}, r *http.Request) {
+	Log.Error(
+		msg,
+		slog.Any("error", err),
+		slog.String("path", r.RequestURI),
+		slog.String("method", r.Method),
+		slog.String("from", r.RemoteAddr),
+		slog.String("to", r.Host),
+	)
+}
+
+func PrintHandlerWarn(msg string, err interface{}, r *http.Request) {
+	Log.Warn(
+		msg,
+		slog.Any("error", err),
+		slog.String("path", r.RequestURI),
+		slog.String("method", r.Method),
+		slog.String("from", r.RemoteAddr),
+		slog.String("to", r.Host),
+	)
 }

@@ -11,15 +11,6 @@ type AuthResponse struct {
 	RefreshToken string `json:"refresh_token" example:"eyJhbGciOI6IkpXVCJ9.eyJzdk5EbifQ.4CfEaMw6Ur_fszI"`
 }
 
-type systemInfo struct {
-	Environment string `json:"environment" example:"prod"`
-	Version     string `json:"version" example:"20240916192353"`
-}
-type HealthCheckResponse struct {
-	Status     string     `json:"status" example:"enabled"`
-	SystemInfo systemInfo `json:"system_info"`
-}
-
 type MessageResponse struct {
 	Message string `json:"message" example:"some kind of success message"`
 }

@@ -9,10 +9,7 @@ const docTemplate = `{
     "info": {
         "description": "{{escape .Description}}",
         "title": "{{.Title}}",
-        "contact": {
-            "name": "API Support",
-            "email": "s_yelkin@proton.me"
-        },
+        "contact": {},
         "version": "{{.Version}}"
     },
     "host": "{{.Host}}",
@@ -1337,7 +1334,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/swagger.HealthCheckResponse"
+                            "$ref": "#/definitions/rest.HealthcheckResponse"
                         }
                     },
                     "500": {
@@ -1729,6 +1726,54 @@ const docTemplate = `{
                 }
             }
         },
+        "rest.Dependency": {
+            "type": "object",
+            "properties": {
+                "response_time": {
+                    "type": "string",
+                    "example": "48ms"
+                },
+                "status": {
+                    "type": "string",
+                    "example": "up"
+                }
+            }
+        },
+        "rest.HealthcheckResponse": {
+            "type": "object",
+            "properties": {
+                "dependencies": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/rest.Dependency"
+                    }
+                },
+                "status": {
+                    "type": "string",
+                    "example": "operational"
+                },
+                "systemInfo": {
+                    "$ref": "#/definitions/rest.SystemInfo"
+                }
+            }
+        },
+        "rest.SystemInfo": {
+            "type": "object",
+            "properties": {
+                "environment": {
+                    "type": "string",
+                    "example": "prod"
+                },
+                "last_checked": {
+                    "type": "string",
+                    "example": "2024-09-24T00:41:20+05:00"
+                },
+                "uptime": {
+                    "type": "string",
+                    "example": "3h 26m 30s"
+                }
+            }
+        },
         "swagger.AccessTokenResponse": {
             "type": "object",
             "properties": {
@@ -1917,18 +1962,6 @@ const docTemplate = `{
                 }
             }
         },
-        "swagger.HealthCheckResponse": {
-            "type": "object",
-            "properties": {
-                "status": {
-                    "type": "string",
-                    "example": "enabled"
-                },
-                "system_info": {
-                    "$ref": "#/definitions/swagger.systemInfo"
-                }
-            }
-        },
         "swagger.LoginRequest": {
             "type": "object",
             "properties": {
@@ -1982,19 +2015,6 @@ const docTemplate = `{
             "properties": {
                 "user": {
                     "$ref": "#/definitions/models.User"
-                }
-            }
-        },
-        "swagger.systemInfo": {
-            "type": "object",
-            "properties": {
-                "environment": {
-                    "type": "string",
-                    "example": "prod"
-                },
-                "version": {
-                    "type": "string",
-                    "example": "20240916192353"
                 }
             }
         }

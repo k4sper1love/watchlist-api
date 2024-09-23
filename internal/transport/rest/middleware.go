@@ -8,27 +8,29 @@ import (
 	"strings"
 )
 
+// List of paths that do not require authentication.
+var notRequireAuth = []string{
+	"/",
+	"/api",
+	"/api/v1/healthcheck",
+	"/api/v1/auth/register",
+	"/api/v1/auth/login",
+	"/api/v1/auth/refresh",
+}
+
 // requireAuth ensures that requests have a valid authentication token or are to an excluded path.
 //
 // Returns a http.Handler that processes the request based on authentication status.
 func requireAuth(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// List of paths that do not require authentication.
-		notAuth := []string{
-			"/api/v1/healthcheck",
-			"/api/v1/auth/register",
-			"/api/v1/auth/login",
-			"/api/v1/auth/refresh",
-		}
 		requestPath := r.URL.Path
 
 		// Check if the request path is in the list of paths that do not require authentication.
-		for _, path := range notAuth {
+		for _, path := range notRequireAuth {
 			if path == requestPath {
 				// If the path is not authenticated, proceed to the next handler.
 				next.ServeHTTP(w, r)
 				return
-
 			}
 		}
 
