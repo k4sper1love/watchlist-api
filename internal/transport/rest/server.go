@@ -75,13 +75,13 @@ func Serve() error {
 			HostPolicy: autocert.HostWhitelist(serverHost),
 			Cache:      autocert.DirCache("/certs"),
 		}
-		httpsServer.TLSConfig = m.TLSConfig()
 
 		// Launching an HTTPS server in goroutine
 		go func() {
 			sl.Log.Info("starting HTTPS server", slog.String("address", "https://"+serverHost+httpsServer.Addr))
 
-			err := httpsServer.ListenAndServeTLS("", "")
+			// TODO delete file paths
+			err := httpsServer.Serve(m.Listener())
 			if err != nil && !errors.Is(err, http.ErrServerClosed) {
 				sl.Log.Error("https server error", slog.Any("error", err))
 			}
