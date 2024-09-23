@@ -14,10 +14,6 @@ import (
 
 // @title Watchlist API
 // @description This is a REST API for saving films you want to watch.
-
-// @contact.name API Support
-// @contact.email s_yelkin@proton.me
-
 // @BasePath /api/v1
 
 // @securityDefinitions.apiKey JWTAuth

@@ -170,6 +170,39 @@ definitions:
     - email
     - username
     type: object
+  rest.Dependency:
+    properties:
+      response_time:
+        example: 48ms
+        type: string
+      status:
+        example: up
+        type: string
+    type: object
+  rest.HealthcheckResponse:
+    properties:
+      dependencies:
+        additionalProperties:
+          $ref: '#/definitions/rest.Dependency'
+        type: object
+      status:
+        example: operational
+        type: string
+      systemInfo:
+        $ref: '#/definitions/rest.SystemInfo'
+    type: object
+  rest.SystemInfo:
+    properties:
+      environment:
+        example: prod
+        type: string
+      last_checked:
+        example: "2024-09-24T00:41:20+05:00"
+        type: string
+      uptime:
+        example: 3h 26m 30s
+        type: string
+    type: object
   swagger.AccessTokenResponse:
     properties:
       access_token:
@@ -300,14 +333,6 @@ definitions:
       metadata:
         $ref: '#/definitions/filters.Metadata'
     type: object
-  swagger.HealthCheckResponse:
-    properties:
-      status:
-        example: enabled
-        type: string
-      system_info:
-        $ref: '#/definitions/swagger.systemInfo'
-    type: object
   swagger.LoginRequest:
     properties:
       email:
@@ -346,19 +371,8 @@ definitions:
       user:
         $ref: '#/definitions/models.User'
     type: object
-  swagger.systemInfo:
-    properties:
-      environment:
-        example: prod
-        type: string
-      version:
-        example: "20240916192353"
-        type: string
-    type: object
 info:
-  contact:
-    email: s_yelkin@proton.me
-    name: API Support
+  contact: {}
   description: This is a REST API for saving films you want to watch.
   title: Watchlist API
 paths:
@@ -1233,7 +1247,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/swagger.HealthCheckResponse'
+            $ref: '#/definitions/rest.HealthcheckResponse'
         "500":
           description: Internal Server Error
           schema:

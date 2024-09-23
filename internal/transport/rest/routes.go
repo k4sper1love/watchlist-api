@@ -1,3 +1,11 @@
+// Package rest provides HTTP handlers for managing and retrieving information related to the REST API.
+//
+// This package includes handlers for adding, retrieving, updating, and deleting users, films,
+// collections, and collection-films, as well as for checking the health of the API.
+//
+// The handlers use a custom logger for logging and interact with the database and other internal
+// components to perform various operations related to users, films, collections, and permissions.
+
 package rest
 
 import (
@@ -25,6 +33,14 @@ func route() *mux.Router {
 
 	// Handle 405 Method Not Allowed
 	router.MethodNotAllowedHandler = http.HandlerFunc(methodNotAllowedResponse)
+
+	// Default endpoint
+	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, "/api", http.StatusSeeOther)
+	})
+
+	// Info API endpoint
+	router.HandleFunc("/api", infoHandler).Methods(http.MethodGet)
 
 	// Health check endpoint
 	router.HandleFunc("/api/v1/healthcheck", healthcheckHandler).Methods(http.MethodGet)

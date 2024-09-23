@@ -15,15 +15,23 @@ import (
 	"time"
 )
 
+var startServerTime time.Time
+
 // Serve initializes and starts the HTTP(S) server, handling both HTTP requests
 // and graceful shutdown when termination signals are received. It dynamically
 // decides whether to start an HTTP or HTTPS server based on the USE_HTTPS
 // environment variable. In HTTPS mode, it also sets up a server for HTTP to HTTPS redirection.
 func Serve() error {
+	startServerTime = time.Now()
+
 	useHTTPS := os.Getenv("USE_HTTPS")
-	host := os.Getenv("SERVER_HOST")
 	portHTTP := fmt.Sprint(config.Port)
 	portHTTPS := "443"
+
+	host := os.Getenv("SERVER_HOST")
+	if host == "" {
+		host = "localhost"
+	}
 
 	// Create servers
 	serverHTTP := newServer(":" + portHTTP)
@@ -52,7 +60,7 @@ func Serve() error {
 		api.SwaggerInfo.Host = host
 		api.SwaggerInfo.Schemes = []string{"https"}
 	} else {
-		api.SwaggerInfo.Host = host + portHTTP
+		api.SwaggerInfo.Host = host + ":" + portHTTP
 		api.SwaggerInfo.Schemes = []string{"http"}
 	}
 
