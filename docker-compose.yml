@@ -15,7 +15,6 @@ services:
       dockerfile: Dockerfile
     <<: *default-logging
     environment:
-      USE_HTTPS: ${USE_HTTPS:-false}
       SERVER_HOST: ${SERVER_HOST:-localhost}
       APP_PORT: ${APP_PORT}
       APP_DSN: ${APP_DSN}
@@ -25,9 +24,6 @@ services:
       VERSION: ${VERSION}
     ports:
       - "${APP_PORT}:${APP_PORT}"
-      - "443:443"
-    volumes:
-      - certs:/root/certs
     depends_on:
       db:
         condition: service_healthy
@@ -104,7 +100,6 @@ services:
       - logging
 
 volumes:
-  certs:
   pg-data:
   grafana-data:
   loki-data:

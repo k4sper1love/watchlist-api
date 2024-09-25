@@ -7,7 +7,6 @@ import (
 	"github.com/k4sper1love/watchlist-api/api"
 	"github.com/k4sper1love/watchlist-api/internal/config"
 	"github.com/k4sper1love/watchlist-api/pkg/logger/sl"
-	"golang.org/x/crypto/acme/autocert"
 	"log/slog"
 	"net/http"
 	"os"
@@ -18,7 +17,6 @@ import (
 // Serve initializes and starts the HTTP(S) server based on the USE_HTTPS environment variable.
 // Handles graceful shutdown when receiving termination signals.
 func Serve() error {
-	useHTTPS := os.Getenv("USE_HTTPS") == "true"
 	port := fmt.Sprint(config.Port)
 	host := getServerHost()
 
@@ -27,14 +25,8 @@ func Serve() error {
 	shutdownErr := make(chan error)
 	go handleGracefulShutdown(server, shutdownErr)
 
-	if useHTTPS {
-		if err := startHTTPS(server, host, port); err != nil {
-			return err
-		}
-	} else {
-		if err := startHTTP(server, host, port); err != nil {
-			return err
-		}
+	if err := startHTTP(server, host, port); err != nil {
+		return err
 	}
 
 	if err := <-shutdownErr; err != nil {
@@ -77,33 +69,6 @@ func startHTTP(server *http.Server, host, port string) error {
 		return err
 	}
 	return nil
-}
-
-// startHTTPS configures and starts the HTTPS server with automatic certificate management.
-func startHTTPS(server *http.Server, host, port string) error {
-	api.SwaggerInfo.Host = host
-	api.SwaggerInfo.Schemes = []string{"https"}
-
-	configureSSL(server, host)
-
-	sl.Log.Info("starting HTTPS server", slog.String("address", "https://"+host+server.Addr+port))
-
-	if err := server.ListenAndServeTLS("", ""); err != nil && !errors.Is(err, http.ErrServerClosed) {
-		sl.Log.Error("HTTPS server error", slog.Any("error", err))
-		return err
-	}
-	return nil
-}
-
-// configureSSL sets up SSL/TLS configuration using autocert for automatic certificate management.
-func configureSSL(server *http.Server, host string) {
-	m := autocert.Manager{
-		Prompt:     autocert.AcceptTOS,
-		HostPolicy: autocert.HostWhitelist(host),
-		Cache:      autocert.DirCache("certs"),
-	}
-
-	server.TLSConfig = m.TLSConfig()
 }
 
 // handleGracefulShutdown listens for termination signals and gracefully shuts down the server.

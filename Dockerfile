@@ -21,7 +21,4 @@ COPY --from=builder /app/watchlist-app .
 COPY --from=builder /app/migrations ./migrations
 COPY --from=builder /app/static ./static
 
-RUN mkdir certs
-
-
 CMD ["./watchlist-app"]
