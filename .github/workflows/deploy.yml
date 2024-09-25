@@ -43,6 +43,10 @@ jobs:
           EOF
           
           scp -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -r ./* ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/home/${{ secrets.SSH_USER }}/watchlist-api
+          
+          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
+           chmod +x /home/${{ secrets.SSH_USER }}/watchlist-api/generate_prometheus_config.sh
+          EOF
 
       # 5. Deploy Application with Docker Compose
       - name: Deploy Application with Docker Compose
