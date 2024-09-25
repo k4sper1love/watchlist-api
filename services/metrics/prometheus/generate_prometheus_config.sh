@@ -1,12 +1,5 @@
 #!/bin/sh
 
-# Defining the port depending on the USE_HTTPS flag
-if [ "$USE_HTTPS" = "true" ]; then
-  APP_PORT=443
-else
-  APP_PORT=${APP_PORT}
-fi
-
 # Generating the Prometheus configuration
 cat <<EOF > /etc/prometheus/prometheus.yml
 global:

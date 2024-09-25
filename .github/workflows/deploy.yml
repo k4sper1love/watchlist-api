@@ -3,7 +3,7 @@ name: Deploy to Server
 on:
   push:
     branches:
-      - main
+      - metrics
 
 permissions:
   contents: write
@@ -116,7 +116,7 @@ jobs:
             sudo systemd-resolve --flush-caches
           
             # Determine BASE_URL based on USE_HTTPS
-            BASE_URL="${{ secrets.USE_HTTPS }}" == "true" ? "https://${{ secrets.SSH_HOST }}" : "http://${{ secrets.SSH_HOST }}:${{ secrets.APP_PORT }}"
+            BASE_URL="${{ secrets.USE_HTTPS }}" == "true" ? "https://${{ secrets.SSH_HOST }}:${{ secrets.APP_PORT }}" : "http://${{ secrets.SSH_HOST }}:${{ secrets.APP_PORT }}"
           
             # Run the Newman tests
             newman run postman_collection.json --environment postman_environment.json --env-var "BASE_URL=$BASE_URL"

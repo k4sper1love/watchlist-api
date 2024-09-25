@@ -92,7 +92,6 @@ services:
       - prometheus-data:/prometheus
     entrypoint: ["/usr/local/bin/generate_prometheus_config.sh"]
     environment:
-      USE_HTTPS: ${USE_HTTPS:-false}
       APP_PORT: ${APP_PORT}
     networks:
       - logging

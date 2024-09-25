@@ -15,55 +15,26 @@ import (
 	"time"
 )
 
-// Serve initializes and starts the HTTP(S) server, handling both HTTP requests
-// and graceful shutdown when termination signals are received. It dynamically
-// decides whether to start an HTTP or HTTPS server based on the USE_HTTPS
-// environment variable. In HTTPS mode, it also sets up a server for HTTP to HTTPS redirection.
+// Serve initializes and starts the HTTP(S) server based on the USE_HTTPS environment variable.
+// Handles graceful shutdown when receiving termination signals.
 func Serve() error {
-	useHTTPS := os.Getenv("USE_HTTPS")
-	portHTTP := fmt.Sprint(config.Port)
-	portHTTPS := "443"
+	useHTTPS := os.Getenv("USE_HTTPS") == "true"
+	port := fmt.Sprint(config.Port)
+	host := getServerHost()
 
-	host := os.Getenv("SERVER_HOST")
-	if host == "" {
-		host = "localhost"
-	}
+	server := newServer(port)
 
-	// Create servers
-	serverHTTP := newServer(":" + portHTTP)
-	serverHTTPS := newServer(":" + portHTTPS)
-
-	// Setup autocert for automatic HTTPS certificate management.
-	m := autocert.Manager{
-		Prompt:     autocert.AcceptTOS,
-		HostPolicy: autocert.HostWhitelist(host),
-		Cache:      autocert.DirCache("certs"),
-	}
-	serverHTTPS.TLSConfig = m.TLSConfig() // Configures the HTTPS server to use autocert
-
-	// Channel for graceful shutdown
 	shutdownErr := make(chan error)
-	go gracefulShutdown(serverHTTP, serverHTTPS, shutdownErr)
+	go handleGracefulShutdown(server, shutdownErr)
 
-	if useHTTPS == "true" {
-		go startHTTPS(serverHTTPS, host)
-
-		serverHTTP.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			redirectToHTTPS(w, r, host)
-		})
-
-		api.SwaggerInfo.Host = host
-		api.SwaggerInfo.Schemes = []string{"https"}
+	if useHTTPS {
+		if err := startHTTPS(server, host, port); err != nil {
+			return err
+		}
 	} else {
-		api.SwaggerInfo.Host = host + ":" + portHTTP
-		api.SwaggerInfo.Schemes = []string{"http"}
-	}
-
-	sl.Log.Info("starting HTTP server", slog.String("address", "http://"+host+serverHTTP.Addr))
-
-	if err := serverHTTP.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-		sl.Log.Error("HTTP server error", slog.Any("error", err))
-		return err
+		if err := startHTTP(server, host, port); err != nil {
+			return err
+		}
 	}
 
 	if err := <-shutdownErr; err != nil {
@@ -75,6 +46,15 @@ func Serve() error {
 	return nil
 }
 
+// getServerHost returns the server host or defaults to "localhost".
+func getServerHost() string {
+	if host := os.Getenv("SERVER_HOST"); host != "" {
+		return host
+	}
+	return "localhost"
+}
+
+// newServer creates a new HTTP server with common configurations.
 func newServer(addr string) *http.Server {
 	return &http.Server{
 		Addr:         addr,
@@ -85,7 +65,49 @@ func newServer(addr string) *http.Server {
 	}
 }
 
-func gracefulShutdown(serverHTTP, serverHTTPS *http.Server, shutdownErr chan error) {
+// startHTTP configures and starts the HTTP server.
+func startHTTP(server *http.Server, host, port string) error {
+	api.SwaggerInfo.Host = host + port
+	api.SwaggerInfo.Schemes = []string{"http"}
+
+	sl.Log.Info("starting HTTP server", slog.String("address", "http://"+host+server.Addr))
+
+	if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+		sl.Log.Error("HTTP server error", slog.Any("error", err))
+		return err
+	}
+	return nil
+}
+
+// startHTTPS configures and starts the HTTPS server with automatic certificate management.
+func startHTTPS(server *http.Server, host, port string) error {
+	api.SwaggerInfo.Host = host
+	api.SwaggerInfo.Schemes = []string{"https"}
+
+	configureSSL(server, host)
+
+	sl.Log.Info("starting HTTPS server", slog.String("address", "https://"+host+server.Addr+port))
+
+	if err := server.ListenAndServeTLS("", ""); err != nil && !errors.Is(err, http.ErrServerClosed) {
+		sl.Log.Error("HTTPS server error", slog.Any("error", err))
+		return err
+	}
+	return nil
+}
+
+// configureSSL sets up SSL/TLS configuration using autocert for automatic certificate management.
+func configureSSL(server *http.Server, host string) {
+	m := autocert.Manager{
+		Prompt:     autocert.AcceptTOS,
+		HostPolicy: autocert.HostWhitelist(host),
+		Cache:      autocert.DirCache("certs"),
+	}
+
+	server.TLSConfig = m.TLSConfig()
+}
+
+// handleGracefulShutdown listens for termination signals and gracefully shuts down the server.
+func handleGracefulShutdown(server *http.Server, shutdownErr chan error) {
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt, os.Kill)
 
@@ -95,28 +117,5 @@ func gracefulShutdown(serverHTTP, serverHTTPS *http.Server, shutdownErr chan err
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	shutdownErr <- serverHTTP.Shutdown(ctx)
-	shutdownErr <- serverHTTPS.Shutdown(ctx)
-}
-
-func startHTTPS(serverHTTPS *http.Server, host string) {
-	sl.Log.Info("starting HTTPS server", slog.String("address", "https://"+host+serverHTTPS.Addr))
-
-	err := serverHTTPS.ListenAndServeTLS("", "")
-
-	if err != nil && !errors.Is(err, http.ErrServerClosed) {
-		sl.Log.Error("HTTPS server error", slog.Any("error", err))
-	}
-}
-
-func redirectToHTTPS(w http.ResponseWriter, r *http.Request, host string) {
-	target := "https://" + host + r.RequestURI
-	http.Redirect(w, r, target, http.StatusMovedPermanently)
-
-	sl.Log.Debug(
-		"redirecting to HTTPS",
-		slog.String("original_url", r.URL.String()),
-		slog.String("target_url", "https://"+host+r.RequestURI),
-		slog.String("from", r.RemoteAddr),
-	)
+	shutdownErr <- server.Shutdown(ctx)
 }
