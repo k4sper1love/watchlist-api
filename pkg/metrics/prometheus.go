@@ -14,12 +14,11 @@ var (
 		"/api/v1/user":        "user",
 		"/api/v1/films":       "films",
 		"/api/v1/collections": "collections",
-		"/api":                "api",
 	}
 
 	requestDuration = prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{
-			Name: "api_request_duration_milliseconds",
+			Name: "http_request_duration_seconds",
 			Help: "Histogram of the duration of HTTP requests.",
 		},
 		[]string{"method", "handler"},
@@ -27,7 +26,7 @@ var (
 
 	statusCount = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
-			Name: "api_status_count",
+			Name: "http_status_count",
 			Help: "Total number of HTTP responses by status code",
 		},
 		[]string{"status"},
@@ -40,8 +39,8 @@ func init() {
 	prometheus.MustRegister(statusCount)
 }
 
-func RecordRequestDuration(r *http.Request, duration int64) {
-	requestDuration.WithLabelValues(r.Method, getResourceType(r)).Observe(float64(duration))
+func RecordRequestDuration(r *http.Request, duration float64) {
+	requestDuration.WithLabelValues(r.Method, getResourceType(r)).Observe(duration)
 }
 
 func IncStatusCount(status int) {
@@ -54,5 +53,10 @@ func getResourceType(r *http.Request) string {
 			return handler
 		}
 	}
+
+	if r.RequestURI == "/api" {
+		return "api"
+	}
+
 	return "unknown"
 }

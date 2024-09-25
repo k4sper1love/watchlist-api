@@ -25,6 +25,11 @@ func route() *mux.Router {
 	router.Use(logAndRecordMetrics)
 	router.Use(authenticate)
 
+	// API Icon Endpoint
+	router.HandleFunc("/favicon.ico", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "static/favicon.ico")
+	})
+
 	// Handle 404 Not Found
 	router.NotFoundHandler = http.HandlerFunc(notFoundResponse)
 

@@ -56,12 +56,12 @@ services:
       - logging
 
   loki:
-    image: grafana/loki:2.9.0
+    image: grafana/loki:latest
     hostname: loki
     ports:
       - "3100:3100"
     volumes:
-      - ./services/logs/grafana/loki/config.yaml:/etc/grafana/loki/config.yaml
+      - ./services/logs/loki/config.yaml:/etc/grafana/loki/config.yaml
       - loki-data:/loki
     command: -config.file=/etc/grafana/loki/config.yaml
     networks:
@@ -73,17 +73,17 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - GF_PATHS_PROVISIONING=/etc/grafana/provisioning
-      - GF_AUTH_ANONYMOUS_ENABLED=false
-      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin}
+      GF_PATHS_PROVISIONING: /etc/grafana/provisioning
+      GF_AUTH_ANONYMOUS_ENABLED: false
     volumes:
-      - ./services/logs/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
+      - ./services/monitoring/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
       - grafana-data:/var/lib/grafana
     networks:
       - logging
 
   prometheus:
-    image: prom/prometheus
+    image: prom/prometheus:latest
     hostname: prometheus
     ports:
       - "9090:9090"
@@ -92,7 +92,15 @@ services:
       - prometheus-data:/prometheus
     entrypoint: ["/usr/local/bin/generate_prometheus_config.sh"]
     environment:
+      USE_HTTPS: ${USE_HTTPS:-false}
       APP_PORT: ${APP_PORT}
+    networks:
+      - logging
+
+  node_exporter:
+    image: prom/node-exporter:latest
+    ports:
+      - "9100:9100"
     networks:
       - logging
 

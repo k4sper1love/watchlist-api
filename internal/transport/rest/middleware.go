@@ -14,6 +14,7 @@ import (
 // Map of paths that do not require authentication.
 var notRequireAuth = map[string]struct{}{
 	"/":                     {},
+	"/favicon.ico":          {},
 	"/api":                  {},
 	"/api/v1/healthcheck":   {},
 	"/api/v1/auth/register": {},
@@ -38,11 +39,9 @@ func authenticate(next http.Handler) http.Handler {
 		}
 
 		// Allow access to internal endpoints.
-		for _, path := range internalPaths {
-			if strings.HasPrefix(requestPath, path) {
-				next.ServeHTTP(w, r)
-				return
-			}
+		if isInternalPath(requestPath) {
+			next.ServeHTTP(w, r)
+			return
 		}
 
 		// Extract the token from the request header.
@@ -128,11 +127,9 @@ func requirePermissions(resource, action string, next http.HandlerFunc) http.Han
 func logAndRecordMetrics(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Skip logging for internal endpoints
-		for _, path := range internalPaths {
-			if strings.HasPrefix(r.URL.Path, path) {
-				next.ServeHTTP(w, r)
-				return
-			}
+		if isInternalPath(r.URL.Path) {
+			next.ServeHTTP(w, r)
+			return
 		}
 
 		sl.PrintEndpointInfo(r)
@@ -140,7 +137,16 @@ func logAndRecordMetrics(next http.Handler) http.Handler {
 
 		next.ServeHTTP(w, r)
 
-		duration := time.Since(start).Milliseconds()
+		duration := time.Since(start).Seconds()
 		metrics.RecordRequestDuration(r, duration)
 	})
+}
+
+func isInternalPath(requestPath string) bool {
+	for _, path := range internalPaths {
+		if strings.HasPrefix(requestPath, path) {
+			return true
+		}
+	}
+	return false
 }
