@@ -15,15 +15,11 @@ import (
 	"time"
 )
 
-var startServerTime time.Time
-
 // Serve initializes and starts the HTTP(S) server, handling both HTTP requests
 // and graceful shutdown when termination signals are received. It dynamically
 // decides whether to start an HTTP or HTTPS server based on the USE_HTTPS
 // environment variable. In HTTPS mode, it also sets up a server for HTTP to HTTPS redirection.
 func Serve() error {
-	startServerTime = time.Now()
-
 	useHTTPS := os.Getenv("USE_HTTPS")
 	portHTTP := fmt.Sprint(config.Port)
 	portHTTPS := "443"
@@ -47,7 +43,6 @@ func Serve() error {
 
 	// Channel for graceful shutdown
 	shutdownErr := make(chan error)
-
 	go gracefulShutdown(serverHTTP, serverHTTPS, shutdownErr)
 
 	if useHTTPS == "true" {
@@ -66,14 +61,12 @@ func Serve() error {
 
 	sl.Log.Info("starting HTTP server", slog.String("address", "http://"+host+serverHTTP.Addr))
 
-	err := serverHTTP.ListenAndServe()
-	if err != nil && !errors.Is(err, http.ErrServerClosed) {
+	if err := serverHTTP.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		sl.Log.Error("HTTP server error", slog.Any("error", err))
 		return err
 	}
 
-	err = <-shutdownErr
-	if err != nil {
+	if err := <-shutdownErr; err != nil {
 		sl.Log.Warn("shutdown error", slog.Any("error", err))
 		return err
 	}
@@ -108,7 +101,9 @@ func gracefulShutdown(serverHTTP, serverHTTPS *http.Server, shutdownErr chan err
 
 func startHTTPS(serverHTTPS *http.Server, host string) {
 	sl.Log.Info("starting HTTPS server", slog.String("address", "https://"+host+serverHTTPS.Addr))
+
 	err := serverHTTPS.ListenAndServeTLS("", "")
+
 	if err != nil && !errors.Is(err, http.ErrServerClosed) {
 		sl.Log.Error("HTTPS server error", slog.Any("error", err))
 	}
@@ -117,8 +112,9 @@ func startHTTPS(serverHTTPS *http.Server, host string) {
 func redirectToHTTPS(w http.ResponseWriter, r *http.Request, host string) {
 	target := "https://" + host + r.RequestURI
 	http.Redirect(w, r, target, http.StatusMovedPermanently)
-	sl.Log.Info(
-		"Redirecting to HTTPS",
+
+	sl.Log.Debug(
+		"redirecting to HTTPS",
 		slog.String("original_url", r.URL.String()),
 		slog.String("target_url", "https://"+host+r.RequestURI),
 		slog.String("from", r.RemoteAddr),

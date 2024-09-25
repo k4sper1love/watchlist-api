@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/k4sper1love/watchlist-api/internal/config"
 	"github.com/k4sper1love/watchlist-api/internal/database/postgres"
-	"github.com/k4sper1love/watchlist-api/pkg/logger/sl"
+	"github.com/k4sper1love/watchlist-api/pkg/metrics"
 	"net/http"
 	"time"
 )
@@ -36,11 +36,9 @@ type HealthcheckResponse struct {
 // @Failure 500 {object} swagger.ErrorResponse
 // @Router /healthcheck [get]
 func healthcheckHandler(w http.ResponseWriter, r *http.Request) {
-	sl.PrintHandlerInfo(r)
-
 	systemInfo := SystemInfo{
 		Environment: config.Env,
-		Uptime:      getUptime(startServerTime),
+		Uptime:      metrics.GetUptimeFormat(),
 		LastChecked: time.Now().Format(time.RFC3339),
 	}
 
@@ -75,9 +73,8 @@ func checkDB() (string, string) {
 		return "down", ""
 	}
 
-	responseTime := time.Since(start).Milliseconds()
-
-	return "up", fmt.Sprintf("%dms", responseTime)
+	duration := time.Since(start).Milliseconds()
+	return "up", fmt.Sprintf("%dms", duration)
 }
 
 func getAPIStatus(dependencies map[string]Dependency) string {
@@ -87,13 +84,4 @@ func getAPIStatus(dependencies map[string]Dependency) string {
 		}
 	}
 	return "operational"
-}
-
-func getUptime(startTime time.Time) string {
-	duration := time.Since(startTime)
-	hours := int(duration.Hours())
-	minutes := int(duration.Minutes()) % 60
-	seconds := int(duration.Seconds()) % 60
-
-	return fmt.Sprintf("%dh %dm %ds", hours, minutes, seconds)
 }

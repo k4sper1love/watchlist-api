@@ -1,16 +1,13 @@
 package rest
 
 import (
-	"github.com/k4sper1love/watchlist-api/pkg/logger/sl"
 	"github.com/k4sper1love/watchlist-api/pkg/version"
 	"net/http"
 	"time"
 )
 
 var (
-	message    = "Welcome to the Watchlist API"
 	apiVersion = "v1"
-	createdBy  = "github.com/k4sper1love"
 	license    = "MIT"
 
 	availableEndpoints = []Endpoint{
@@ -39,15 +36,13 @@ type APIResponse struct {
 }
 
 func infoHandler(w http.ResponseWriter, r *http.Request) {
-	sl.PrintHandlerInfo(r)
-
 	response := APIResponse{
-		Message:            message,
+		Message:            "Welcome to the Watchlist API",
 		Version:            version.GetVersion(),
 		APIVersion:         apiVersion,
 		Timestamp:          time.Now().Format(time.RFC3339),
 		AvailableEndpoints: availableEndpoints,
-		CreatedBy:          createdBy,
+		CreatedBy:          "github.com/k4sper1love",
 		License:            license,
 	}
 

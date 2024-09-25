@@ -15,28 +15,37 @@ import (
 // Log is a global logger instance used throughout the application.
 var Log *slog.Logger
 
-// SetupLogger configures the global logger based on the environment.
+// SetupLogger configures the global logger based on the specified environment.
 // It sets different logging levels and formats for "local", "dev", and "prod" environments.
 func SetupLogger(env string) {
-	switch env {
-	case "local":
-		// Configure logger for local environment with text output and debug level.
-		Log = slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug}))
-	case "dev":
-		// Configure logger for development environment with JSON output and debug level.
-		Log = slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug}))
-	case "prod":
-		// Configure logger for production environment with JSON output and info level.
-		Log = slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}))
-	}
-
-	// Add environment tag to the logger for additional context.
+	Log = configureLogger(env)
 	Log = Log.With(slog.String("env", env))
 }
 
-// PrintHandlerInfo logs details about an incoming HTTP request.
-// It includes the request URI, method, remote address, and host.
-func PrintHandlerInfo(r *http.Request) {
+// configureLogger initializes and returns a logger based on the provided environment.
+func configureLogger(env string) *slog.Logger {
+	var handler slog.Handler
+
+	switch env {
+	case "local":
+		// Logger for local environment with text output and debug level.
+		handler = slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug})
+	case "dev":
+		// Logger for development environment with JSON output and debug level.
+		handler = slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo})
+	case "prod":
+		// Logger for production environment with JSON output and info level.
+		handler = slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo})
+	default:
+		// Default to production settings.
+		handler = slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo})
+	}
+
+	return slog.New(handler)
+}
+
+// PrintEndpointInfo logs information about an incoming HTTP request.
+func PrintEndpointInfo(r *http.Request) {
 	Log.Info(
 		"handling request",
 		slog.String("path", r.RequestURI),
@@ -46,7 +55,8 @@ func PrintHandlerInfo(r *http.Request) {
 	)
 }
 
-func PrintHandlerError(msg string, err interface{}, r *http.Request) {
+// PrintEndpointError logs an error message related to an HTTP request.
+func PrintEndpointError(msg string, err interface{}, r *http.Request) {
 	Log.Error(
 		msg,
 		slog.Any("error", err),
@@ -57,7 +67,8 @@ func PrintHandlerError(msg string, err interface{}, r *http.Request) {
 	)
 }
 
-func PrintHandlerWarn(msg string, err interface{}, r *http.Request) {
+// PrintEndpointWarn logs a warning message related to an HTTP request.
+func PrintEndpointWarn(msg string, err interface{}, r *http.Request) {
 	Log.Warn(
 		msg,
 		slog.Any("error", err),

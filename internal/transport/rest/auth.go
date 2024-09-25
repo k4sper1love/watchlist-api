@@ -14,32 +14,27 @@ type authResponse struct {
 }
 
 // register creates a new user and generates authentication tokens.
-//
-// Returns an authResponse containing user details and tokens, or an error if registration fails.
 func register(user *models.User) (*authResponse, error) {
-	// Hash the user's password using bcrypt with default cost.
-	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
-	user.Password = string(hashedPassword) // Store the hashed password in the user object.
-
-	err := postgres.AddUser(user)
-	if err != nil {
+	if err := hashPassword(user); err != nil {
 		return nil, err
 	}
-	user.Password = "" // Clear the password from the user object before returning.
 
-	// Generate an access token for the user.
+	if err := postgres.AddUser(user); err != nil {
+		return nil, err
+	}
+
+	user.Password = "" // Clear the password before returning.
+
 	accessToken, err := generateAccessToken(user.Id)
 	if err != nil {
 		return nil, err
 	}
 
-	// Generate and save a refresh token for the user.
 	refreshToken, err := generateAndSaveRefreshToken(user.Id)
 	if err != nil {
 		return nil, err
 	}
 
-	// Create an authResponse with user details and tokens.
 	res := &authResponse{
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
@@ -50,8 +45,6 @@ func register(user *models.User) (*authResponse, error) {
 }
 
 // login authenticates a user by email and password, and generates authentication tokens.
-//
-// Returns an authResponse containing user details and tokens, or an error if authentication fails.
 func login(email, password string) (*authResponse, error) {
 	// Retrieve the user from the database by email.
 	user, err := postgres.GetUserByEmail(email)
@@ -59,76 +52,76 @@ func login(email, password string) (*authResponse, error) {
 		return nil, err
 	}
 
-	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
-	if err != nil {
+	if err := comparePasswords(user.Password, password); err != nil {
 		return nil, err
 	}
-	user.Password = "" // Clear the password from the user object before returning.
 
-	// Generate an access token for the user.
+	user.Password = "" // Clear the password before returning.
+
 	accessToken, err := generateAccessToken(user.Id)
 	if err != nil {
 		return nil, err
 	}
 
-	// Generate and save a refresh token for the user.
 	refreshToken, err := generateAndSaveRefreshToken(user.Id)
 	if err != nil {
 		return nil, err
 	}
 
-	// Create an authResponse with user details and tokens.
-	res := &authResponse{
-		AccessToken:  accessToken,
-		RefreshToken: refreshToken,
-		User:         user,
-	}
-
-	return res, nil
+	return createAuthResponse(user, accessToken, refreshToken), nil
 }
 
 // refreshAccessToken generates a new access token using a valid refresh token.
-//
-// Returns the new access token or an error if the refresh token is invalid or revoked.
 func refreshAccessToken(refreshToken string) (string, error) {
-	// Parse the claims from the refresh token.
-	claims := parseTokenClaims(refreshToken)
-	if claims == nil {
+	if claims := parseTokenClaims(refreshToken); claims == nil {
 		return "", errInvalidRefreshToken
 	}
 
-	// Check if the refresh token is revoked.
-	isRevoked, err := postgres.IsRefreshTokenRevoked(refreshToken)
-	if err != nil || isRevoked {
+	if isRevoked, err := postgres.IsRefreshTokenRevoked(refreshToken); err != nil || isRevoked {
 		return "", errInvalidRefreshToken
 	}
 
-	// Retrieve the user ID from the refresh token.
 	userId, err := postgres.GetIdFromRefreshToken(refreshToken)
 	if err != nil {
 		return "", err
 	}
 
-	// Generate a new access token for the user.
 	return generateAccessToken(userId)
 }
 
 // logout invalidates the given refresh token.
-//
-// Returns an error if the refresh token is invalid, revoked, or if revocation fails.
 func logout(refreshToken string) error {
-	// Parse the claims from the refresh token.
-	claims := parseTokenClaims(refreshToken)
-	if claims == nil {
+	if claims := parseTokenClaims(refreshToken); claims == nil {
 		return errInvalidRefreshToken
 	}
 
-	// Check if the refresh token is revoked.
-	isRevoked, err := postgres.IsRefreshTokenRevoked(refreshToken)
-	if err != nil || isRevoked {
+	if isRevoked, err := postgres.IsRefreshTokenRevoked(refreshToken); err != nil || isRevoked {
 		return errInvalidRefreshToken
 	}
 
-	// Revoke the refresh token in the database.
 	return postgres.RevokeRefreshToken(refreshToken)
+}
+
+// hashPassword hashes the user's password using bcrypt.
+func hashPassword(user *models.User) error {
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+	user.Password = string(hashedPassword)
+	return nil
+}
+
+// comparePasswords compares a hashed password with a plaintext password.
+func comparePasswords(hashedPassword, password string) error {
+	return bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
+}
+
+// createAuthResponse constructs and returns an authResponse object.
+func createAuthResponse(user *models.User, accessToken, refreshToken string) *authResponse {
+	return &authResponse{
+		User:         user,
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
+	}
 }

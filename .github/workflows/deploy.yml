@@ -65,11 +65,9 @@ jobs:
             export VERSION=${{ env.VERSION }}
             export GRAFANA_PASSWORD=${{ secrets.GRAFANA_PASSWORD }}
           
-            # Deploy with Docker Compose
-            docker-compose down
-          
             # If FULL_REBUILD = true, then use --no-cache
             if [[ "${{ secrets.FULL_REBUILD }}" == "true" ]]; then
+              docker-compose down --rmi all
               docker-compose build --no-cache
             else 
               docker-compose build

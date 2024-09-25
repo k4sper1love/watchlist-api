@@ -11,22 +11,19 @@ package rest
 import (
 	"github.com/gorilla/mux"
 	_ "github.com/k4sper1love/watchlist-api/api"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	httpSwagger "github.com/swaggo/http-swagger"
 	"net/http"
 )
 
 // route initializes the HTTP router with all API routes and handlers.
-// It sets up routes for health checks, user authentication, and CRUD operations
-// for users, films, collections, and collection films. It also configures middleware
-// for authentication and custom handlers for not found and method not allowed errors.
-//
-// Returns:
-//
-//	*mux.Router - Configured router with all routes and middleware.
 func route() *mux.Router {
-	router := mux.NewRouter() //Register a new router
+	// Register a new router
+	router := mux.NewRouter()
 
-	router.Use(requireAuth) // Apply JWT authentication middleware
+	// Apply middlewares
+	router.Use(logAndRecordMetrics)
+	router.Use(authenticate)
 
 	// Handle 404 Not Found
 	router.NotFoundHandler = http.HandlerFunc(notFoundResponse)
@@ -34,58 +31,73 @@ func route() *mux.Router {
 	// Handle 405 Method Not Allowed
 	router.MethodNotAllowedHandler = http.HandlerFunc(methodNotAllowedResponse)
 
-	// Default endpoint
+	// Default Endpoint
 	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/api", http.StatusSeeOther)
 	})
 
-	// Info API endpoint
+	// Info API Endpoint
 	router.HandleFunc("/api", infoHandler).Methods(http.MethodGet)
 
-	// Health check endpoint
+	// Health check Endpoint
 	router.HandleFunc("/api/v1/healthcheck", healthcheckHandler).Methods(http.MethodGet)
 
-	// Swagger documentation UI endpoint
+	// Swagger documentation UI Endpoint
 	router.Handle("/swagger/{rest:.*}", httpSwagger.Handler(
-		httpSwagger.URL("/swagger/doc.json"), // Swagger UI will use the Swagger JSON file
+		httpSwagger.URL("/swagger/doc.json"),
 	))
 
-	// Subrouter for authentication routes
-	auth1 := router.PathPrefix("/api/v1").Subrouter()
-	auth1.HandleFunc("/auth/register", registerHandler).Methods(http.MethodPost)
-	auth1.HandleFunc("/auth/login", loginHandler).Methods(http.MethodPost)
-	auth1.HandleFunc("/auth/refresh", refreshAccessTokenHandler).Methods(http.MethodPost)
-	auth1.HandleFunc("/auth/logout", logoutHandler).Methods(http.MethodPost)
+	// Prometheus Metrics Endpoint
+	router.Handle("/metrics", promhttp.Handler()).Methods(http.MethodGet)
 
-	// Subrouter for user routes
-	user1 := router.PathPrefix("/api/v1").Subrouter()
-	user1.HandleFunc("/user", getUserHandler).Methods(http.MethodGet)
-	user1.HandleFunc("/user", updateUserHandler).Methods(http.MethodPut)
-	user1.HandleFunc("/user", deleteUserHandler).Methods(http.MethodDelete)
-
-	// Subrouter for film routes
-	films1 := router.PathPrefix("/api/v1").Subrouter()
-	films1.HandleFunc("/films", getFilmsHandler).Methods(http.MethodGet)
-	films1.HandleFunc("/films", requirePermissions("film", "create", addFilmHandler)).Methods(http.MethodPost)
-	films1.HandleFunc("/films/{filmId:[0-9]+}", requirePermissions("film", "read", getFilmHandler)).Methods(http.MethodGet)
-	films1.HandleFunc("/films/{filmId:[0-9]+}", requirePermissions("film", "update", updateFilmHandler)).Methods(http.MethodPut)
-	films1.HandleFunc("/films/{filmId:[0-9]+}", requirePermissions("film", "delete", deleteFilmHandler)).Methods(http.MethodDelete)
-
-	// Subrouter for collection routes
-	collections1 := router.PathPrefix("/api/v1").Subrouter()
-	collections1.HandleFunc("/collections", getCollectionsHandler).Methods(http.MethodGet)
-	collections1.HandleFunc("/collections", requirePermissions("collection", "create", addCollectionHandler)).Methods(http.MethodPost)
-	collections1.HandleFunc("/collections/{collectionId:[0-9]+}", requirePermissions("collection", "read", getCollectionHandler)).Methods(http.MethodGet)
-	collections1.HandleFunc("/collections/{collectionId:[0-9]+}", requirePermissions("collection", "update", updateCollectionHandler)).Methods(http.MethodPut)
-	collections1.HandleFunc("/collections/{collectionId:[0-9]+}", requirePermissions("collection", "delete", deleteCollectionHandler)).Methods(http.MethodDelete)
-
-	// Subrouter for collection films routes
-	collectionFilms1 := router.PathPrefix("/api/v1/collections/{collectionId:[0-9]+}").Subrouter()
-	collectionFilms1.HandleFunc("/films", requirePermissions("collectionFilm", "read", getCollectionFilmsHandler)).Methods(http.MethodGet)
-	collectionFilms1.HandleFunc("/films/{filmId:[0-9]+}", requirePermissions("collectionFilm", "create", addCollectionFilmHandler)).Methods(http.MethodPost)
-	collectionFilms1.HandleFunc("/films/{filmId:[0-9]+}", requirePermissions("collectionFilm", "read", getCollectionFilmHandler)).Methods(http.MethodGet)
-	collectionFilms1.HandleFunc("/films/{filmId:[0-9]+}", requirePermissions("collectionFilm", "update", updateCollectionFilmHandler)).Methods(http.MethodPut)
-	collectionFilms1.HandleFunc("/films/{filmId:[0-9]+}", requirePermissions("collectionFilm", "delete", deleteCollectionFilmHandler)).Methods(http.MethodDelete)
+	// Set up routes
+	setupAuthRoutes(router)
+	setupUserRoutes(router)
+	setupFilmRoutes(router)
+	setupCollectionRoutes(router)
+	setupCollectionFilmRoutes(router)
 
 	return router
+}
+
+func setupAuthRoutes(router *mux.Router) {
+	auth := router.PathPrefix("/api/v1/auth").Subrouter()
+	auth.HandleFunc("/register", registerHandler).Methods(http.MethodPost)
+	auth.HandleFunc("/login", loginHandler).Methods(http.MethodPost)
+	auth.HandleFunc("/refresh", refreshAccessTokenHandler).Methods(http.MethodPost)
+	auth.HandleFunc("/logout", logoutHandler).Methods(http.MethodPost)
+}
+
+func setupUserRoutes(router *mux.Router) {
+	user := router.PathPrefix("/api/v1").Subrouter()
+	user.HandleFunc("/user", getUserHandler).Methods(http.MethodGet)
+	user.HandleFunc("/user", updateUserHandler).Methods(http.MethodPut)
+	user.HandleFunc("/user", deleteUserHandler).Methods(http.MethodDelete)
+}
+
+func setupFilmRoutes(router *mux.Router) {
+	films := router.PathPrefix("/api/v1/films").Subrouter()
+	films.HandleFunc("", getFilmsHandler).Methods(http.MethodGet)
+	films.HandleFunc("", requirePermissions("film", "create", addFilmHandler)).Methods(http.MethodPost)
+	films.HandleFunc("/{filmId:[0-9]+}", requirePermissions("film", "read", getFilmHandler)).Methods(http.MethodGet)
+	films.HandleFunc("/{filmId:[0-9]+}", requirePermissions("film", "update", updateFilmHandler)).Methods(http.MethodPut)
+	films.HandleFunc("/{filmId:[0-9]+}", requirePermissions("film", "delete", deleteFilmHandler)).Methods(http.MethodDelete)
+}
+
+func setupCollectionRoutes(router *mux.Router) {
+	collections := router.PathPrefix("/api/v1/collections").Subrouter()
+	collections.HandleFunc("", getCollectionsHandler).Methods(http.MethodGet)
+	collections.HandleFunc("", requirePermissions("collection", "create", addCollectionHandler)).Methods(http.MethodPost)
+	collections.HandleFunc("/{collectionId:[0-9]+}", requirePermissions("collection", "read", getCollectionHandler)).Methods(http.MethodGet)
+	collections.HandleFunc("/{collectionId:[0-9]+}", requirePermissions("collection", "update", updateCollectionHandler)).Methods(http.MethodPut)
+	collections.HandleFunc("/{collectionId:[0-9]+}", requirePermissions("collection", "delete", deleteCollectionHandler)).Methods(http.MethodDelete)
+}
+
+func setupCollectionFilmRoutes(router *mux.Router) {
+	collectionFilms := router.PathPrefix("/api/v1/collections/{collectionId:[0-9]+}/films").Subrouter()
+	collectionFilms.HandleFunc("", requirePermissions("collectionFilm", "read", getCollectionFilmsHandler)).Methods(http.MethodGet)
+	collectionFilms.HandleFunc("/{filmId:[0-9]+}", requirePermissions("collectionFilm", "create", addCollectionFilmHandler)).Methods(http.MethodPost)
+	collectionFilms.HandleFunc("/{filmId:[0-9]+}", requirePermissions("collectionFilm", "read", getCollectionFilmHandler)).Methods(http.MethodGet)
+	collectionFilms.HandleFunc("/{filmId:[0-9]+}", requirePermissions("collectionFilm", "update", updateCollectionFilmHandler)).Methods(http.MethodPut)
+	collectionFilms.HandleFunc("/{filmId:[0-9]+}", requirePermissions("collectionFilm", "delete", deleteCollectionFilmHandler)).Methods(http.MethodDelete)
 }

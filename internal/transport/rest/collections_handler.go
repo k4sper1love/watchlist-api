@@ -6,7 +6,6 @@ import (
 	"github.com/k4sper1love/watchlist-api/internal/database/postgres"
 	"github.com/k4sper1love/watchlist-api/internal/models"
 	"github.com/k4sper1love/watchlist-api/pkg/filters"
-	"github.com/k4sper1love/watchlist-api/pkg/logger/sl"
 	"github.com/k4sper1love/watchlist-api/pkg/validator"
 	"net/http"
 )
@@ -27,27 +26,21 @@ import (
 // @Security JWTAuth
 // @Router /collections [post]
 func addCollectionHandler(w http.ResponseWriter, r *http.Request) {
-	sl.PrintHandlerInfo(r)
-
-	// Retrieve the user ID from the request context.
 	userId := r.Context().Value("userId").(int)
-
 	var collection models.Collection
-	err := parseRequestBody(r, &collection)
-	if err != nil {
+
+	if err := parseRequestBody(r, &collection); err != nil {
 		badRequestResponse(w, r, err)
 		return
 	}
-	collection.UserId = userId // Assign the user ID to the collection.
+	collection.UserId = userId
 
-	errs := validator.ValidateStruct(&collection)
-	if errs != nil {
+	if errs := validator.ValidateStruct(&collection); errs != nil {
 		failedValidationResponse(w, r, errs)
 		return
 	}
 
-	err = postgres.AddCollection(&collection)
-	if err != nil {
+	if err := postgres.AddCollection(&collection); err != nil {
 		handleDBError(w, r, err)
 		return
 	}
@@ -55,9 +48,7 @@ func addCollectionHandler(w http.ResponseWriter, r *http.Request) {
 	// Define permissions for the collection.
 	actions := []string{"read", "update", "delete"}
 	for _, action := range actions {
-		// Add permissions and assign them to the user.
-		err = addPermissionAndAssignToUser(userId, collection.Id, "collection", action)
-		if err != nil {
+		if err := addPermissionAndAssignToUser(userId, collection.Id, "collection", action); err != nil {
 			serverErrorResponse(w, r, err)
 			return
 		}
@@ -81,8 +72,6 @@ func addCollectionHandler(w http.ResponseWriter, r *http.Request) {
 // @Security JWTAuth
 // @Router /collections/{collection_id} [get]
 func getCollectionHandler(w http.ResponseWriter, r *http.Request) {
-	sl.PrintHandlerInfo(r)
-
 	collectionId, err := parseIdParam(r, "collectionId")
 	if err != nil {
 		badRequestResponse(w, r, err)
@@ -115,9 +104,6 @@ func getCollectionHandler(w http.ResponseWriter, r *http.Request) {
 // @Security JWTAuth
 // @Router /collections [get]
 func getCollectionsHandler(w http.ResponseWriter, r *http.Request) {
-	sl.PrintHandlerInfo(r)
-
-	// Retrieve the user ID from the request context.
 	userId := r.Context().Value("userId").(int)
 
 	// Define an input structure to hold filter and pagination parameters.
@@ -126,29 +112,23 @@ func getCollectionsHandler(w http.ResponseWriter, r *http.Request) {
 		filters.Filters
 	}
 
-	// Parse query string parameters from the request URL.
+	// Parse query string parameters.
 	qs := r.URL.Query()
-
 	input.Name = parseQueryString(qs, "name", "")
-
 	input.Filters.Page = parseQueryInt(qs, "page", 1)
 	input.Filters.PageSize = parseQueryInt(qs, "page_size", 5)
-
 	input.Filters.Sort = parseQueryString(qs, "sort", "id")
 
-	// Define a safe list of sortable fields.
+	// Define safe sortable fields.
 	input.Filters.SortSafeList = []string{
 		"id", "name", "created_at",
 		"-id", "-name", "-created_at",
 	}
 
-	// Validate the filters.
-	errs, err := filters.ValidateFilters(input.Filters)
-	switch {
-	case err != nil:
+	if errs, err := filters.ValidateFilters(input.Filters); err != nil {
 		serverErrorResponse(w, r, err)
 		return
-	case errs != nil:
+	} else if errs != nil {
 		failedValidationResponse(w, r, errs)
 		return
 	}
@@ -182,8 +162,6 @@ func getCollectionsHandler(w http.ResponseWriter, r *http.Request) {
 // @Security JWTAuth
 // @Router /collections/{collection_id} [put]
 func updateCollectionHandler(w http.ResponseWriter, r *http.Request) {
-	sl.PrintHandlerInfo(r)
-
 	collectionId, err := parseIdParam(r, "collectionId")
 	if err != nil {
 		badRequestResponse(w, r, err)
@@ -196,21 +174,18 @@ func updateCollectionHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = parseRequestBody(r, collection)
-	if err != nil {
+	if err = parseRequestBody(r, collection); err != nil {
 		badRequestResponse(w, r, err)
 		return
 	}
-	collection.Id = collectionId // Ensure the collection ID is set.
+	collection.Id = collectionId
 
-	errs := validator.ValidateStruct(collection)
-	if errs != nil {
+	if errs := validator.ValidateStruct(collection); errs != nil {
 		failedValidationResponse(w, r, errs)
 		return
 	}
 
-	err = postgres.UpdateCollection(collection)
-	if err != nil {
+	if err := postgres.UpdateCollection(collection); err != nil {
 		switch {
 		case errors.Is(err, sql.ErrNoRows):
 			editConflictResponse(w, r)
@@ -239,8 +214,6 @@ func updateCollectionHandler(w http.ResponseWriter, r *http.Request) {
 // @Security JWTAuth
 // @Router /collections/{collection_id} [delete]
 func deleteCollectionHandler(w http.ResponseWriter, r *http.Request) {
-	sl.PrintHandlerInfo(r)
-
 	collectionId, err := parseIdParam(r, "collectionId")
 	if err != nil {
 		badRequestResponse(w, r, err)
@@ -248,24 +221,20 @@ func deleteCollectionHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Verify that the collection exists in the database.
-	_, err = postgres.GetCollection(collectionId)
-	if err != nil {
+	if _, err := postgres.GetCollection(collectionId); err != nil {
 		handleDBError(w, r, err)
 		return
 	}
 
-	err = postgres.DeleteCollection(collectionId)
-	if err != nil {
+	if err := postgres.DeleteCollection(collectionId); err != nil {
 		handleDBError(w, r, err)
 		return
 	}
 
-	err = deletePermissionCodes(collectionId, "collection")
-	if err != nil {
+	if err := deletePermissionCodes(collectionId, "collection"); err != nil {
 		handleDBError(w, r, err)
 		return
 	}
 
-	// Confirm successful deletion with a JSON response.
 	writeJSON(w, r, http.StatusOK, envelope{"message": "collection deleted"})
 }
