@@ -43,10 +43,6 @@ jobs:
           EOF
           
           scp -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -r ./* ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/home/${{ secrets.SSH_USER }}/watchlist-api
-          
-          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
-           chmod +x /home/${{ secrets.SSH_USER }}/watchlist-api/generate_prometheus_config.sh
-          EOF
 
       # 5. Deploy Application with Docker Compose
       - name: Deploy Application with Docker Compose
@@ -56,7 +52,6 @@ jobs:
           
             # Export environment variables 
             export SERVER_HOST=${{ secrets.SSH_HOST }}
-            export APP_PORT=${{ secrets.APP_PORT }}
             export APP_SECRET=${{ secrets.APP_SECRET }}  
             export APP_ENV=${{ secrets.APP_ENV }}  
             export APP_MIGRATIONS=${{ secrets.APP_MIGRATIONS }}  
@@ -65,6 +60,7 @@ jobs:
             export POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}  
             export POSTGRES_DB=${{ secrets.POSTGRES_DB }}  
             export POSTGRES_PORT=${{ secrets.POSTGRES_PORT }}
+            export POSTGRES_HOST=${{ secrets.POSTGRES_HOST }}
             export VERSION=${{ env.VERSION }}
             export GRAFANA_PASSWORD=${{ secrets.GRAFANA_PASSWORD }}
           
@@ -119,7 +115,7 @@ jobs:
             sudo systemd-resolve --flush-caches
           
             # Determine BASE_URL based on USE_HTTPS
-            BASE_URL="http://${{ secrets.SSH_HOST }}:${{ secrets.APP_PORT }}"
+            BASE_URL="http://${{ secrets.SSH_HOST }}:8001"
           
             # Run the Newman tests
             newman run postman_collection.json --environment postman_environment.json --env-var "BASE_URL=$BASE_URL"

@@ -16,14 +16,17 @@ services:
     <<: *default-logging
     environment:
       SERVER_HOST: ${SERVER_HOST:-localhost}
-      APP_PORT: ${APP_PORT}
-      APP_DSN: ${APP_DSN}
       APP_MIGRATIONS: ${APP_MIGRATIONS}
       APP_ENV: ${APP_ENV}
       APP_SECRET: ${APP_SECRET}
       VERSION: ${VERSION}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_HOST: ${POSTGRES_HOST:-db}
+      POSTGRES_PORT: ${POSTGRES_PORT}
     ports:
-      - "${APP_PORT}:${APP_PORT}"
+      - "8001:8001"
     depends_on:
       db:
         condition: service_healthy
@@ -59,7 +62,7 @@ services:
     volumes:
       - ./services/logs/loki/config.yaml:/etc/grafana/loki/config.yaml
       - loki-data:/loki
-    command: -config.file=/etc/grafana/loki/config.yaml
+    command: ["--config.file=/etc/grafana/loki/config.yaml"]
     networks:
       - logging
 
@@ -84,11 +87,9 @@ services:
     ports:
       - "9090:9090"
     volumes:
-      - ./services/metrics/prometheus/generate_prometheus_config.sh:/usr/local/bin/generate_prometheus_config.sh
+      - ./services/metrics/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
       - prometheus-data:/prometheus
-    entrypoint: ["/usr/local/bin/generate_prometheus_config.sh"]
-    environment:
-      APP_PORT: ${APP_PORT}
+    command: ["--config.file=/etc/prometheus/prometheus.yml"]
     networks:
       - logging
 

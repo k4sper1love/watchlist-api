@@ -3,7 +3,6 @@ package rest
 import (
 	"context"
 	"errors"
-	"fmt"
 	"github.com/k4sper1love/watchlist-api/api"
 	"github.com/k4sper1love/watchlist-api/internal/config"
 	"github.com/k4sper1love/watchlist-api/pkg/logger/sl"
@@ -17,15 +16,13 @@ import (
 // Serve initializes and starts the HTTP(S) server based on the USE_HTTPS environment variable.
 // Handles graceful shutdown when receiving termination signals.
 func Serve() error {
-	port := fmt.Sprint(config.Port)
 	host := getServerHost()
-
-	server := newServer(port)
+	server := newServer(config.Port)
 
 	shutdownErr := make(chan error)
 	go handleGracefulShutdown(server, shutdownErr)
 
-	if err := startHTTP(server, host, port); err != nil {
+	if err := startHTTP(server, host); err != nil {
 		return err
 	}
 
@@ -38,18 +35,10 @@ func Serve() error {
 	return nil
 }
 
-// getServerHost returns the server host or defaults to "localhost".
-func getServerHost() string {
-	if host := os.Getenv("SERVER_HOST"); host != "" {
-		return host
-	}
-	return "localhost"
-}
-
 // newServer creates a new HTTP server with common configurations.
-func newServer(addr string) *http.Server {
+func newServer(port string) *http.Server {
 	return &http.Server{
-		Addr:         addr,
+		Addr:         ":" + port,
 		Handler:      route(),
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 30 * time.Second,
@@ -58,8 +47,8 @@ func newServer(addr string) *http.Server {
 }
 
 // startHTTP configures and starts the HTTP server.
-func startHTTP(server *http.Server, host, port string) error {
-	api.SwaggerInfo.Host = host + port
+func startHTTP(server *http.Server, host string) error {
+	api.SwaggerInfo.Host = host + server.Addr
 	api.SwaggerInfo.Schemes = []string{"http"}
 
 	sl.Log.Info("starting HTTP server", slog.String("address", "http://"+host+server.Addr))
@@ -83,4 +72,12 @@ func handleGracefulShutdown(server *http.Server, shutdownErr chan error) {
 	defer cancel()
 
 	shutdownErr <- server.Shutdown(ctx)
+}
+
+// getServerHost returns the server host or defaults to "localhost".
+func getServerHost() string {
+	if host := os.Getenv("SERVER_HOST"); host != "" {
+		return host
+	}
+	return "localhost"
 }

@@ -33,7 +33,7 @@ func generateToken(userId int, duration time.Duration) (string, error) {
 
 	// Create and sign the token using the HS256 signing method.
 	token := jwt.NewWithClaims(jwt.GetSigningMethod("HS256"), claims)
-	return token.SignedString([]byte(config.TokenPass))
+	return token.SignedString([]byte(config.JwtSecret))
 }
 
 // generateAccessToken creates a JWT access token for a user with a short expiration time.

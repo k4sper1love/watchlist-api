@@ -32,7 +32,7 @@ func configureLogger(env string) *slog.Logger {
 		handler = slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug})
 	case "dev":
 		// Logger for development environment with JSON output and debug level.
-		handler = slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo})
+		handler = slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug})
 	case "prod":
 		// Logger for production environment with JSON output and info level.
 		handler = slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo})
