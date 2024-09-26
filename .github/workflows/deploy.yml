@@ -66,6 +66,7 @@ jobs:
             export POSTGRES_PORT=${{ secrets.POSTGRES_PORT }}
             export POSTGRES_HOST=${{ secrets.POSTGRES_HOST }}
             export VERSION=${{ env.VERSION }}
+            export GRAFANA_PORT=${{ secrets.GRAFANA_PORT }}
             export GRAFANA_PASSWORD=${{ secrets.GRAFANA_PASSWORD }}
           
             # Conditional build

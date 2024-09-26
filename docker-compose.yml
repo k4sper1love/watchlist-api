@@ -72,11 +72,12 @@ services:
     image: grafana/grafana:latest
     hostname: grafana
     ports:
-      - "3000:3000"
+      - "${GRAFANA_PORT:-3000}:${GRAFANA_PORT:-3000}"
     environment:
       GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin}
       GF_PATHS_PROVISIONING: /etc/grafana/provisioning
       GF_AUTH_ANONYMOUS_ENABLED: false
+      GF_SERVER_HTTP_PORT: ${GRAFANA_PORT:-3000}
     volumes:
       - ./services/monitoring/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
       - grafana-data:/var/lib/grafana
