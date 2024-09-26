@@ -78,6 +78,7 @@ services:
       GF_PATHS_PROVISIONING: /etc/grafana/provisioning
       GF_AUTH_ANONYMOUS_ENABLED: false
       GF_SERVER_HTTP_PORT: ${GRAFANA_PORT:-3000}
+      GF_SERVER_ROOT_URL: "%(protocol)s://%(domain)s/grafana/"
     volumes:
       - ./services/monitoring/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
       - grafana-data:/var/lib/grafana
