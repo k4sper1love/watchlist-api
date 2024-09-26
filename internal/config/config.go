@@ -16,17 +16,18 @@ import (
 )
 
 var (
-	JwtSecret  string   // Secret password for creating JWT tokens.
-	Env        string   // Environment (local, dev, prod).
-	Migrations string   // Path to migration files.
-	Dsn        string   // PostgreSQL Data Source Name for database connection.
-	Port       = "8001" // Port for the API server.
+	JwtSecret  string // Secret password for creating JWT tokens.
+	Env        string // Environment (local, dev, prod).
+	Migrations string // Path to migration files.
+	Dsn        string // PostgreSQL Data Source Name for database connection.
+	Port       int    // Port for the API server.
 )
 
 // ParseFlags parses command-line flags and sets the corresponding global configuration variables.
 // It uses the ff package to handle flag parsing and environment variable overrides.
 //
 // Supported flags include:
+//   - -p, --port: The port number for the API server (default: 8001).
 //   - -e, --env: The environment setting (local, dev, prod) (default: local).
 //   - -m, --migrations: Path to the folder containing database migration files.
 //   - -s, --secret: The secret password for creating JWT tokens.
@@ -35,6 +36,7 @@ func ParseFlags(args []string) error {
 	flagSet := ff.NewFlagSet("API Configuration")
 
 	// Define command-line flags and their default values
+	flagSet.IntVar(&Port, 'p', "port", 8001, "API server port")
 	flagSet.StringVar(&Env, 'e', "env", "local", "Environment (local|dev|prod)")
 	flagSet.StringVar(&Migrations, 'm', "migrations", "", "Path to migration files folder. If not provided, migrations do not apply")
 	flagSet.StringVar(&JwtSecret, 's', "secret", "secretPass", "Secret password for creating JWT tokens")

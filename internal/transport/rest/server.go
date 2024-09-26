@@ -3,6 +3,7 @@ package rest
 import (
 	"context"
 	"errors"
+	"fmt"
 	"github.com/k4sper1love/watchlist-api/api"
 	"github.com/k4sper1love/watchlist-api/internal/config"
 	"github.com/k4sper1love/watchlist-api/pkg/logger/sl"
@@ -17,7 +18,8 @@ import (
 // Handles graceful shutdown when receiving termination signals.
 func Serve() error {
 	host := getServerHost()
-	server := newServer(config.Port)
+	port := fmt.Sprintf("%d", config.Port)
+	server := newServer(port)
 
 	shutdownErr := make(chan error)
 	go handleGracefulShutdown(server, shutdownErr)
