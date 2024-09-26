@@ -68,6 +68,7 @@ jobs:
             export VERSION=${{ env.VERSION }}
             export GRAFANA_PORT=${{ secrets.GRAFANA_PORT }}
             export GRAFANA_PASSWORD=${{ secrets.GRAFANA_PASSWORD }}
+            export GRAFANA_DOMAIN=${{ secrets.GRAFANA_DOMAIN }}
           
             # Conditional build
             if [[ "${{ secrets.FULL_REBUILD }}" == "true" ]]; then
