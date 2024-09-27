@@ -17,11 +17,6 @@ func swaggerHandler(w http.ResponseWriter, r *http.Request) {
 
 // setSwaggerInfo configures the Host and Schemes for SwaggerInfo
 func setSwaggerInfo(r *http.Request) {
-	scheme := "http"
-	if r.TLS != nil {
-		scheme = "https"
-	}
-
 	api.SwaggerInfo.Host = r.Host
-	api.SwaggerInfo.Schemes = []string{scheme}
+	api.SwaggerInfo.Schemes = []string{"http", "https"}
 }
