@@ -15,16 +15,16 @@ services:
       dockerfile: Dockerfile
     <<: *default-logging
     environment:
-      SERVER_HOST: ${SSH_HOST:-localhost}
+      SERVER_HOST: ${SERVER_HOST:-localhost}
       APP_PORT: ${APP_PORT}
-      APP_MIGRATIONS: ${APP_MIGRATIONS:-file://migrations}
+      APP_MIGRATIONS: ${APP_MIGRATIONS}
       APP_ENV: ${APP_ENV}
       APP_SECRET: ${APP_SECRET}
       VERSION: ${VERSION}
-      POSTGRES_HOST: ${POSTGRES_HOST:-db}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_HOST: ${POSTGRES_HOST:-db}
       POSTGRES_PORT: ${POSTGRES_PORT}
     ports:
       - "${APP_PORT}:${APP_PORT}"

@@ -52,21 +52,20 @@ jobs:
           
             # Setting the script execution rights
             chmod +x ./services/metrics/prometheus/generate_prometheus_config.sh
-        
+          
             # Export environment variables 
-            export GRAFANA_PASSWORD=${{ secrets.GRAFANA_PASSWORD }}
-            export SSH_HOST=${{ secrets.SSH_HOST }}
+            export SERVER_HOST=${{ secrets.SSH_HOST }}
             export APP_PORT=${{ secrets.APP_PORT }}  
             export APP_SECRET=${{ secrets.APP_SECRET }}  
             export APP_ENV=${{ secrets.APP_ENV }}  
             export APP_MIGRATIONS=${{ secrets.APP_MIGRATIONS }}  
-            export APP_DSN=${{ secrets.APP_DSN }}  
             export POSTGRES_USER=${{ secrets.POSTGRES_USER }}  
             export POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}  
             export POSTGRES_DB=${{ secrets.POSTGRES_DB }}  
             export POSTGRES_PORT=${{ secrets.POSTGRES_PORT }}
             export POSTGRES_HOST=${{ secrets.POSTGRES_HOST }}
             export VERSION=${{ env.VERSION }}
+            export GRAFANA_PASSWORD=${{ secrets.GRAFANA_PASSWORD }}
           
             # Conditional build
             if [[ "${{ secrets.FULL_REBUILD }}" == "true" ]]; then
