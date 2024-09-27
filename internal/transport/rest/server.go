@@ -51,7 +51,7 @@ func newServer(port string) *http.Server {
 // startHTTP configures and starts the HTTP server.
 func startHTTP(server *http.Server, host string) error {
 	api.SwaggerInfo.Host = host + server.Addr
-	api.SwaggerInfo.Schemes = []string{"http, https"}
+	api.SwaggerInfo.Schemes = []string{"http", "https"}
 
 	sl.Log.Info("starting HTTP server", slog.String("address", "http://"+host+server.Addr))
 
