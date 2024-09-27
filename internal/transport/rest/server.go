@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/k4sper1love/watchlist-api/api"
 	"github.com/k4sper1love/watchlist-api/internal/config"
 	"github.com/k4sper1love/watchlist-api/pkg/logger/sl"
 	"log/slog"
@@ -50,9 +49,6 @@ func newServer(port string) *http.Server {
 
 // startHTTP configures and starts the HTTP server.
 func startHTTP(server *http.Server, host string) error {
-	api.SwaggerInfo.Host = host + server.Addr
-	api.SwaggerInfo.Schemes = []string{"http", "https"}
-
 	sl.Log.Info("starting HTTP server", slog.String("address", "http://"+host+server.Addr))
 
 	if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
