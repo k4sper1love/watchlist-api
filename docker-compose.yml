@@ -77,7 +77,7 @@ services:
       GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin}
       GF_PATHS_PROVISIONING: /etc/grafana/provisioning
       GF_AUTH_ANONYMOUS_ENABLED: false
-      GF_SERVER_ROOT_URL: "%(protocol)s://${GRAFANA_DOMAIN}/"
+      GF_SERVER_HTTP_PORT: ${GRAFANA_PORT:-3O00}
     volumes:
       - ./services/monitoring/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
       - grafana-data:/var/lib/grafana
