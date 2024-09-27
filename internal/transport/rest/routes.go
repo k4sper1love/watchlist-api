@@ -12,7 +12,6 @@ import (
 	"github.com/gorilla/mux"
 	_ "github.com/k4sper1love/watchlist-api/api"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	httpSwagger "github.com/swaggo/http-swagger"
 	"net/http"
 )
 
@@ -48,9 +47,7 @@ func route() *mux.Router {
 	router.HandleFunc("/api/v1/healthcheck", healthcheckHandler).Methods(http.MethodGet)
 
 	// Swagger documentation UI Endpoint
-	router.Handle("/swagger/{rest:.*}", httpSwagger.Handler(
-		httpSwagger.URL("/swagger/doc.json"),
-	))
+	router.HandleFunc("/swagger/{rest:.*}", swaggerHandler)
 
 	// Prometheus Metrics Endpoint
 	router.Handle("/metrics", promhttp.Handler()).Methods(http.MethodGet)
