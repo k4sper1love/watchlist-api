@@ -14,7 +14,7 @@ import (
 	"time"
 )
 
-// Serve initializes and starts the HTTP(S) server based on the USE_HTTPS environment variable.
+// Serve initializes and starts the HTTP server.
 // Handles graceful shutdown when receiving termination signals.
 func Serve() error {
 	host := getServerHost()
@@ -51,7 +51,6 @@ func newServer(port string) *http.Server {
 // startHTTP configures and starts the HTTP server.
 func startHTTP(server *http.Server, host string) error {
 	api.SwaggerInfo.Host = host + server.Addr
-	api.SwaggerInfo.Schemes = []string{"http"}
 
 	sl.Log.Info("starting HTTP server", slog.String("address", "http://"+host+server.Addr))
 

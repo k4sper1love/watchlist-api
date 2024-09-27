@@ -54,7 +54,8 @@ jobs:
             chmod +x ./services/metrics/prometheus/generate_prometheus_config.sh
         
             # Export environment variables 
-            export SERVER_HOST=${{ secrets.SSH_HOST }}
+            export GRAFANA_PASSWORD=${{ secrets.GRAFANA_PASSWORD }}
+            export SSH_HOST=${{ secrets.SSH_HOST }}
             export APP_PORT=${{ secrets.APP_PORT }}  
             export APP_SECRET=${{ secrets.APP_SECRET }}  
             export APP_ENV=${{ secrets.APP_ENV }}  
@@ -66,9 +67,6 @@ jobs:
             export POSTGRES_PORT=${{ secrets.POSTGRES_PORT }}
             export POSTGRES_HOST=${{ secrets.POSTGRES_HOST }}
             export VERSION=${{ env.VERSION }}
-            export GRAFANA_PORT=${{ secrets.GRAFANA_PORT }}
-            export GRAFANA_PASSWORD=${{ secrets.GRAFANA_PASSWORD }}
-            export GRAFANA_DOMAIN=${{ secrets.GRAFANA_DOMAIN }}
           
             # Conditional build
             if [[ "${{ secrets.FULL_REBUILD }}" == "true" ]]; then
