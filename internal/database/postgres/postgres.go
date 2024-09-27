@@ -23,21 +23,19 @@ var db *sql.DB
 // OpenDB opens a PostgreSQL database connection and applies any pending migrations.
 // It initializes a connection using the DSN from `config.Dsn`, verifies the connection with a ping,
 // and applies migrations if a path is specified in `config.Migrations`.
-func OpenDB() error {
+func OpenDB() {
 	var err error
 
 	// Open a connection to the PostgreSQL database using the DSN from the configuration.
 	db, err = sql.Open("postgres", config.Dsn)
 	if err != nil {
 		sl.Log.Error("failed to open database connection", slog.Any("error", err))
-		return err
 	}
 
 	// Ping the database to ensure the connection is valid.
 	err = db.Ping()
 	if err != nil {
 		sl.Log.Error("failed to ping database", slog.Any("error", err))
-		return err
 	}
 
 	sl.Log.Info("database connection established successfully")
@@ -48,14 +46,12 @@ func OpenDB() error {
 		driver, err := postgres.WithInstance(db, &postgres.Config{})
 		if err != nil {
 			sl.Log.Error("failed to create migration driver", slog.Any("error", err))
-			return err
 		}
 
 		// Create a new migration instance with the specified migrations' path.
 		m, err := migrate.NewWithDatabaseInstance(config.Migrations, "postgres", driver)
 		if err != nil {
 			sl.Log.Error("failed to create migration instance", slog.Any("error", err))
-			return err
 		}
 
 		// Apply any pending migrations.
@@ -64,13 +60,10 @@ func OpenDB() error {
 			sl.Log.Info("no migrations to apply")
 		} else if err != nil {
 			sl.Log.Error("migration failed", slog.Any("error", err))
-			return err
 		} else {
 			sl.Log.Info("migrations applied successfully")
 		}
 	}
-
-	return nil
 }
 
 func CloseDB() {

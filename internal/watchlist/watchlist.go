@@ -37,9 +37,8 @@ func Run(args []string) error {
 	api.SwaggerInfo.Version = version.GetVersion()
 
 	// Open database connection
-	if err := postgres.OpenDB(); err != nil {
-		return err
-	}
+	postgres.OpenDB()
+
 	defer postgres.CloseDB()
 
 	// Start the REST server.
