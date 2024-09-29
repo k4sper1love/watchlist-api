@@ -5,7 +5,9 @@
 ## 🔴 Live Server
 - **API**: [https://k4sper1love.kz/api](https://k4sper1love.kz/api)
 - **Swagger Documentation**: [https://k4sper1love.kz/swagger/index.html](https://k4sper1love.kz/swagger/index.html)
-- **Grafana Dashboard**: [http://k4sper1love.kz:3000](http://k4sper1love.kz:3000/public-dashboards/2537938d1d5a4917a3a2264da797a5b5?orgId=1&refresh=auto)
+- **Grafana Dashboards**: 
+  - [https://k4sper1love.kz/logs](https://k4sper1love.kz/logs)
+  - [https://k4sper1love.kz/monitoring](https://k4sper1love.kz/monitoring)
 
 ## 🔎 Navigation
 - [Main Features](#-main-features)
@@ -175,8 +177,8 @@ http://localhost:3000
 ```
 4. Log in using the credentials (by default: `admin`, `admin`).
 5. Create a new dashboard and select the preset data sources:
-  - For logs, use **Loki**.
-  - For metrics, use **Prometheus**.
+- For logs, use **Loki**.
+- For metrics, use **Prometheus**.
 7. Set up a query, such as `{compose_service="app"}`, and save the dashboard.
 
 ## 🌐 Watchlist REST API Endpoints

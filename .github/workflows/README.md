@@ -97,7 +97,7 @@ POSTGRES_PORT: PostgreSQL port number.
 
 POSTGRES_HOST: (Optional) PostgreSQL host name. Default: 'db'.
    
-APP_MIGRATIONS: (Optional) Path to database migration files. Default: 'file://migrations'.
+APP_MIGRATIONS: Path to database migration files. Default: 'file://migrations'.
 
 APP_PORT: Port number for the HTTP server.
    
