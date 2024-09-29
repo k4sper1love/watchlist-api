@@ -13,29 +13,29 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Uploading project files to GitHub Runner
+      # 1. Checkout Project Files
       - name: Checkout Project Files
         uses: actions/checkout@v3
 
-      # Set up a private SSH key
+      # 2. Configure SSH Access
       - name: Configure SSH Access
         uses: webfactory/ssh-agent@v0.7.0
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      # Create VERSION based on the current date and time, then create and push the tag
+      # 3. Set VERSION and Create Tag
       - name: Set VERSION and Create Tag
         run: |
           VERSION=$(date +'%Y%m%d%H%M%S')
           echo "VERSION=${VERSION}" >> $GITHUB_ENV
-    
+
           git config --global user.email "${{ secrets.GIT_USER_EMAIL }}"
           git config --global user.name "${{ secrets.GIT_USER_NAME }}"
-    
+
           git tag -a "v${VERSION}" -m "Release version ${VERSION}"
           git push origin "v${VERSION}"
 
-      # Copying project files to the server storage
+      # 4. Upload Project to Server
       - name: Upload Project to Server
         run: |
           ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
@@ -44,32 +44,32 @@ jobs:
           
           scp -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -r ./* ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/home/${{ secrets.SSH_USER }}/watchlist-api
 
-        # Exporting environment variables and running docker compose
+      # 5. Deploy Application with Docker Compose
       - name: Deploy Application with Docker Compose
         run: |
           ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -o ServerAliveInterval=60 -o ServerAliveCountMax=5 ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
             cd /home/${{ secrets.SSH_USER }}/watchlist-api
           
+            # Setting the script execution rights
+            chmod +x ./services/metrics/prometheus/generate_prometheus_config.sh
+          
             # Export environment variables 
-            export USE_HTTPS=${{ secrets.USE_HTTPS }}
             export SERVER_HOST=${{ secrets.SSH_HOST }}
-            export APP_PORT=${{ secrets.APP_PORT }}
+            export APP_PORT=${{ secrets.APP_PORT }}  
             export APP_SECRET=${{ secrets.APP_SECRET }}  
             export APP_ENV=${{ secrets.APP_ENV }}  
             export APP_MIGRATIONS=${{ secrets.APP_MIGRATIONS }}  
-            export APP_DSN=${{ secrets.APP_DSN }}  
             export POSTGRES_USER=${{ secrets.POSTGRES_USER }}  
             export POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}  
             export POSTGRES_DB=${{ secrets.POSTGRES_DB }}  
             export POSTGRES_PORT=${{ secrets.POSTGRES_PORT }}
+            export POSTGRES_HOST=${{ secrets.POSTGRES_HOST }}
             export VERSION=${{ env.VERSION }}
             export GRAFANA_PASSWORD=${{ secrets.GRAFANA_PASSWORD }}
           
-            # Deploy with Docker Compose
-            docker-compose down
-          
-            # If FULL_REBUILD = true, then use --no-cache
+            # Conditional build
             if [[ "${{ secrets.FULL_REBUILD }}" == "true" ]]; then
+              docker-compose down --rmi all
               docker-compose build --no-cache
             else 
               docker-compose build
@@ -78,11 +78,11 @@ jobs:
             docker-compose up -d
           EOF
 
-      # Installing dependencies (node.js, npm, newman) to run Postman tests if they are not already installed
+      # 6. Prepare Node.js Environment for Testing
       - name: Prepare Node.js Environment for Testing
         run: |
           ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
-            # Check if Node.js is installed
+            # Install Node.js if not present
             if ! command -v node &> /dev/null; then
               echo "Node.js not found, installing..."
               curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
@@ -91,7 +91,7 @@ jobs:
               echo "Node.js is already installed"
             fi
 
-            # Check if npm is installed
+            # Install npm if not present
             if ! command -v npm &> /dev/null; then
               echo "npm not found, installing..."
               sudo apt-get install -y npm
@@ -99,7 +99,7 @@ jobs:
               echo "npm is already installed"
             fi
 
-            # Check if Newman is installed
+            # Install Newman if not present
             if ! command -v newman &> /dev/null; then
               echo "Newman not found, installing..."
               npm install -g newman
@@ -108,23 +108,18 @@ jobs:
             fi
           EOF
 
-      # Running tests from Postman located in the tests/postman folder
+      # 7. Execute Postman Tests
       - name: Execute Postman Tests
         run: |
           ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
             cd /home/${{ secrets.SSH_USER }}/watchlist-api/tests/postman
           
-            # Clearing the cache
-            sudo systemd-resolve --flush-cachesя
+            # Clear the cache
+            sudo systemd-resolve --flush-caches
           
             # Determine BASE_URL based on USE_HTTPS
-            if [ "${{ secrets.USE_HTTPS }}" == "true" ]; then
-              BASE_URL="https://${{ secrets.SSH_HOST }}"
-            else
-              BASE_URL="http://${{ secrets.SSH_HOST }}:${{ secrets.APP_PORT }}"
-            fi
+            BASE_URL="http://${{ secrets.SSH_HOST }}:${{ secrets.APP_PORT }}"
           
-            # Starting with the determinated BASE_URL
+            # Run the Newman tests
             newman run postman_collection.json --environment postman_environment.json --env-var "BASE_URL=$BASE_URL"
-
           EOF

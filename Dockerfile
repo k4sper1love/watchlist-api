@@ -19,8 +19,6 @@ WORKDIR /root/
 
 COPY --from=builder /app/watchlist-app .
 COPY --from=builder /app/migrations ./migrations
-
-RUN mkdir certs
-
+COPY --from=builder /app/static ./static
 
 CMD ["./watchlist-app"]

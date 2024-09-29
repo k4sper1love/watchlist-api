@@ -15,19 +15,20 @@ services:
       dockerfile: Dockerfile
     <<: *default-logging
     environment:
-      USE_HTTPS: ${USE_HTTPS:-false}
       SERVER_HOST: ${SERVER_HOST:-localhost}
       APP_PORT: ${APP_PORT}
-      APP_DSN: ${APP_DSN}
       APP_MIGRATIONS: ${APP_MIGRATIONS}
       APP_ENV: ${APP_ENV}
       APP_SECRET: ${APP_SECRET}
       VERSION: ${VERSION}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_HOST: ${POSTGRES_HOST:-db}
+      POSTGRES_PORT: ${POSTGRES_PORT}
     ports:
       - "${APP_PORT}:${APP_PORT}"
       - "443:443"
-    volumes:
-      - certs:/root/certs
     depends_on:
       db:
         condition: service_healthy
@@ -56,29 +57,50 @@ services:
       - logging
 
   loki:
+    image: grafana/loki:latest
     hostname: loki
-    image: grafana/loki:2.9.0
-    volumes:
-      - ./logs/grafana/loki/config.yaml:/etc/grafana/loki/config.yaml
-      - loki-data:/loki
     ports:
       - "3100:3100"
-    command: -config.file=/etc/grafana/loki/config.yaml
+    volumes:
+      - ./services/logs/loki/config.yaml:/etc/grafana/loki/config.yaml
+      - loki-data:/loki
+    command: ["--config.file=/etc/grafana/loki/config.yaml"]
     networks:
       - logging
 
   grafana:
-    hostname: grafana
-    environment:
-      - GF_PATHS_PROVISIONING=/etc/grafana/provisioning
-      - GF_AUTH_ANONYMOUS_ENABLED=false
-      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
-    volumes:
-      - ./logs/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
-      - grafana-data:/var/lib/grafana
     image: grafana/grafana:latest
+    hostname: grafana
     ports:
       - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin}
+      GF_PATHS_PROVISIONING: /etc/grafana/provisioning
+      GF_AUTH_ANONYMOUS_ENABLED: false
+    volumes:
+      - ./services/monitoring/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
+      - grafana-data:/var/lib/grafana
+    networks:
+      - logging
+
+  prometheus:
+    image: prom/prometheus:latest
+    hostname: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./services/metrics/prometheus/generate_prometheus_config.sh:/usr/local/bin/generate_prometheus_config.sh
+      - prometheus-data:/prometheus
+    entrypoint: [ "/usr/local/bin/generate_prometheus_config.sh" ]
+    environment:
+      APP_PORT: ${APP_PORT}
+    networks:
+      - logging
+
+  node_exporter:
+    image: prom/node-exporter:latest
+    ports:
+      - "9100:9100"
     networks:
       - logging
 
@@ -86,7 +108,7 @@ volumes:
   pg-data:
   grafana-data:
   loki-data:
-  certs:
+  prometheus-data:
 
 networks:
   logging:

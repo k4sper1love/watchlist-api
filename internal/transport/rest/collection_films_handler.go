@@ -6,7 +6,6 @@ import (
 	"github.com/k4sper1love/watchlist-api/internal/database/postgres"
 	"github.com/k4sper1love/watchlist-api/internal/models"
 	"github.com/k4sper1love/watchlist-api/pkg/filters"
-	"github.com/k4sper1love/watchlist-api/pkg/logger/sl"
 	"net/http"
 )
 
@@ -27,8 +26,6 @@ import (
 // @Security JWTAuth
 // @Router /collections/{collection_id}/films/{film_id} [post]
 func addCollectionFilmHandler(w http.ResponseWriter, r *http.Request) {
-	sl.PrintHandlerInfo(r)
-
 	collectionId, err := parseIdParam(r, "collectionId")
 	if err != nil {
 		badRequestResponse(w, r, err)
@@ -42,12 +39,12 @@ func addCollectionFilmHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Create a new CollectionFilm object with the parsed IDs.
-	var collectionFilm models.CollectionFilm
-	collectionFilm.CollectionId = collectionId
-	collectionFilm.FilmId = filmId
+	collectionFilm := models.CollectionFilm{
+		CollectionId: collectionId,
+		FilmId:       filmId,
+	}
 
-	err = postgres.AddCollectionFilm(&collectionFilm)
-	if err != nil {
+	if err := postgres.AddCollectionFilm(&collectionFilm); err != nil {
 		handleDBError(w, r, err)
 		return
 	}
@@ -72,8 +69,6 @@ func addCollectionFilmHandler(w http.ResponseWriter, r *http.Request) {
 // @Security JWTAuth
 // @Router /collections/{collection_id}/films/{film_id} [get]
 func getCollectionFilmHandler(w http.ResponseWriter, r *http.Request) {
-	sl.PrintHandlerInfo(r)
-
 	collectionId, err := parseIdParam(r, "collectionId")
 	if err != nil {
 		badRequestResponse(w, r, err)
@@ -115,8 +110,6 @@ func getCollectionFilmHandler(w http.ResponseWriter, r *http.Request) {
 // @Security JWTAuth
 // @Router /collections/{collection_id}/films [get]
 func getCollectionFilmsHandler(w http.ResponseWriter, r *http.Request) {
-	sl.PrintHandlerInfo(r)
-
 	collectionId, err := parseIdParam(r, "collectionId")
 	if err != nil {
 		badRequestResponse(w, r, err)
@@ -128,27 +121,23 @@ func getCollectionFilmsHandler(w http.ResponseWriter, r *http.Request) {
 		filters.Filters
 	}
 
-	// Parse query string parameters from the request URL.
+	// Parse query string parameters.
 	qs := r.URL.Query()
-
 	input.Filters.Page = parseQueryInt(qs, "page", 1)
 	input.Filters.PageSize = parseQueryInt(qs, "page_size", 5)
-
 	input.Filters.Sort = parseQueryString(qs, "sort", "film_id")
 
-	// Define a safe list of sortable fields.
+	// Define safe sortable fields.
 	input.Filters.SortSafeList = []string{
 		"film_id", "added_at",
 		"-film_id", "-added_at",
 	}
 
 	// Validate the filters.
-	errs, err := filters.ValidateFilters(input.Filters)
-	switch {
-	case err != nil:
+	if errs, err := filters.ValidateFilters(input.Filters); err != nil {
 		serverErrorResponse(w, r, err)
 		return
-	case errs != nil:
+	} else if errs != nil {
 		failedValidationResponse(w, r, errs)
 		return
 	}
@@ -181,8 +170,6 @@ func getCollectionFilmsHandler(w http.ResponseWriter, r *http.Request) {
 // @Security JWTAuth
 // @Router /collections/{collection_id}/films/{film_id} [put]
 func updateCollectionFilmHandler(w http.ResponseWriter, r *http.Request) {
-	sl.PrintHandlerInfo(r)
-
 	collectionId, err := parseIdParam(r, "collectionId")
 	if err != nil {
 		badRequestResponse(w, r, err)
@@ -201,16 +188,14 @@ func updateCollectionFilmHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = parseRequestBody(r, collectionFilm)
-	if err != nil {
+	if err := parseRequestBody(r, collectionFilm); err != nil {
 		badRequestResponse(w, r, err)
 		return
 	}
-	collectionFilm.CollectionId = collectionId // Ensure the collection ID is set.
-	collectionFilm.FilmId = filmId             // Ensure the film ID is set.
+	collectionFilm.CollectionId = collectionId
+	collectionFilm.FilmId = filmId
 
-	err = postgres.UpdateCollectionFilm(collectionFilm)
-	if err != nil {
+	if err := postgres.UpdateCollectionFilm(collectionFilm); err != nil {
 		switch {
 		case errors.Is(err, sql.ErrNoRows):
 			editConflictResponse(w, r)
@@ -240,8 +225,6 @@ func updateCollectionFilmHandler(w http.ResponseWriter, r *http.Request) {
 // @Security JWTAuth
 // @Router /collections/{collection_id}/films/{films_id} [delete]
 func deleteCollectionFilmHandler(w http.ResponseWriter, r *http.Request) {
-	sl.PrintHandlerInfo(r)
-
 	collectionId, err := parseIdParam(r, "collectionId")
 	if err != nil {
 		badRequestResponse(w, r, err)
@@ -255,14 +238,12 @@ func deleteCollectionFilmHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Verify that the collection-film relationship exists in the database.
-	_, err = postgres.GetCollectionFilm(collectionId, filmId)
-	if err != nil {
+	if _, err := postgres.GetCollectionFilm(collectionId, filmId); err != nil {
 		handleDBError(w, r, err)
 		return
 	}
 
-	err = postgres.DeleteCollectionFilm(collectionId, filmId)
-	if err != nil {
+	if err = postgres.DeleteCollectionFilm(collectionId, filmId); err != nil {
 		handleDBError(w, r, err)
 		return
 	}

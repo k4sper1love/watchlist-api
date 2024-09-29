@@ -5,7 +5,9 @@
 ## 🔴 Live Server
 - **API**: [https://k4sper1love.kz/api](https://k4sper1love.kz/api)
 - **Swagger Documentation**: [https://k4sper1love.kz/swagger/index.html](https://k4sper1love.kz/swagger/index.html)
-- **Grafana Dashboards**: [http://k4sper1love.kz:3000](http://k4sper1love.kz:3000/public-dashboards/2537938d1d5a4917a3a2264da797a5b5?orgId=1&refresh=auto)
+- **Grafana Dashboards**: 
+  - [https://k4sper1love.kz/logs](https://k4sper1love.kz/logs)
+  - [https://k4sper1love.kz/monitoring](https://k4sper1love.kz/monitoring)
 
 ## 🔎 Navigation
 - [Main Features](#-main-features)
@@ -24,7 +26,7 @@
 - [Testing with Postman](#-testing-with-postman)
   - [Postman tests](#postman-tests)
   - [Running tests](#running-tests)
-- [Logging System](#-logging-system)
+- [Monitoring System (Grafana)](#-monitoring-system-grafana)
 - [Watchlist REST API Endpoints](#-watchlist-rest-api-endpoints)
 - [Database Structure](#-database-structure)
 - [License](#-license)
@@ -53,17 +55,19 @@ Authorization: Bearer <JWT_TOKEN>
 - **Authentication**: JWT
 - **Database**: PostgreSQL
 - **API Documentation**: Swagger
-- **Logging**: Grafana + Loki
+- **Log Aggregation**: Loki
+- **Metrics**: Prometheus + Node Exporter
+- **Visualization**: Grafana (for logs and metrics)
 - **Testing**: Postman
 - **Deployment**: Docker, Docker Compose
 - **CI/CD**: GitHub Actions
 
 ## 📝 Project Requirements
 - **Go**: 1.18+
-- **PostgreSQL**
+- **PostgreSQL**: 13+
 ### For Deployment
-- **Docker**
-- **Docker Compose**
+- **Docker**: 20.10+
+- **Docker Compose**: 1.29+
 - **Loki Docker Driver**
 ### For Testing
 - **Postman**
@@ -91,7 +95,7 @@ go mod tidy
 ```
 4. Install Loki Docker Driver (required for Depoyment):
 ```bash
-docker plugin install grafana/loki-docker-driver:2.9.4 --alias loki --grant-all-permissions
+docker plugin install grafana/loki-docker-driver:latest --alias loki --grant-all-permissions
 ```
 
 ## ⚙️ Configuration
@@ -109,15 +113,17 @@ APP_ENV=local
 
 APP_MIGRATIONS=file://migrations
 
-APP_DSN=postgres://postgres:postgres@localhost:5432/example?sslmode=disable
-
 POSTGRES_DB=watchlist
 
 POSTGRES_PORT=5432
 
 POSTGRES_USER=postgres
+
+POSTGRES_PASSWORD=password
+
+POSTGRES_HOST=localhost
 ```
-❗**Note:** For Docker Compose, replace **localhost** with **db** in the `APP_DSN` value.
+❗**Note:** For Docker Compose, replace **localhost** with **db** in the `POSTGRES_HOST` value.
 
 ## ⚡ Run the application
 ### Using Terminal
@@ -128,7 +134,6 @@ go run ./cmd/watchlist
 #### Available Flags
 - `-p`, `--port`: Port number for the API server (default: `8001`).
 - `-e`, `--env`: Environment setting (`local`, `dev`, `prod`) (default: `local`).
-- `-d`, `--dsn`: PostgreSQL DSN for database connection (e.g., `postgres://user:pass@host:port/dbname?sslmode=disable`).
 - `-m`, `--migrations`: Path to migration files (e.g., `file://migrations`).
 - `-s`, `--secret`: Secret password for creating JWT tokens (default: `secretPass`).
 
@@ -163,16 +168,18 @@ These files are located in the [tests/postman](tests/postman) directory:
 2. Select the Environment.
 3. Run the Collection.
 
-## 📁 Logging System
-Grafana + Loki is used to collect and monitor logs.
-### Setting Up Logs 🔧
+## 📁 Monitoring System (Grafana)
+**Grafana** is used to collect and monitor logs using Loki and metrics using Prometheus.
+### Setting Up Monitoring 🔧
 1. Navigate to Grafana at:
 ```bash
 http://localhost:3000
 ```
 4. Log in using the credentials (by default: `admin`, `admin`).
-5. Create a new dashboard and add a `Loki` data source.
-6. Set up a query, such as `{compose_service="app"}`, and save the dashboard.
+5. Create a new dashboard and select the preset data sources:
+- For logs, use **Loki**.
+- For metrics, use **Prometheus**.
+7. Set up a query, such as `{compose_service="app"}`, and save the dashboard.
 
 ## 🌐 Watchlist REST API Endpoints
 ```bash

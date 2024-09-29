@@ -32,7 +32,6 @@ type Metadata struct {
 }
 
 // CalculateMetadata calculates pagination metadata based on total records, current page, and page size.
-// It returns a Metadata struct with details about the pagination.
 func CalculateMetadata(totalRecords, page, pageSize int) Metadata {
 	if totalRecords == 0 {
 		return Metadata{}
@@ -48,7 +47,6 @@ func CalculateMetadata(totalRecords, page, pageSize int) Metadata {
 }
 
 // ValidateFilters validates the filter parameters against predefined constraints.
-// It returns a map of validation error messages and any additional errors encountered.
 func ValidateFilters(f Filters) (map[string]string, error) {
 	errs := validator.ValidateStruct(&f)
 

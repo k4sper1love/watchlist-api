@@ -4,38 +4,42 @@ import (
 	"context"
 	"github.com/gorilla/mux"
 	"github.com/k4sper1love/watchlist-api/internal/database/postgres"
+	"github.com/k4sper1love/watchlist-api/pkg/logger/sl"
+	"github.com/k4sper1love/watchlist-api/pkg/metrics"
 	"net/http"
 	"strings"
+	"time"
 )
 
-// List of paths that do not require authentication.
-var notRequireAuth = []string{
-	"/",
-	"/api",
-	"/api/v1/healthcheck",
-	"/api/v1/auth/register",
-	"/api/v1/auth/login",
-	"/api/v1/auth/refresh",
+// Map of paths that do not require authentication.
+var notRequireAuth = map[string]struct{}{
+	"/":                     {},
+	"/favicon.ico":          {},
+	"/api":                  {},
+	"/api/v1/healthcheck":   {},
+	"/api/v1/auth/register": {},
+	"/api/v1/auth/login":    {},
+	"/api/v1/auth/refresh":  {},
 }
 
-// requireAuth ensures that requests have a valid authentication token or are to an excluded path.
-//
-// Returns a http.Handler that processes the request based on authentication status.
-func requireAuth(next http.Handler) http.Handler {
+var internalPaths = []string{
+	"/swagger",
+	"/metrics",
+}
+
+// authenticate ensures that requests have a valid authentication token or are to an excluded path.
+func authenticate(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		requestPath := r.URL.Path
 
 		// Check if the request path is in the list of paths that do not require authentication.
-		for _, path := range notRequireAuth {
-			if path == requestPath {
-				// If the path is not authenticated, proceed to the next handler.
-				next.ServeHTTP(w, r)
-				return
-			}
+		if _, exists := notRequireAuth[requestPath]; exists {
+			next.ServeHTTP(w, r)
+			return
 		}
 
-		// Check if the request path starts with "/swagger/"
-		if strings.HasPrefix(requestPath, "/swagger/") {
+		// Allow access to internal endpoints.
+		if isInternalPath(requestPath) {
 			next.ServeHTTP(w, r)
 			return
 		}
@@ -64,18 +68,14 @@ func requireAuth(next http.Handler) http.Handler {
 }
 
 // requirePermissions ensures that the user has the necessary permissions for the specified resource and action.
-//
-// Returns a http.HandlerFunc that checks user permissions and proceeds if authorized.
 func requirePermissions(resource, action string, next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// Retrieve the user ID from the request context.
 		userId := r.Context().Value("userId").(int)
-
-		// Get URL parameters from the request.
 		params := mux.Vars(r)
 
 		// Initialize a slice to store the required permission codes.
 		var permissionCodes []string
+
 		// Determine permission codes based on the resource type and action.
 		switch resource {
 		case "collectionFilm":
@@ -113,7 +113,6 @@ func requirePermissions(resource, action string, next http.HandlerFunc) http.Han
 		// Check if the user has all required permissions.
 		for _, permissionCode := range permissionCodes {
 			if !permissions.Include(permissionCode) {
-				// If any permission is missing, respond with a forbidden error.
 				forbiddenResponse(w, r)
 				return
 			}
@@ -122,4 +121,32 @@ func requirePermissions(resource, action string, next http.HandlerFunc) http.Han
 		// Proceed to the next handler if permissions are valid.
 		next.ServeHTTP(w, r)
 	}
+}
+
+// logAndRecordMetrics logs the endpoint info and records metrics for the request.
+func logAndRecordMetrics(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Skip logging for internal endpoints
+		if isInternalPath(r.URL.Path) {
+			next.ServeHTTP(w, r)
+			return
+		}
+
+		sl.PrintEndpointInfo(r)
+		start := time.Now()
+
+		next.ServeHTTP(w, r)
+
+		duration := time.Since(start).Seconds()
+		metrics.RecordRequestDuration(r, duration)
+	})
+}
+
+func isInternalPath(requestPath string) bool {
+	for _, path := range internalPaths {
+		if strings.HasPrefix(requestPath, path) {
+			return true
+		}
+	}
+	return false
 }

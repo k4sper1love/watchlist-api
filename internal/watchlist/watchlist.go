@@ -18,40 +18,30 @@ import (
 	"github.com/k4sper1love/watchlist-api/internal/database/postgres"
 	"github.com/k4sper1love/watchlist-api/internal/transport/rest"
 	"github.com/k4sper1love/watchlist-api/pkg/logger/sl"
+	"github.com/k4sper1love/watchlist-api/pkg/metrics"
 	"github.com/k4sper1love/watchlist-api/pkg/version"
-	"log/slog"
 )
 
 // Run initializes and starts the application, handling configuration,
 // logging, database connection, and server startup.
 func Run(args []string) error {
-	// Initial logging setup
 	sl.SetupLogger("dev")
-
 	sl.Log.Info("starting application")
 
-	err := config.ParseFlags(args[1:])
-	if err != nil {
+	if err := config.ParseFlags(args[1:]); err != nil {
 		return err
 	}
 
 	// Reconfigure logger based on the environment.
 	sl.SetupLogger(config.Env)
-
-	db, err := postgres.OpenDB()
-	if err != nil {
-		return err
-	}
-
-	defer func() {
-		if err := db.Close(); err != nil {
-			sl.Log.Error("failed to close database connection", slog.Any("error", err))
-		}
-		sl.Log.Info("database connection closed")
-	}()
-
 	api.SwaggerInfo.Version = version.GetVersion()
 
+	// Open database connection
+	postgres.OpenDB()
+
+	defer postgres.CloseDB()
+
 	// Start the REST server.
+	metrics.InitUptime()
 	return rest.Serve()
 }

@@ -21,45 +21,43 @@ var validationMessages = map[string]string{
 	"max":      "must be at most ",
 }
 
-// getValidationMessage returns the error message for a given validation error,
-// customizing messages for "lte", "gte", "min", and "max" tags.
+// getValidationMessage returns a human-readable error message for a given validation error.
 func getValidationMessage(fe validator.FieldError) string {
 	message, ok := validationMessages[fe.Tag()]
 	if !ok {
-		return "invalid field param"
+		return "invalid field parameter"
 	}
 
-	if fe.Tag() == "lte" || fe.Tag() == "gte" {
+	switch fe.Tag() {
+	case "lte", "gte":
 		return message + fe.Param()
-	} else if fe.Tag() == "min" || fe.Tag() == "max" {
-		return message + fe.Param() + "characters long"
+	case "min", "max":
+		return message + fe.Param() + " characters long"
+	default:
+		return message
 	}
-
-	return message
 }
 
-// usernameValidator checks if a username contains only allowed characters:
-// letters, numbers, dots, and underscores.
+// usernameValidator checks if a username contains only allowed characters: letters, numbers, dots, and underscores.
 func usernameValidator(fl validator.FieldLevel) bool {
 	username := fl.Field().String()
-
 	validUsername := regexp.MustCompile(`^[a-zA-Z0-9._]+$`)
-
 	return validUsername.MatchString(username)
 }
 
 // passwordValidator ensures a password meets security criteria:
-// minimum length of 8 characters, and contains upper, lower, number, and special characters.
+// a minimum length of 8 characters, and includes upper, lower, number, and special characters.
 func passwordValidator(fl validator.FieldLevel) bool {
 	password := fl.Field().String()
 
-	var hasMinLen = len(password) >= 8 // Check if the password meets the minimum length of 8 characters.
-	var hasUpper bool                  // Flag to track if the password contains an uppercase letter.
-	var hasLower bool                  // Flag to track if the password contains a lowercase letter.
-	var hasNumber bool                 // Flag to track if the password contains a numeric digit.
-	var hasSpecial bool                // Flag to track if the password contains a special character
+	const minLength = 8
+	hasMinLen := len(password) >= minLength
+	hasUpper := false
+	hasLower := false
+	hasNumber := false
+	hasSpecial := false
 
-	// Iterate through each character in the password to set the respective flags.
+	// Iterate through each character in the password to check for required types.
 	for _, char := range password {
 		switch {
 		case unicode.IsUpper(char):
@@ -74,6 +72,6 @@ func passwordValidator(fl validator.FieldLevel) bool {
 		}
 	}
 
-	// Return true if all criteria are met, otherwise return false.
+	// Return true if all criteria are met.
 	return hasMinLen && hasUpper && hasLower && hasNumber && hasSpecial
 }

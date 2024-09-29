@@ -3,7 +3,6 @@ package rest
 import (
 	"github.com/k4sper1love/watchlist-api/internal/database/postgres"
 	"github.com/k4sper1love/watchlist-api/internal/models"
-	"github.com/k4sper1love/watchlist-api/pkg/logger/sl"
 	"github.com/k4sper1love/watchlist-api/pkg/validator"
 	"net/http"
 )
@@ -24,17 +23,14 @@ import (
 // @Failure 500 {object} swagger.ErrorResponse
 // @Router /auth/register [post]
 func registerHandler(w http.ResponseWriter, r *http.Request) {
-	sl.PrintHandlerInfo(r)
-
 	var user models.User
-	err := parseRequestBody(r, &user)
-	if err != nil {
+
+	if err := parseRequestBody(r, &user); err != nil {
 		badRequestResponse(w, r, err)
 		return
 	}
 
-	errs := validator.ValidateStruct(&user)
-	if errs != nil {
+	if errs := validator.ValidateStruct(&user); errs != nil {
 		failedValidationResponse(w, r, errs)
 		return
 	}
@@ -48,8 +44,8 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Assign default permissions to the user.
 	permissionCodes := []string{"film:create", "collection:create"}
-	err = postgres.AddUserPermissions(user.Id, permissionCodes...)
-	if err != nil {
+
+	if err = postgres.AddUserPermissions(user.Id, permissionCodes...); err != nil {
 		serverErrorResponse(w, r, err)
 		return
 	}
@@ -71,21 +67,17 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 // @Failure 500 {object} swagger.ErrorResponse
 // @Router /auth/login [post]
 func loginHandler(w http.ResponseWriter, r *http.Request) {
-	sl.PrintHandlerInfo(r)
-
 	var input struct {
-		Email    string `json:"email" validate:"required,email"` // Email of the user attempting to log in.
-		Password string `json:"password" validate:"required"`    // Password of the user attempting to log in.
+		Email    string `json:"email" validate:"required,email"`
+		Password string `json:"password" validate:"required"`
 	}
 
-	err := parseRequestBody(r, &input)
-	if err != nil {
+	if err := parseRequestBody(r, &input); err != nil {
 		badRequestResponse(w, r, err)
 		return
 	}
 
-	errs := validator.ValidateStruct(&input)
-	if errs != nil {
+	if errs := validator.ValidateStruct(&input); errs != nil {
 		failedValidationResponse(w, r, errs)
 		return
 	}
@@ -112,9 +104,6 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 // @Security JWTAuth
 // @Router /auth/refresh [post]
 func refreshAccessTokenHandler(w http.ResponseWriter, r *http.Request) {
-	sl.PrintHandlerInfo(r)
-
-	// Extract the refresh token from the request header.
 	refreshToken := parseTokenFromHeader(r)
 	if refreshToken == "" {
 		invalidAuthTokenResponse(w, r)
@@ -143,9 +132,6 @@ func refreshAccessTokenHandler(w http.ResponseWriter, r *http.Request) {
 // @Security JWTAuth
 // @Router /auth/logout [post]
 func logoutHandler(w http.ResponseWriter, r *http.Request) {
-	sl.PrintHandlerInfo(r)
-
-	// Extract the refresh token from the request header.
 	refreshToken := parseTokenFromHeader(r)
 	if refreshToken == "" {
 		invalidAuthTokenResponse(w, r)
@@ -153,8 +139,7 @@ func logoutHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Revoke the refresh token.
-	err := logout(refreshToken)
-	if err != nil {
+	if err := logout(refreshToken); err != nil {
 		invalidAuthTokenResponse(w, r)
 		return
 	}

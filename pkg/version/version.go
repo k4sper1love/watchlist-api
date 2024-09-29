@@ -3,5 +3,9 @@ package version
 import "os"
 
 func GetVersion() string {
-	return os.Getenv("VERSION")
+	if version := os.Getenv("VERSION"); version != "" {
+		return version
+	} else {
+		return "unknown"
+	}
 }

@@ -14,8 +14,6 @@ func hashToken(token string) string {
 }
 
 // SaveRefreshToken stores a refresh token, its associated user ID, and its expiration time in the database.
-//
-// Returns an error if insertion fails.
 func SaveRefreshToken(refreshToken string, userId int, expiresAt time.Time) error {
 	hashedToken := hashToken(refreshToken)
 
@@ -24,13 +22,11 @@ func SaveRefreshToken(refreshToken string, userId int, expiresAt time.Time) erro
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	_, err := db.ExecContext(ctx, query, hashedToken, userId, expiresAt)
+	_, err := GetDB().ExecContext(ctx, query, hashedToken, userId, expiresAt)
 	return err
 }
 
 // RevokeRefreshToken marks a refresh token as revoked in the database.
-//
-// Returns an error if the update fails.
 func RevokeRefreshToken(refreshToken string) error {
 	hashedToken := hashToken(refreshToken)
 
@@ -39,13 +35,11 @@ func RevokeRefreshToken(refreshToken string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	_, err := db.ExecContext(ctx, query, hashedToken)
+	_, err := GetDB().ExecContext(ctx, query, hashedToken)
 	return err
 }
 
 // IsRefreshTokenRevoked checks if a refresh token has been revoked.
-//
-// Returns true if the token is revoked, false otherwise, and an error if the query fails.
 func IsRefreshTokenRevoked(refreshToken string) (bool, error) {
 	hashedToken := hashToken(refreshToken)
 
@@ -55,21 +49,14 @@ func IsRefreshTokenRevoked(refreshToken string) (bool, error) {
 	defer cancel()
 
 	var revoked bool
-	err := db.QueryRowContext(ctx, query, hashedToken).Scan(&revoked)
-	if err != nil {
+	if err := GetDB().QueryRowContext(ctx, query, hashedToken).Scan(&revoked); err != nil {
 		return false, err
 	}
 
-	if revoked {
-		return true, nil
-	}
-
-	return false, nil
+	return revoked, nil
 }
 
 // GetIdFromRefreshToken retrieves the user ID associated with a refresh token.
-//
-// Returns the user ID and an error if the query fails.
 func GetIdFromRefreshToken(refreshToken string) (int, error) {
 	hashedToken := hashToken(refreshToken)
 
@@ -79,8 +66,7 @@ func GetIdFromRefreshToken(refreshToken string) (int, error) {
 	defer cancel()
 
 	var userId int
-	err := db.QueryRowContext(ctx, query, hashedToken).Scan(&userId)
-	if err != nil {
+	if err := GetDB().QueryRowContext(ctx, query, hashedToken).Scan(&userId); err != nil {
 		return 0, err
 	}
 
