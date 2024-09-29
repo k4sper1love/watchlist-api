@@ -1,8 +1,8 @@
 package swagger
 
 import (
-	"github.com/k4sper1love/watchlist-api/internal/models"
 	"github.com/k4sper1love/watchlist-api/pkg/filters"
+	"github.com/k4sper1love/watchlist-api/pkg/models"
 )
 
 type AuthResponse struct {

@@ -2,7 +2,7 @@ package rest
 
 import (
 	"github.com/k4sper1love/watchlist-api/internal/database/postgres"
-	"github.com/k4sper1love/watchlist-api/internal/models"
+	"github.com/k4sper1love/watchlist-api/pkg/models"
 	"golang.org/x/crypto/bcrypt"
 )
 

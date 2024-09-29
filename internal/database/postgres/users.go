@@ -2,8 +2,8 @@ package postgres
 
 import (
 	"context"
-	"github.com/k4sper1love/watchlist-api/internal/models"
 	"github.com/k4sper1love/watchlist-api/pkg/logger/sl"
+	"github.com/k4sper1love/watchlist-api/pkg/models"
 	"log/slog"
 	"time"
 )
