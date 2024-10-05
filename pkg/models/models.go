@@ -23,6 +23,12 @@ type User struct {
 	Version   int       `json:"-"`                                                                    // Internal version tracking; not included in JSON responses.
 }
 
+type AuthResponse struct {
+	*User
+	AccessToken  string `json:"access_token" example:"eyJhbGciOiJIUzI1NiIs.eyJzdWIilIn0.iTNuOHMObmeRmKU"` // JWT Access Token used to access protected resources.
+	RefreshToken string `json:"refresh_token" example:"eyJhbGciOI6IkpXVCJ9.eyJzdk5EbifQ.4CfEaMw6Ur_fszI"` // JWT Refresh Token used to obtain a new Access Token when it expires.
+}
+
 // Collection represents a collection of films created by a user.
 type Collection struct {
 	Id          int       `json:"id" example:"1"`                                                                   // Unique identifier for the collection.

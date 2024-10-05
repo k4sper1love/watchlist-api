@@ -23,6 +23,36 @@ definitions:
         example: 15
         type: integer
     type: object
+  models.AuthResponse:
+    properties:
+      access_token:
+        description: JWT Access Token used to access protected resources.
+        example: eyJhbGciOiJIUzI1NiIs.eyJzdWIilIn0.iTNuOHMObmeRmKU
+        type: string
+      created_at:
+        description: Timestamp when the user was created.
+        example: "2024-09-04T13:37:24.87653+05:00"
+        type: string
+      email:
+        description: Email address of the user; must be a valid email format.
+        example: john_doe@example.com
+        type: string
+      id:
+        description: Unique identifier for the user.
+        example: 1
+        type: integer
+      refresh_token:
+        description: JWT Refresh Token used to obtain a new Access Token when it expires.
+        example: eyJhbGciOI6IkpXVCJ9.eyJzdk5EbifQ.4CfEaMw6Ur_fszI
+        type: string
+      username:
+        description: Username of the user; must be unique and valid.
+        example: john_doe
+        type: string
+    required:
+    - email
+    - username
+    type: object
   models.Collection:
     properties:
       created_at:
@@ -211,31 +241,8 @@ definitions:
     type: object
   swagger.AuthResponse:
     properties:
-      access_token:
-        example: eyJhbGciOiJIUzI1NiIs.eyJzdWIilIn0.iTNuOHMObmeRmKU
-        type: string
-      created_at:
-        description: Timestamp when the user was created.
-        example: "2024-09-04T13:37:24.87653+05:00"
-        type: string
-      email:
-        description: Email address of the user; must be a valid email format.
-        example: john_doe@example.com
-        type: string
-      id:
-        description: Unique identifier for the user.
-        example: 1
-        type: integer
-      refresh_token:
-        example: eyJhbGciOI6IkpXVCJ9.eyJzdk5EbifQ.4CfEaMw6Ur_fszI
-        type: string
-      username:
-        description: Username of the user; must be unique and valid.
-        example: john_doe
-        type: string
-    required:
-    - email
-    - username
+      user:
+        $ref: '#/definitions/models.AuthResponse'
     type: object
   swagger.CollectionFilmRequest:
     properties:
@@ -376,6 +383,32 @@ info:
   description: This is a REST API for saving films you want to watch.
   title: Watchlist API
 paths:
+  /auth/check-token:
+    get:
+      consumes:
+      - application/json
+      description: Checks if the token provided in the Authorization header is still
+        valid.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/swagger.MessageResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+      security:
+      - JWTAuth: []
+      summary: Check validity of token
+      tags:
+      - auth
   /auth/login:
     post:
       consumes:

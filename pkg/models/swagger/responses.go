@@ -6,9 +6,7 @@ import (
 )
 
 type AuthResponse struct {
-	*models.User
-	AccessToken  string `json:"access_token" example:"eyJhbGciOiJIUzI1NiIs.eyJzdWIilIn0.iTNuOHMObmeRmKU"`
-	RefreshToken string `json:"refresh_token" example:"eyJhbGciOI6IkpXVCJ9.eyJzdk5EbifQ.4CfEaMw6Ur_fszI"`
+	User models.AuthResponse `json:"user"`
 }
 
 type MessageResponse struct {

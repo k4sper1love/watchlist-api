@@ -17,9 +17,18 @@ func GetUptime() float64 {
 
 func GetUptimeFormat() string {
 	duration := time.Since(startTime)
-	hours := int(duration.Hours())
+	days := int(duration.Hours()) / 24
+	hours := int(duration.Hours()) % 24
 	minutes := int(duration.Minutes()) % 60
 	seconds := int(duration.Seconds()) % 60
 
-	return fmt.Sprintf("%dh %dm %ds", hours, minutes, seconds)
+	if days > 0 {
+		return fmt.Sprintf("%dd %dh %dm %ds", days, hours, minutes, seconds)
+	} else if hours > 0 {
+		return fmt.Sprintf("%dh %dm %ds", hours, minutes, seconds)
+	} else if minutes > 0 {
+		return fmt.Sprintf("%dm %ds", minutes, seconds)
+	}
+
+	return fmt.Sprintf("%ds", seconds)
 }

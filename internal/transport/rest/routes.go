@@ -68,6 +68,7 @@ func setupAuthRoutes(router *mux.Router) {
 	auth.HandleFunc("/login", loginHandler).Methods(http.MethodPost)
 	auth.HandleFunc("/refresh", refreshAccessTokenHandler).Methods(http.MethodPost)
 	auth.HandleFunc("/logout", logoutHandler).Methods(http.MethodPost)
+	auth.HandleFunc("/check-token", checkTokenHandler).Methods(http.MethodGet)
 }
 
 func setupUserRoutes(router *mux.Router) {

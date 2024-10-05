@@ -188,6 +188,7 @@ POST /auth/register
 POST /auth/login
 POST /auth/refresh
 POST /auth/logout
+GET /auth/check-token
 
 # User section
 GET /user
