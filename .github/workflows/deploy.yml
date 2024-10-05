@@ -3,7 +3,7 @@ name: Deploy to Server
 on:
   push:
     branches:
-      - models
+      - main
 
 permissions:
   contents: write
