@@ -146,3 +146,29 @@ func logoutHandler(w http.ResponseWriter, r *http.Request) {
 
 	writeJSON(w, r, http.StatusOK, envelope{"message": "token revoked"})
 }
+
+// CheckToken godoc
+// @Summary Check validity of token
+// @Description Checks if the token provided in the Authorization header is still valid.
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Success 200 {object} swagger.MessageResponse
+// @Failure 401 {object} swagger.ErrorResponse
+// @Failure 500 {object} swagger.ErrorResponse
+// @Security JWTAuth
+// @Router /auth/check-token [get]
+func checkTokenHandler(w http.ResponseWriter, r *http.Request) {
+	token := parseTokenFromHeader(r)
+	if token == "" {
+		invalidAuthTokenResponse(w, r)
+		return
+	}
+
+	if err := checkToken(token); err != nil {
+		invalidAuthTokenResponse(w, r)
+		return
+	}
+
+	writeJSON(w, r, http.StatusOK, envelope{"message": "token is valid"})
+}

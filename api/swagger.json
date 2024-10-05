@@ -7,6 +7,46 @@
     },
     "basePath": "/api/v1",
     "paths": {
+        "/auth/check-token": {
+            "get": {
+                "security": [
+                    {
+                        "JWTAuth": []
+                    }
+                ],
+                "description": "Checks if the token provided in the Authorization header is still valid.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Check validity of token",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/swagger.MessageResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/swagger.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/swagger.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/auth/login": {
             "post": {
                 "description": "Log in to your account using your email and password. Returns tokens.",
@@ -1533,6 +1573,45 @@
                 }
             }
         },
+        "models.AuthResponse": {
+            "type": "object",
+            "required": [
+                "email",
+                "username"
+            ],
+            "properties": {
+                "access_token": {
+                    "description": "JWT Access Token used to access protected resources.",
+                    "type": "string",
+                    "example": "eyJhbGciOiJIUzI1NiIs.eyJzdWIilIn0.iTNuOHMObmeRmKU"
+                },
+                "created_at": {
+                    "description": "Timestamp when the user was created.",
+                    "type": "string",
+                    "example": "2024-09-04T13:37:24.87653+05:00"
+                },
+                "email": {
+                    "description": "Email address of the user; must be a valid email format.",
+                    "type": "string",
+                    "example": "john_doe@example.com"
+                },
+                "id": {
+                    "description": "Unique identifier for the user.",
+                    "type": "integer",
+                    "example": 1
+                },
+                "refresh_token": {
+                    "description": "JWT Refresh Token used to obtain a new Access Token when it expires.",
+                    "type": "string",
+                    "example": "eyJhbGciOI6IkpXVCJ9.eyJzdk5EbifQ.4CfEaMw6Ur_fszI"
+                },
+                "username": {
+                    "description": "Username of the user; must be unique and valid.",
+                    "type": "string",
+                    "example": "john_doe"
+                }
+            }
+        },
         "models.Collection": {
             "type": "object",
             "required": [
@@ -1777,38 +1856,9 @@
         },
         "swagger.AuthResponse": {
             "type": "object",
-            "required": [
-                "email",
-                "username"
-            ],
             "properties": {
-                "access_token": {
-                    "type": "string",
-                    "example": "eyJhbGciOiJIUzI1NiIs.eyJzdWIilIn0.iTNuOHMObmeRmKU"
-                },
-                "created_at": {
-                    "description": "Timestamp when the user was created.",
-                    "type": "string",
-                    "example": "2024-09-04T13:37:24.87653+05:00"
-                },
-                "email": {
-                    "description": "Email address of the user; must be a valid email format.",
-                    "type": "string",
-                    "example": "john_doe@example.com"
-                },
-                "id": {
-                    "description": "Unique identifier for the user.",
-                    "type": "integer",
-                    "example": 1
-                },
-                "refresh_token": {
-                    "type": "string",
-                    "example": "eyJhbGciOI6IkpXVCJ9.eyJzdk5EbifQ.4CfEaMw6Ur_fszI"
-                },
-                "username": {
-                    "description": "Username of the user; must be unique and valid.",
-                    "type": "string",
-                    "example": "john_doe"
+                "user": {
+                    "$ref": "#/definitions/models.AuthResponse"
                 }
             }
         },

@@ -6,15 +6,8 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-// authResponse represents the response returned after authentication operations.
-type authResponse struct {
-	*models.User
-	AccessToken  string `json:"access_token"`
-	RefreshToken string `json:"refresh_token"`
-}
-
 // register creates a new user and generates authentication tokens.
-func register(user *models.User) (*authResponse, error) {
+func register(user *models.User) (*models.AuthResponse, error) {
 	if err := hashPassword(user); err != nil {
 		return nil, err
 	}
@@ -35,7 +28,7 @@ func register(user *models.User) (*authResponse, error) {
 		return nil, err
 	}
 
-	res := &authResponse{
+	res := &models.AuthResponse{
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
 		User:         user,
@@ -45,7 +38,7 @@ func register(user *models.User) (*authResponse, error) {
 }
 
 // login authenticates a user by email and password, and generates authentication tokens.
-func login(email, password string) (*authResponse, error) {
+func login(email, password string) (*models.AuthResponse, error) {
 	// Retrieve the user from the database by email.
 	user, err := postgres.GetUserByEmail(email)
 	if err != nil {
@@ -73,8 +66,8 @@ func login(email, password string) (*authResponse, error) {
 
 // refreshAccessToken generates a new access token using a valid refresh token.
 func refreshAccessToken(refreshToken string) (string, error) {
-	if claims := parseTokenClaims(refreshToken); claims == nil {
-		return "", errInvalidRefreshToken
+	if err := checkToken(refreshToken); err != nil {
+		return "", err
 	}
 
 	if isRevoked, err := postgres.IsRefreshTokenRevoked(refreshToken); err != nil || isRevoked {
@@ -91,8 +84,8 @@ func refreshAccessToken(refreshToken string) (string, error) {
 
 // logout invalidates the given refresh token.
 func logout(refreshToken string) error {
-	if claims := parseTokenClaims(refreshToken); claims == nil {
-		return errInvalidRefreshToken
+	if err := checkToken(refreshToken); err != nil {
+		return err
 	}
 
 	if isRevoked, err := postgres.IsRefreshTokenRevoked(refreshToken); err != nil || isRevoked {
@@ -100,6 +93,13 @@ func logout(refreshToken string) error {
 	}
 
 	return postgres.RevokeRefreshToken(refreshToken)
+}
+
+func checkToken(token string) error {
+	if claims := parseTokenClaims(token); claims == nil {
+		return errInvalidRefreshToken
+	}
+	return nil
 }
 
 // hashPassword hashes the user's password using bcrypt.
@@ -118,8 +118,8 @@ func comparePasswords(hashedPassword, password string) error {
 }
 
 // createAuthResponse constructs and returns an authResponse object.
-func createAuthResponse(user *models.User, accessToken, refreshToken string) *authResponse {
-	return &authResponse{
+func createAuthResponse(user *models.User, accessToken, refreshToken string) *models.AuthResponse {
+	return &models.AuthResponse{
 		User:         user,
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
