@@ -16,7 +16,9 @@ var (
 	errNotFound            = errors.New("resource not found")
 	errEmptyRequest        = errors.New("empty request body")
 	errForeignKeyViolation = errors.New("attempted to reference a non-existent record")
+	errInvalidToken        = errors.New("invalid token")
 	errInvalidRefreshToken = errors.New("invalid or revoked refresh token")
+	errRequiredPassword    = errors.New("password is required for this login method")
 )
 
 // errorResponse sends a JSON response with an error message and status code.
@@ -70,6 +72,12 @@ func invalidAuthTokenResponse(w http.ResponseWriter, r *http.Request) {
 	sl.PrintEndpointWarn(message, nil, r)
 }
 
+// invalidVerificationTokenResponse handles cases where the verification token is invalid or missing.
+func invalidVerificationTokenResponse(w http.ResponseWriter, r *http.Request) {
+	message := "invalid or missing verification token"
+	errorResponse(w, r, http.StatusForbidden, message)
+}
+
 // incorrectPasswordResponse handles authentication failures due to incorrect passwords.
 func incorrectPasswordResponse(w http.ResponseWriter, r *http.Request) {
 	message := "incorrect password"
@@ -112,6 +120,8 @@ func handleDBError(w http.ResponseWriter, r *http.Request, err error) {
 	case errors.Is(err, bcrypt.ErrMismatchedHashAndPassword):
 		incorrectPasswordResponse(w, r)
 		return
+	case errors.Is(err, errRequiredPassword):
+		badRequestResponse(w, r, err)
 	default:
 		serverErrorResponse(w, r, err)
 		return

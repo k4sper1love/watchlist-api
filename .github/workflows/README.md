@@ -101,9 +101,11 @@ APP_MIGRATIONS: Path to database migration files. Default: 'file://migrations'.
 
 APP_PORT: Port number for the HTTP server.
    
-APP_SECRET: Secret password for creating JWT tokens.
-   
 APP_ENV: Environment setting (local, dev, prod).
+
+APP_SECRET: Secret password for creating JWT tokens.
+
+APP_TELEGRAM: (Optional) Secret password for checking verification token
 ```
 
 ## 🔄 GitHub Actions Workflow

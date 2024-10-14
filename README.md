@@ -23,6 +23,9 @@
   - [Using Terminal](#using-terminal)
   - [Using Docker Compose](#using-docker-compose)
 - [API Documentation](#-api-documentation)
+- [Account Authentication](#-account-authentication)
+  - [Using Credentials](#using-credentials)
+  - [Via Telegram Bot](#via-telegram-bot)
 - [Testing with Postman](#-testing-with-postman)
   - [Postman tests](#postman-tests)
   - [Running tests](#running-tests)
@@ -52,7 +55,7 @@ Authorization: Bearer <JWT_TOKEN>
 
 ## 🚀 Technology Stack
 - **Programming Language**: Go
-- **Authentication**: JWT
+- **Authorization**: JWT
 - **Database**: PostgreSQL
 - **API Documentation**: Swagger
 - **Log Aggregation**: Loki
@@ -100,18 +103,20 @@ docker plugin install grafana/loki-docker-driver:latest --alias loki --grant-all
 
 ## ⚙️ Configuration
 Create an `.env` file in the root directory and configure the environment variables. Use [.env.example](.env.example) as a reference.
-```text
-VERSION=unknown
+```txt
+(Optional) VERSION=unknown 
 
-GRAFANA_PASSWORD=password
-
-APP_SECRET=JWTPASSWORD
+(Optional) GRAFANA_PASSWORD=password
 
 APP_PORT=8001
 
 APP_ENV=local
 
 APP_MIGRATIONS=file://migrations
+
+APP_SECRET=TOKENPASSWORD 
+
+(Optional) APP_TELEGRAM=TOKENPASSWORD
 
 POSTGRES_DB=watchlist
 
@@ -136,6 +141,7 @@ go run ./cmd/watchlist
 - `-e`, `--env`: Environment setting (`local`, `dev`, `prod`) (default: `local`).
 - `-m`, `--migrations`: Path to migration files (e.g., `file://migrations`).
 - `-s`, `--secret`: Secret password for creating JWT tokens (default: `secretPass`).
+- `-t`, `--telegram`: Secret password for checking verification token (default: `secretPass`).
 
 ### Using Docker Compose
 Start the project with Docker Compose:
@@ -152,6 +158,18 @@ http://localhost:8001/swagger/index.html
 [Swagger Documentation Update](api/README.md)
 
 ❗**Note:** Use the port on which your application is running.
+
+## 🛡️ Account Authentication
+There are two methods to register or log in to your account:
+### Using Credentials
+- Endpoints: `/auth/register`, `/auth/login`
+- Use this method to register or log in with your username and password.
+### Via Telegram Bot
+- Endpoints: `/auth/register/telegram`, `/auth/login/telegram`
+- The Telegram bot generates a token by signing it with the `APP_TELEGRAM` secret. 
+- The token contains the `Telegram ID` as an integer in the claims.
+- This token is sent in the header with the key Verification.
+- The API reads the token, extracts the `Telegram ID`, and generates a random username for the user.
 
 ## 👨🏻‍💻 Testing with Postman
 Watchlist API uses Postman for automated API testing.
@@ -185,7 +203,9 @@ http://localhost:3000
 ```bash
 # Auth section
 POST /auth/register
+POST /auth/login/telegram
 POST /auth/login
+POST /auth/login/telegram
 POST /auth/refresh
 POST /auth/logout
 GET /auth/check-token

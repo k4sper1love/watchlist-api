@@ -3,23 +3,27 @@ package rest
 import (
 	"context"
 	"github.com/gorilla/mux"
+	"github.com/k4sper1love/watchlist-api/internal/config"
 	"github.com/k4sper1love/watchlist-api/internal/database/postgres"
 	"github.com/k4sper1love/watchlist-api/pkg/logger/sl"
 	"github.com/k4sper1love/watchlist-api/pkg/metrics"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 )
 
 // Map of paths that do not require authentication.
 var notRequireAuth = map[string]struct{}{
-	"/":                     {},
-	"/favicon.ico":          {},
-	"/api":                  {},
-	"/api/v1/healthcheck":   {},
-	"/api/v1/auth/register": {},
-	"/api/v1/auth/login":    {},
-	"/api/v1/auth/refresh":  {},
+	"/":                              {},
+	"/favicon.ico":                   {},
+	"/api":                           {},
+	"/api/v1/healthcheck":            {},
+	"/api/v1/auth/register":          {},
+	"/api/v1/auth/register/telegram": {},
+	"/api/v1/auth/login":             {},
+	"/api/v1/auth/login/telegram":    {},
+	"/api/v1/auth/refresh":           {},
 }
 
 var internalPaths = []string{
@@ -52,14 +56,19 @@ func authenticate(next http.Handler) http.Handler {
 		}
 
 		// Parse the token to extract claims.
-		claims := parseTokenClaims(tokenString)
-		if claims == nil {
+		claims, err := parseTokenClaims(tokenString, config.JWTSecret)
+		if err != nil || claims == nil {
 			invalidAuthTokenResponse(w, r)
 			return
 		}
 
+		userID, err := strconv.Atoi(claims.Sub)
+		if err != nil {
+			invalidAuthTokenResponse(w, r)
+			return
+		}
 		// Add the user ID from claims to the request context.
-		ctx := context.WithValue(r.Context(), "userId", claims.UserId)
+		ctx := context.WithValue(r.Context(), "userID", userID)
 		r = r.WithContext(ctx)
 
 		// Proceed to the next handler with the modified request.
@@ -67,10 +76,38 @@ func authenticate(next http.Handler) http.Handler {
 	})
 }
 
+// verificate is a middleware that checks the verification token from the request header.
+func verificate(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// Extract the token from the request header.
+		verificationToken := r.Header.Get("Verification")
+
+		// Parse the token to extract claims.
+		claims, err := parseTokenClaims(verificationToken, config.TelegramSecret)
+		if err != nil || claims == nil {
+			invalidVerificationTokenResponse(w, r)
+			return
+		}
+
+		telegramID, err := strconv.Atoi(claims.Sub)
+		if err != nil {
+			invalidVerificationTokenResponse(w, r)
+			return
+		}
+
+		// Add the telegram ID from claims to the request context.
+		ctx := context.WithValue(r.Context(), "telegramID", telegramID)
+		r = r.WithContext(ctx)
+
+		// Proceed to the next handler with the modified request.
+		next.ServeHTTP(w, r)
+	}
+}
+
 // requirePermissions ensures that the user has the necessary permissions for the specified resource and action.
 func requirePermissions(resource, action string, next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		userId := r.Context().Value("userId").(int)
+		userID := r.Context().Value("userID").(int)
 		params := mux.Vars(r)
 
 		// Initialize a slice to store the required permission codes.
@@ -80,31 +117,31 @@ func requirePermissions(resource, action string, next http.HandlerFunc) http.Han
 		switch resource {
 		case "collectionFilm":
 			if action == "create" {
-				permissionCodes = append(permissionCodes, "film"+":"+params["filmId"]+":"+"read")
-				permissionCodes = append(permissionCodes, "collection"+":"+params["collectionId"]+":"+"update")
+				permissionCodes = append(permissionCodes, "film"+":"+params["filmID"]+":"+"read")
+				permissionCodes = append(permissionCodes, "collection"+":"+params["collectionID"]+":"+"update")
 			} else if action == "read" {
-				permissionCodes = append(permissionCodes, "collection"+":"+params["collectionId"]+":"+"read")
+				permissionCodes = append(permissionCodes, "collection"+":"+params["collectionID"]+":"+"read")
 			} else {
-				permissionCodes = append(permissionCodes, "collection"+":"+params["collectionId"]+":"+"update")
+				permissionCodes = append(permissionCodes, "collection"+":"+params["collectionID"]+":"+"update")
 			}
 		case "collection":
 			if action == "create" {
 				permissionCodes = append(permissionCodes, resource+":"+action)
 			} else {
-				permissionCodes = append(permissionCodes, resource+":"+params["collectionId"]+":"+action)
+				permissionCodes = append(permissionCodes, resource+":"+params["collectionID"]+":"+action)
 			}
 		case "film":
 			if action == "create" {
 				permissionCodes = append(permissionCodes, resource+":"+action)
 			} else {
-				permissionCodes = append(permissionCodes, resource+":"+params["filmId"]+":"+action)
+				permissionCodes = append(permissionCodes, resource+":"+params["filmID"]+":"+action)
 			}
 		default:
 			permissionCodes = append(permissionCodes, resource+":"+action)
 		}
 
 		// Retrieve the user's permissions from the database.
-		permissions, err := postgres.GetUserPermissions(userId)
+		permissions, err := postgres.GetUserPermissions(userID)
 		if err != nil {
 			handleDBError(w, r, err)
 			return

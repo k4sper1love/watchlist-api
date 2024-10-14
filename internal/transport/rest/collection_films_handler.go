@@ -26,13 +26,13 @@ import (
 // @Security JWTAuth
 // @Router /collections/{collection_id}/films/{film_id} [post]
 func addCollectionFilmHandler(w http.ResponseWriter, r *http.Request) {
-	collectionId, err := parseIdParam(r, "collectionId")
+	collectionID, err := parseIDParam(r, "collectionID")
 	if err != nil {
 		badRequestResponse(w, r, err)
 		return
 	}
 
-	filmId, err := parseIdParam(r, "filmId")
+	filmID, err := parseIDParam(r, "filmID")
 	if err != nil {
 		badRequestResponse(w, r, err)
 		return
@@ -40,8 +40,8 @@ func addCollectionFilmHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Create a new CollectionFilm object with the parsed IDs.
 	collectionFilm := models.CollectionFilm{
-		CollectionId: collectionId,
-		FilmId:       filmId,
+		CollectionID: collectionID,
+		FilmID:       filmID,
 	}
 
 	if err := postgres.AddCollectionFilm(&collectionFilm); err != nil {
@@ -69,19 +69,19 @@ func addCollectionFilmHandler(w http.ResponseWriter, r *http.Request) {
 // @Security JWTAuth
 // @Router /collections/{collection_id}/films/{film_id} [get]
 func getCollectionFilmHandler(w http.ResponseWriter, r *http.Request) {
-	collectionId, err := parseIdParam(r, "collectionId")
+	collectionID, err := parseIDParam(r, "collectionID")
 	if err != nil {
 		badRequestResponse(w, r, err)
 		return
 	}
 
-	filmId, err := parseIdParam(r, "filmId")
+	filmID, err := parseIDParam(r, "filmID")
 	if err != nil {
 		badRequestResponse(w, r, err)
 		return
 	}
 
-	collectionFilm, err := postgres.GetCollectionFilm(collectionId, filmId)
+	collectionFilm, err := postgres.GetCollectionFilm(collectionID, filmID)
 	if err != nil {
 		handleDBError(w, r, err)
 		return
@@ -110,7 +110,7 @@ func getCollectionFilmHandler(w http.ResponseWriter, r *http.Request) {
 // @Security JWTAuth
 // @Router /collections/{collection_id}/films [get]
 func getCollectionFilmsHandler(w http.ResponseWriter, r *http.Request) {
-	collectionId, err := parseIdParam(r, "collectionId")
+	collectionID, err := parseIDParam(r, "collectionID")
 	if err != nil {
 		badRequestResponse(w, r, err)
 		return
@@ -143,7 +143,7 @@ func getCollectionFilmsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Retrieve the list of collection-films based on the filters.
-	collectionFilms, metadata, err := postgres.GetCollectionFilms(collectionId, input.Filters)
+	collectionFilms, metadata, err := postgres.GetCollectionFilms(collectionID, input.Filters)
 	if err != nil {
 		handleDBError(w, r, err)
 		return
@@ -170,19 +170,19 @@ func getCollectionFilmsHandler(w http.ResponseWriter, r *http.Request) {
 // @Security JWTAuth
 // @Router /collections/{collection_id}/films/{film_id} [put]
 func updateCollectionFilmHandler(w http.ResponseWriter, r *http.Request) {
-	collectionId, err := parseIdParam(r, "collectionId")
+	collectionID, err := parseIDParam(r, "collectionID")
 	if err != nil {
 		badRequestResponse(w, r, err)
 		return
 	}
 
-	filmId, err := parseIdParam(r, "filmId")
+	filmID, err := parseIDParam(r, "filmID")
 	if err != nil {
 		badRequestResponse(w, r, err)
 		return
 	}
 
-	collectionFilm, err := postgres.GetCollectionFilm(collectionId, filmId)
+	collectionFilm, err := postgres.GetCollectionFilm(collectionID, filmID)
 	if err != nil {
 		handleDBError(w, r, err)
 		return
@@ -192,8 +192,8 @@ func updateCollectionFilmHandler(w http.ResponseWriter, r *http.Request) {
 		badRequestResponse(w, r, err)
 		return
 	}
-	collectionFilm.CollectionId = collectionId
-	collectionFilm.FilmId = filmId
+	collectionFilm.CollectionID = collectionID
+	collectionFilm.FilmID = filmID
 
 	if err := postgres.UpdateCollectionFilm(collectionFilm); err != nil {
 		switch {
@@ -225,25 +225,25 @@ func updateCollectionFilmHandler(w http.ResponseWriter, r *http.Request) {
 // @Security JWTAuth
 // @Router /collections/{collection_id}/films/{films_id} [delete]
 func deleteCollectionFilmHandler(w http.ResponseWriter, r *http.Request) {
-	collectionId, err := parseIdParam(r, "collectionId")
+	collectionID, err := parseIDParam(r, "collectionID")
 	if err != nil {
 		badRequestResponse(w, r, err)
 		return
 	}
 
-	filmId, err := parseIdParam(r, "filmId")
+	filmID, err := parseIDParam(r, "filmID")
 	if err != nil {
 		badRequestResponse(w, r, err)
 		return
 	}
 
 	// Verify that the collection-film relationship exists in the database.
-	if _, err := postgres.GetCollectionFilm(collectionId, filmId); err != nil {
+	if _, err := postgres.GetCollectionFilm(collectionID, filmID); err != nil {
 		handleDBError(w, r, err)
 		return
 	}
 
-	if err = postgres.DeleteCollectionFilm(collectionId, filmId); err != nil {
+	if err = postgres.DeleteCollectionFilm(collectionID, filmID); err != nil {
 		handleDBError(w, r, err)
 		return
 	}

@@ -37,7 +37,7 @@ func AddPermission(code string) error {
 }
 
 // AddUserPermissions adds multiple permissions for a specific user.
-func AddUserPermissions(userId int, codes ...string) error {
+func AddUserPermissions(userID int, codes ...string) error {
 	query := `
 		INSERT INTO user_permissions (user_id, permissions_id)
 		SELECT $1, permissions.id
@@ -48,12 +48,12 @@ func AddUserPermissions(userId int, codes ...string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	_, err := GetDB().ExecContext(ctx, query, userId, pq.Array(codes))
+	_, err := GetDB().ExecContext(ctx, query, userID, pq.Array(codes))
 	return err
 }
 
 // GetUserPermissions retrieves all permission codes for a specific user.
-func GetUserPermissions(userId int) (Permissions, error) {
+func GetUserPermissions(userID int) (Permissions, error) {
 	query := `
 		SELECT permissions.code 
 		FROM permissions
@@ -64,7 +64,7 @@ func GetUserPermissions(userId int) (Permissions, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	rows, err := GetDB().QueryContext(ctx, query, userId)
+	rows, err := GetDB().QueryContext(ctx, query, userID)
 	if err != nil {
 		return nil, err
 	}

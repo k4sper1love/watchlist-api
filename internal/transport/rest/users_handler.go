@@ -21,9 +21,9 @@ import (
 // @Security JWTAuth
 // @Router /user [get]
 func getUserHandler(w http.ResponseWriter, r *http.Request) {
-	userId := r.Context().Value("userId").(int)
+	userID := r.Context().Value("userID").(int)
 
-	user, err := postgres.GetUserById(userId)
+	user, err := postgres.GetUserById(userID)
 	if err != nil {
 		handleDBError(w, r, err)
 		return
@@ -40,7 +40,7 @@ func getUserHandler(w http.ResponseWriter, r *http.Request) {
 // @Tags user
 // @Accept json
 // @Produce json
-// @Param username body swagger.UpdateUserRequest true "New information about the user"
+// @Param data body swagger.UpdateUserRequest true "New information about the user"
 // @Success 200 {object} swagger.UserResponse
 // @Failure 400 {object} swagger.ErrorResponse
 // @Failure 401 {object} swagger.ErrorResponse
@@ -51,9 +51,9 @@ func getUserHandler(w http.ResponseWriter, r *http.Request) {
 // @Security JWTAuth
 // @Router /user [put]
 func updateUserHandler(w http.ResponseWriter, r *http.Request) {
-	userId := r.Context().Value("userId").(int)
+	userID := r.Context().Value("userID").(int)
 
-	user, err := postgres.GetUserById(userId)
+	user, err := postgres.GetUserById(userID)
 	if err != nil {
 		handleDBError(w, r, err)
 		return
@@ -70,7 +70,7 @@ func updateUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user.Id = userId
+	user.ID = userID
 	user.Password = "" // Clear password
 
 	if err := postgres.UpdateUser(user); err != nil {
@@ -99,15 +99,15 @@ func updateUserHandler(w http.ResponseWriter, r *http.Request) {
 // @Security JWTAuth
 // @Router /user [delete]
 func deleteUserHandler(w http.ResponseWriter, r *http.Request) {
-	userId := r.Context().Value("userId").(int)
+	userID := r.Context().Value("userID").(int)
 
 	// Verify that the user exists in the database.
-	if _, err := postgres.GetUserById(userId); err != nil {
+	if _, err := postgres.GetUserById(userID); err != nil {
 		handleDBError(w, r, err)
 		return
 	}
 
-	if err := postgres.DeleteUser(userId); err != nil {
+	if err := postgres.DeleteUser(userID); err != nil {
 		handleDBError(w, r, err)
 		return
 	}

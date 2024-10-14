@@ -26,14 +26,14 @@ import (
 // @Security JWTAuth
 // @Router /collections [post]
 func addCollectionHandler(w http.ResponseWriter, r *http.Request) {
-	userId := r.Context().Value("userId").(int)
+	userID := r.Context().Value("userID").(int)
 	var collection models.Collection
 
 	if err := parseRequestBody(r, &collection); err != nil {
 		badRequestResponse(w, r, err)
 		return
 	}
-	collection.UserId = userId
+	collection.UserID = userID
 
 	if errs := validator.ValidateStruct(&collection); errs != nil {
 		failedValidationResponse(w, r, errs)
@@ -48,7 +48,7 @@ func addCollectionHandler(w http.ResponseWriter, r *http.Request) {
 	// Define permissions for the collection.
 	actions := []string{"read", "update", "delete"}
 	for _, action := range actions {
-		if err := addPermissionAndAssignToUser(userId, collection.Id, "collection", action); err != nil {
+		if err := addPermissionAndAssignToUser(userID, collection.ID, "collection", action); err != nil {
 			serverErrorResponse(w, r, err)
 			return
 		}
@@ -72,13 +72,13 @@ func addCollectionHandler(w http.ResponseWriter, r *http.Request) {
 // @Security JWTAuth
 // @Router /collections/{collection_id} [get]
 func getCollectionHandler(w http.ResponseWriter, r *http.Request) {
-	collectionId, err := parseIdParam(r, "collectionId")
+	collectionID, err := parseIDParam(r, "collectionID")
 	if err != nil {
 		badRequestResponse(w, r, err)
 		return
 	}
 
-	collection, err := postgres.GetCollection(collectionId)
+	collection, err := postgres.GetCollection(collectionID)
 	if err != nil {
 		handleDBError(w, r, err)
 		return
@@ -104,7 +104,7 @@ func getCollectionHandler(w http.ResponseWriter, r *http.Request) {
 // @Security JWTAuth
 // @Router /collections [get]
 func getCollectionsHandler(w http.ResponseWriter, r *http.Request) {
-	userId := r.Context().Value("userId").(int)
+	userID := r.Context().Value("userID").(int)
 
 	// Define an input structure to hold filter and pagination parameters.
 	var input struct {
@@ -134,7 +134,7 @@ func getCollectionsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Retrieve the list of collections based on the filters.
-	collections, metadata, err := postgres.GetCollections(userId, input.Name, input.Filters)
+	collections, metadata, err := postgres.GetCollections(userID, input.Name, input.Filters)
 	if err != nil {
 		handleDBError(w, r, err)
 		return
@@ -162,13 +162,13 @@ func getCollectionsHandler(w http.ResponseWriter, r *http.Request) {
 // @Security JWTAuth
 // @Router /collections/{collection_id} [put]
 func updateCollectionHandler(w http.ResponseWriter, r *http.Request) {
-	collectionId, err := parseIdParam(r, "collectionId")
+	collectionID, err := parseIDParam(r, "collectionID")
 	if err != nil {
 		badRequestResponse(w, r, err)
 		return
 	}
 
-	collection, err := postgres.GetCollection(collectionId)
+	collection, err := postgres.GetCollection(collectionID)
 	if err != nil {
 		handleDBError(w, r, err)
 		return
@@ -178,7 +178,7 @@ func updateCollectionHandler(w http.ResponseWriter, r *http.Request) {
 		badRequestResponse(w, r, err)
 		return
 	}
-	collection.Id = collectionId
+	collection.ID = collectionID
 
 	if errs := validator.ValidateStruct(collection); errs != nil {
 		failedValidationResponse(w, r, errs)
@@ -214,24 +214,24 @@ func updateCollectionHandler(w http.ResponseWriter, r *http.Request) {
 // @Security JWTAuth
 // @Router /collections/{collection_id} [delete]
 func deleteCollectionHandler(w http.ResponseWriter, r *http.Request) {
-	collectionId, err := parseIdParam(r, "collectionId")
+	collectionID, err := parseIDParam(r, "collectionID")
 	if err != nil {
 		badRequestResponse(w, r, err)
 		return
 	}
 
 	// Verify that the collection exists in the database.
-	if _, err := postgres.GetCollection(collectionId); err != nil {
+	if _, err := postgres.GetCollection(collectionID); err != nil {
 		handleDBError(w, r, err)
 		return
 	}
 
-	if err := postgres.DeleteCollection(collectionId); err != nil {
+	if err := postgres.DeleteCollection(collectionID); err != nil {
 		handleDBError(w, r, err)
 		return
 	}
 
-	if err := deletePermissionCodes(collectionId, "collection"); err != nil {
+	if err := deletePermissionCodes(collectionID, "collection"); err != nil {
 		handleDBError(w, r, err)
 		return
 	}

@@ -14,7 +14,7 @@ func hashToken(token string) string {
 }
 
 // SaveRefreshToken stores a refresh token, its associated user ID, and its expiration time in the database.
-func SaveRefreshToken(refreshToken string, userId int, expiresAt time.Time) error {
+func SaveRefreshToken(refreshToken string, userID int, expiresAt time.Time) error {
 	hashedToken := hashToken(refreshToken)
 
 	query := `INSERT INTO refresh_tokens(token, user_id, expires_at) values ($1, $2, $3)`
@@ -22,7 +22,7 @@ func SaveRefreshToken(refreshToken string, userId int, expiresAt time.Time) erro
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	_, err := GetDB().ExecContext(ctx, query, hashedToken, userId, expiresAt)
+	_, err := GetDB().ExecContext(ctx, query, hashedToken, userID, expiresAt)
 	return err
 }
 
@@ -65,10 +65,10 @@ func GetIdFromRefreshToken(refreshToken string) (int, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	var userId int
-	if err := GetDB().QueryRowContext(ctx, query, hashedToken).Scan(&userId); err != nil {
+	var userID int
+	if err := GetDB().QueryRowContext(ctx, query, hashedToken).Scan(&userID); err != nil {
 		return 0, err
 	}
 
-	return userId, nil
+	return userID, nil
 }

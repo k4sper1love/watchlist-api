@@ -8,8 +8,9 @@
 
 Table users {
   id integer [primary key]
-  username citext unique [not null]
-  email citext unique [not null]
+  telegram__id bigint unique
+  username citext unique
+  email citext
   password text [not null]
   created_at timestamp
   version bigint [default: 1]

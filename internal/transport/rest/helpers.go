@@ -6,16 +6,18 @@ import (
 	"fmt"
 	"github.com/golang-jwt/jwt"
 	"github.com/gorilla/mux"
-	"github.com/k4sper1love/watchlist-api/internal/config"
 	"github.com/k4sper1love/watchlist-api/internal/database/postgres"
 	"github.com/k4sper1love/watchlist-api/pkg/logger/sl"
 	"github.com/k4sper1love/watchlist-api/pkg/metrics"
+	"github.com/k4sper1love/watchlist-api/pkg/models"
 	"io"
 	"log/slog"
+	"math/rand"
 	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
+	"time"
 )
 
 // envelope is a map used for formatting JSON responses.
@@ -43,8 +45,8 @@ func writeJSON(w http.ResponseWriter, r *http.Request, status int, data envelope
 	}
 }
 
-// parseIdParam extracts an integer ID from a URL parameter.
-func parseIdParam(r *http.Request, paramName string) (int, error) {
+// parseIDParam extracts an integer ID from a URL parameter.
+func parseIDParam(r *http.Request, paramName string) (int, error) {
 	param := mux.Vars(r)[paramName]
 
 	id, err := strconv.Atoi(param)
@@ -78,35 +80,36 @@ func parseTokenFromHeader(r *http.Request) string {
 }
 
 // parseTokenClaims parses and validates a JWT token string, extracting the claims if valid.
-func parseTokenClaims(tokenString string) *tokenClaims {
-	claims := &tokenClaims{}
+func parseTokenClaims(tokenString, secret string) (*models.JWTClaims, error) {
+	claims := &models.JWTClaims{}
 	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
-		return []byte(config.JwtSecret), nil
+		return []byte(secret), nil
 	})
 
 	if err != nil || !token.Valid {
-		return nil
+		return nil, errInvalidToken
 	}
-	return claims
+
+	return claims, nil
 }
 
 // addPermissionAndAssignToUser adds a permission string to the database and assigns it to a user.
-func addPermissionAndAssignToUser(userId, objectId int, objectType, action string) error {
-	permission := fmt.Sprintf("%s:%d:%s", objectType, objectId, action)
+func addPermissionAndAssignToUser(userID, objectID int, objectType, action string) error {
+	permission := fmt.Sprintf("%s:%d:%s", objectType, objectID, action)
 
 	if err := postgres.AddPermission(permission); err != nil {
 		return err
 	}
 
-	return postgres.AddUserPermissions(userId, permission)
+	return postgres.AddUserPermissions(userID, permission)
 }
 
 // deletePermissionCodes removes permission codes related to an object from the database.
-func deletePermissionCodes(objectId int, objectType string) error {
+func deletePermissionCodes(objectID int, objectType string) error {
 	codes := []string{
-		fmt.Sprintf("%s:%d:%s", objectType, objectId, "read"),
-		fmt.Sprintf("%s:%d:%s", objectType, objectId, "update"),
-		fmt.Sprintf("%s:%d:%s", objectType, objectId, "delete"),
+		fmt.Sprintf("%s:%d:%s", objectType, objectID, "read"),
+		fmt.Sprintf("%s:%d:%s", objectType, objectID, "update"),
+		fmt.Sprintf("%s:%d:%s", objectType, objectID, "delete"),
 	}
 
 	return postgres.DeletePermissions(codes...)
@@ -145,4 +148,33 @@ func parseQueryFloat(qs url.Values, key string, defaultValue float64) float64 {
 	return parseQuery(qs, key, defaultValue, func(v string) (float64, error) {
 		return strconv.ParseFloat(v, 64)
 	})
+}
+
+// generateString creates a random string of specified length from a set of characters.
+func generateString(length int) string {
+	const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+
+	str := make([]byte, length)
+	for i := range str {
+		str[i] = charset[r.Intn(len(charset))]
+	}
+
+	return string(str)
+}
+
+// generateUniqueUsername generates a unique username by combining a random string and a Telegram ID.
+func generateUniqueUsername(length, telegramID int) string {
+	for tries := 0; tries < 5; tries++ {
+		base := generateString(length)
+		username := fmt.Sprintf("%s_%d", base, telegramID)
+
+		// Check if the username already exists in the database.
+		if !postgres.IsUsernameExists(username) {
+			return username
+		}
+	}
+
+	// Return an empty string if no unique username is found after several attempts.
+	return ""
 }

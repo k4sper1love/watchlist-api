@@ -21,11 +21,11 @@ func AddCollectionFilm(c *models.CollectionFilm) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	return GetDB().QueryRowContext(ctx, query, c.CollectionId, c.FilmId).Scan(&c.AddedAt, &c.UpdatedAt)
+	return GetDB().QueryRowContext(ctx, query, c.CollectionID, c.FilmID).Scan(&c.AddedAt, &c.UpdatedAt)
 }
 
 // GetCollectionFilm retrieves the association of a film in a collection by collection ID and film ID.
-func GetCollectionFilm(collectionId, filmId int) (*models.CollectionFilm, error) {
+func GetCollectionFilm(collectionID, filmID int) (*models.CollectionFilm, error) {
 	query := `
 		SELECT *
 		FROM collection_films
@@ -36,7 +36,7 @@ func GetCollectionFilm(collectionId, filmId int) (*models.CollectionFilm, error)
 	defer cancel()
 
 	var c models.CollectionFilm
-	if err := GetDB().QueryRowContext(ctx, query, collectionId, filmId).Scan(&c.CollectionId, &c.FilmId, &c.AddedAt, &c.UpdatedAt); err != nil {
+	if err := GetDB().QueryRowContext(ctx, query, collectionID, filmID).Scan(&c.CollectionID, &c.FilmID, &c.AddedAt, &c.UpdatedAt); err != nil {
 		return nil, err
 	}
 
@@ -44,7 +44,7 @@ func GetCollectionFilm(collectionId, filmId int) (*models.CollectionFilm, error)
 }
 
 // GetCollectionFilms retrieves all films in a collection with optional pagination and sorting.
-func GetCollectionFilms(collectionId int, f filters.Filters) ([]*models.CollectionFilm, filters.Metadata, error) {
+func GetCollectionFilms(collectionID int, f filters.Filters) ([]*models.CollectionFilm, filters.Metadata, error) {
 	query := fmt.Sprintf(
 		`	
 			SELECT count(*) OVER(), *
@@ -58,7 +58,7 @@ func GetCollectionFilms(collectionId int, f filters.Filters) ([]*models.Collecti
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	rows, err := GetDB().QueryContext(ctx, query, collectionId, f.Limit(), f.Offset())
+	rows, err := GetDB().QueryContext(ctx, query, collectionID, f.Limit(), f.Offset())
 	if err != nil {
 		return nil, filters.Metadata{}, err
 	}
@@ -74,7 +74,7 @@ func GetCollectionFilms(collectionId int, f filters.Filters) ([]*models.Collecti
 
 	for rows.Next() {
 		var c models.CollectionFilm
-		if err := rows.Scan(&totalRecords, &c.CollectionId, &c.FilmId, &c.AddedAt, &c.UpdatedAt); err != nil {
+		if err := rows.Scan(&totalRecords, &c.CollectionID, &c.FilmID, &c.AddedAt, &c.UpdatedAt); err != nil {
 			return nil, filters.Metadata{}, err
 		}
 		collectionFilms = append(collectionFilms, &c)
@@ -100,11 +100,11 @@ func UpdateCollectionFilm(c *models.CollectionFilm) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	return GetDB().QueryRowContext(ctx, query, c.CollectionId, c.FilmId, c.UpdatedAt, c.AddedAt).Scan(&c.AddedAt, &c.UpdatedAt)
+	return GetDB().QueryRowContext(ctx, query, c.CollectionID, c.FilmID, c.UpdatedAt, c.AddedAt).Scan(&c.AddedAt, &c.UpdatedAt)
 }
 
 // DeleteCollectionFilm removes a film from a collection by collection ID and film ID.
-func DeleteCollectionFilm(collectionId, filmId int) error {
+func DeleteCollectionFilm(collectionID, filmID int) error {
 	query := `
 		DELETE FROM collection_films
 		WHERE collection_id = $1 AND film_id = $2
@@ -113,6 +113,6 @@ func DeleteCollectionFilm(collectionId, filmId int) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	_, err := GetDB().ExecContext(ctx, query, collectionId, filmId)
+	_, err := GetDB().ExecContext(ctx, query, collectionID, filmID)
 	return err
 }

@@ -16,11 +16,12 @@ import (
 )
 
 var (
-	JwtSecret  string // Secret password for creating JWT tokens.
-	Env        string // Environment (local, dev, prod).
-	Migrations string // Path to migration files.
-	Dsn        string // PostgreSQL Data Source Name for database connection.
-	Port       int    // Port for the API server.
+	Env            string // Environment (local, dev, prod).
+	Migrations     string // Path to migration files.
+	Dsn            string // PostgreSQL Data Source Name for database connection.
+	Port           int    // Port for the API server.
+	JWTSecret      string // Secret password for creating JWT tokens.
+	TelegramSecret string // Secret password for checking verification token
 )
 
 // ParseFlags parses command-line flags and sets the corresponding global configuration variables.
@@ -31,6 +32,7 @@ var (
 //   - -e, --env: The environment setting (local, dev, prod) (default: local).
 //   - -m, --migrations: Path to the folder containing database migration files.
 //   - -s, --secret: The secret password for creating JWT tokens.
+//   - -t, --telegram: The secret password for checking verification token
 func ParseFlags(args []string) error {
 	// Create a new flag set for the API configuration
 	flagSet := ff.NewFlagSet("API Configuration")
@@ -39,7 +41,8 @@ func ParseFlags(args []string) error {
 	flagSet.IntVar(&Port, 'p', "port", 8001, "API server port")
 	flagSet.StringVar(&Env, 'e', "env", "local", "Environment (local|dev|prod)")
 	flagSet.StringVar(&Migrations, 'm', "migrations", "", "Path to migration files folder. If not provided, migrations do not apply")
-	flagSet.StringVar(&JwtSecret, 's', "secret", "secretPass", "Secret password for creating JWT tokens")
+	flagSet.StringVar(&JWTSecret, 's', "secret", "secretPass", "Secret password for creating JWT tokens")
+	flagSet.StringVar(&TelegramSecret, 't', "telegram", "secretPassq", "Secret password for checking verification token")
 
 	// Load environment variables from .env file
 	if err := godotenv.Load(); err != nil {
