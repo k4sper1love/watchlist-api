@@ -1,6 +1,7 @@
 package rest
 
 import (
+	"github.com/k4sper1love/watchlist-api/internal/config"
 	"github.com/k4sper1love/watchlist-api/internal/database/postgres"
 	"github.com/k4sper1love/watchlist-api/pkg/tokens"
 	"time"
@@ -14,13 +15,13 @@ const (
 
 // generateAccessToken creates a JWT access token for a user with a short expiration time.
 func generateAccessToken(id int) (string, error) {
-	return tokens.GenerateToken(id, accessTokenExpiration)
+	return tokens.GenerateToken(config.JWTSecret, id, accessTokenExpiration)
 }
 
 // generateAndSaveRefreshToken creates a JWT refresh token for a user with a longer expiration time.
 // It also saves the refresh token in the database.
 func generateAndSaveRefreshToken(id int) (string, error) {
-	tokenString, err := tokens.GenerateToken(id, refreshTokenExpiration)
+	tokenString, err := tokens.GenerateToken(config.JWTSecret, id, refreshTokenExpiration)
 	if err != nil {
 		return "", err
 	}
