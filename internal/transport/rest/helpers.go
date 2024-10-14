@@ -80,33 +80,14 @@ func parseTokenFromHeader(r *http.Request) string {
 }
 
 // parseTokenClaims parses and validates a JWT token string, extracting the claims if valid.
-func parseTokenClaims(tokenString, secret string, claims jwt.Claims) error {
+func parseTokenClaims(tokenString, secret string) (*models.JWTClaims, error) {
+	claims := &models.JWTClaims{}
 	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
 		return []byte(secret), nil
 	})
 
 	if err != nil || !token.Valid {
-		return errInvalidToken
-	}
-
-	return nil
-}
-
-// parseAuthClaims extracts and validates authentication claims from a token string.
-func parseAuthClaims(tokenString, secret string) (*models.AuthClaims, error) {
-	claims := &models.AuthClaims{}
-	if err := parseTokenClaims(tokenString, secret, claims); err != nil {
-		return nil, err
-	}
-
-	return claims, nil
-}
-
-// parseTelegramClaims extracts and validates Telegram claims from a token string.
-func parseTelegramClaims(tokenString, secret string) (*models.TelegramClaims, error) {
-	claims := &models.TelegramClaims{}
-	if err := parseTokenClaims(tokenString, secret, claims); err != nil {
-		return nil, err
+		return nil, errInvalidToken
 	}
 
 	return claims, nil

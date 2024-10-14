@@ -8,6 +8,7 @@ import (
 	"github.com/k4sper1love/watchlist-api/pkg/logger/sl"
 	"github.com/k4sper1love/watchlist-api/pkg/metrics"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -55,14 +56,19 @@ func authenticate(next http.Handler) http.Handler {
 		}
 
 		// Parse the token to extract claims.
-		claims, err := parseAuthClaims(tokenString, config.JWTSecret)
+		claims, err := parseTokenClaims(tokenString, config.JWTSecret)
 		if err != nil || claims == nil {
 			invalidAuthTokenResponse(w, r)
 			return
 		}
 
+		userID, err := strconv.Atoi(claims.Sub)
+		if err != nil {
+			invalidAuthTokenResponse(w, r)
+			return
+		}
 		// Add the user ID from claims to the request context.
-		ctx := context.WithValue(r.Context(), "userID", claims.UserID)
+		ctx := context.WithValue(r.Context(), "userID", userID)
 		r = r.WithContext(ctx)
 
 		// Proceed to the next handler with the modified request.
@@ -77,14 +83,20 @@ func verificate(next http.HandlerFunc) http.HandlerFunc {
 		verificationToken := r.Header.Get("Verification")
 
 		// Parse the token to extract claims.
-		claims, err := parseTelegramClaims(verificationToken, config.TelegramSecret)
+		claims, err := parseTokenClaims(verificationToken, config.TelegramSecret)
 		if err != nil || claims == nil {
 			invalidVerificationTokenResponse(w, r)
 			return
 		}
 
+		telegramID, err := strconv.Atoi(claims.Sub)
+		if err != nil {
+			invalidVerificationTokenResponse(w, r)
+			return
+		}
+
 		// Add the telegram ID from claims to the request context.
-		ctx := context.WithValue(r.Context(), "telegramID", claims.TelegramID)
+		ctx := context.WithValue(r.Context(), "telegramID", telegramID)
 		r = r.WithContext(ctx)
 
 		// Proceed to the next handler with the modified request.

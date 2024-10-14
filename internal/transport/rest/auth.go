@@ -143,7 +143,7 @@ func logout(refreshToken string) error {
 
 // checkToken verifies the validity of the provided authentication token.
 func checkToken(token string) error {
-	claims, err := parseAuthClaims(token, config.JWTSecret)
+	claims, err := parseTokenClaims(token, config.JWTSecret)
 	if err != nil {
 		return err
 	}

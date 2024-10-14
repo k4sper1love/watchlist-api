@@ -15,15 +15,9 @@ import (
 	"time"
 )
 
-// AuthClaims defines the structure of JWT claims for user authentication by credentials.
-type AuthClaims struct {
-	UserID int `json:"user_id"`
-	jwt.StandardClaims
-}
-
-// TelegramClaims defines the structure of JWT claims for user authentication by Telegram.
-type TelegramClaims struct {
-	TelegramID int `json:"telegram_id"`
+// JWTClaims defines the structure of JWT claims for user authentication by credentials.
+type JWTClaims struct {
+	Sub string `json:"sub"`
 	jwt.StandardClaims
 }
 
