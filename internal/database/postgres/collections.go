@@ -21,18 +21,18 @@ func AddCollection(c *models.Collection) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	return GetDB().QueryRowContext(ctx, query, c.UserId, c.Name, c.Description).Scan(&c.Id, &c.CreatedAt, &c.UpdatedAt)
+	return GetDB().QueryRowContext(ctx, query, c.UserID, c.Name, c.Description).Scan(&c.ID, &c.CreatedAt, &c.UpdatedAt)
 }
 
 // GetCollection retrieves a collection by its ID.
-func GetCollection(collectionId int) (*models.Collection, error) {
+func GetCollection(collectionID int) (*models.Collection, error) {
 	query := `SELECT * FROM collections WHERE id = $1`
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
 	var c models.Collection
-	if err := GetDB().QueryRowContext(ctx, query, collectionId).Scan(&c.Id, &c.UserId, &c.Name, &c.Description, &c.CreatedAt, &c.UpdatedAt); err != nil {
+	if err := GetDB().QueryRowContext(ctx, query, collectionID).Scan(&c.ID, &c.UserID, &c.Name, &c.Description, &c.CreatedAt, &c.UpdatedAt); err != nil {
 		return nil, err
 	}
 
@@ -40,7 +40,7 @@ func GetCollection(collectionId int) (*models.Collection, error) {
 }
 
 // GetCollections retrieves collections for a user with optional filtering and pagination.
-func GetCollections(userId int, name string, f filters.Filters) ([]*models.Collection, filters.Metadata, error) {
+func GetCollections(userID int, name string, f filters.Filters) ([]*models.Collection, filters.Metadata, error) {
 	query := fmt.Sprintf(
 		`	
 			SELECT count(*) OVER(), * 
@@ -55,7 +55,7 @@ func GetCollections(userId int, name string, f filters.Filters) ([]*models.Colle
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	rows, err := GetDB().QueryContext(ctx, query, userId, name, f.Limit(), f.Offset())
+	rows, err := GetDB().QueryContext(ctx, query, userID, name, f.Limit(), f.Offset())
 	if err != nil {
 		return nil, filters.Metadata{}, err
 	}
@@ -71,7 +71,7 @@ func GetCollections(userId int, name string, f filters.Filters) ([]*models.Colle
 
 	for rows.Next() {
 		var c models.Collection
-		if err := rows.Scan(&totalRecords, &c.Id, &c.UserId, &c.Name, &c.Description, &c.CreatedAt, &c.UpdatedAt); err != nil {
+		if err := rows.Scan(&totalRecords, &c.ID, &c.UserID, &c.Name, &c.Description, &c.CreatedAt, &c.UpdatedAt); err != nil {
 			return nil, filters.Metadata{}, err
 		}
 		collections = append(collections, &c)
@@ -97,7 +97,7 @@ func UpdateCollection(c *models.Collection) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	return GetDB().QueryRowContext(ctx, query, c.Id, c.UpdatedAt, c.Name, c.Description).Scan(&c.UserId, &c.CreatedAt, &c.UpdatedAt)
+	return GetDB().QueryRowContext(ctx, query, c.ID, c.UpdatedAt, c.Name, c.Description).Scan(&c.UserID, &c.CreatedAt, &c.UpdatedAt)
 }
 
 // DeleteCollection removes a collection by its ID.

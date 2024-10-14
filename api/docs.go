@@ -67,7 +67,7 @@ const docTemplate = `{
                 "tags": [
                     "auth"
                 ],
-                "summary": "Log in to your account",
+                "summary": "Log in to your account with credentials",
                 "parameters": [
                     {
                         "description": "Login information",
@@ -88,6 +88,62 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/swagger.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/swagger.ErrorResponse"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/swagger.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/swagger.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/login/telegram": {
+            "post": {
+                "description": "Log in to your account using verification token from header. Returns tokens.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Log in to your account by Telegram",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Verification token from Telegram",
+                        "name": "Verification",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/swagger.AuthResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
                         "schema": {
                             "$ref": "#/definitions/swagger.ErrorResponse"
                         }
@@ -195,7 +251,7 @@ const docTemplate = `{
         },
         "/auth/register": {
             "post": {
-                "description": "Register a new user using a username, email and password. Returns user information and tokens.\nBasic permissions are available to you: creating films and collections.",
+                "description": "Register a new user using a username and password. Returns user information and tokens.\nBasic permissions are available to you: creating films and collections.",
                 "consumes": [
                     "application/json"
                 ],
@@ -205,7 +261,7 @@ const docTemplate = `{
                 "tags": [
                     "auth"
                 ],
-                "summary": "Register a new user",
+                "summary": "Register a new user with credentials",
                 "parameters": [
                     {
                         "description": "Information about the new user ",
@@ -215,6 +271,68 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/swagger.RegisterRequest"
                         }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/swagger.AuthResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/swagger.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/swagger.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/swagger.ErrorResponse"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/swagger.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/swagger.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/register/telegram": {
+            "post": {
+                "description": "Register a new user using verification token from header. Returns user information and tokens.\nBasic permissions are available to you: creating films and collections.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Register a new user by Telegram",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Verification token from Telegram",
+                        "name": "Verification",
+                        "in": "header",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -1451,7 +1569,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "description": "New information about the user",
-                        "name": "username",
+                        "name": "data",
                         "in": "body",
                         "required": true,
                         "schema": {
@@ -1583,10 +1701,6 @@ const docTemplate = `{
         },
         "models.AuthResponse": {
             "type": "object",
-            "required": [
-                "email",
-                "username"
-            ],
             "properties": {
                 "access_token": {
                     "description": "JWT Access Token used to access protected resources.",
@@ -1612,6 +1726,10 @@ const docTemplate = `{
                     "description": "JWT Refresh Token used to obtain a new Access Token when it expires.",
                     "type": "string",
                     "example": "eyJhbGciOI6IkpXVCJ9.eyJzdk5EbifQ.4CfEaMw6Ur_fszI"
+                },
+                "telegram_id": {
+                    "type": "integer",
+                    "example": 123456789
                 },
                 "username": {
                     "description": "Username of the user; must be unique and valid.",
@@ -1778,10 +1896,6 @@ const docTemplate = `{
         },
         "models.User": {
             "type": "object",
-            "required": [
-                "email",
-                "username"
-            ],
             "properties": {
                 "created_at": {
                     "description": "Timestamp when the user was created.",
@@ -1797,6 +1911,10 @@ const docTemplate = `{
                     "description": "Unique identifier for the user.",
                     "type": "integer",
                     "example": 1
+                },
+                "telegram_id": {
+                    "type": "integer",
+                    "example": 123456789
                 },
                 "username": {
                     "description": "Username of the user; must be unique and valid.",
@@ -2015,13 +2133,13 @@ const docTemplate = `{
         "swagger.LoginRequest": {
             "type": "object",
             "properties": {
-                "email": {
-                    "type": "string",
-                    "example": "john_doe@example.com"
-                },
                 "password": {
                     "type": "string",
                     "example": "Secret1!"
+                },
+                "username": {
+                    "type": "string",
+                    "example": "k4sper1love"
                 }
             }
         },
@@ -2037,23 +2155,23 @@ const docTemplate = `{
         "swagger.RegisterRequest": {
             "type": "object",
             "properties": {
-                "email": {
-                    "type": "string",
-                    "example": "john_doe@example.com"
-                },
                 "password": {
                     "type": "string",
                     "example": "Secret1!"
                 },
                 "username": {
                     "type": "string",
-                    "example": "john_doe"
+                    "example": "k4sper1love"
                 }
             }
         },
         "swagger.UpdateUserRequest": {
             "type": "object",
             "properties": {
+                "email": {
+                    "type": "string",
+                    "example": "new@example.com"
+                },
                 "username": {
                     "type": "string",
                     "example": "new_username"

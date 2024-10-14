@@ -26,14 +26,14 @@ import (
 // @Security JWTAuth
 // @Router /films [post]
 func addFilmHandler(w http.ResponseWriter, r *http.Request) {
-	userId := r.Context().Value("userId").(int)
+	userID := r.Context().Value("userID").(int)
 	var film models.Film
 
 	if err := parseRequestBody(r, &film); err != nil {
 		badRequestResponse(w, r, err)
 		return
 	}
-	film.UserId = userId
+	film.UserID = userID
 
 	if errs := validator.ValidateStruct(&film); errs != nil {
 		failedValidationResponse(w, r, errs)
@@ -48,7 +48,7 @@ func addFilmHandler(w http.ResponseWriter, r *http.Request) {
 	// Define permissions for the film.
 	actions := []string{"read", "update", "delete"}
 	for _, action := range actions {
-		if err := addPermissionAndAssignToUser(userId, film.Id, "film", action); err != nil {
+		if err := addPermissionAndAssignToUser(userID, film.ID, "film", action); err != nil {
 			serverErrorResponse(w, r, err)
 			return
 		}
@@ -72,7 +72,7 @@ func addFilmHandler(w http.ResponseWriter, r *http.Request) {
 // @Security JWTAuth
 // @Router /films/{film_id} [get]
 func getFilmHandler(w http.ResponseWriter, r *http.Request) {
-	id, err := parseIdParam(r, "filmId")
+	id, err := parseIDParam(r, "filmID")
 	if err != nil {
 		badRequestResponse(w, r, err)
 		return
@@ -106,7 +106,7 @@ func getFilmHandler(w http.ResponseWriter, r *http.Request) {
 // @Security JWTAuth
 // @Router /films [get]
 func getFilmsHandler(w http.ResponseWriter, r *http.Request) {
-	userId := r.Context().Value("userId").(int)
+	userId := r.Context().Value("userID").(int)
 
 	// Define an input structure to hold filter and pagination parameters.
 	var input struct {
@@ -168,7 +168,7 @@ func getFilmsHandler(w http.ResponseWriter, r *http.Request) {
 // @Security JWTAuth
 // @Router /films/{film_id} [put]
 func updateFilmHandler(w http.ResponseWriter, r *http.Request) {
-	id, err := parseIdParam(r, "filmId")
+	id, err := parseIDParam(r, "filmID")
 	if err != nil {
 		badRequestResponse(w, r, err)
 		return
@@ -184,7 +184,7 @@ func updateFilmHandler(w http.ResponseWriter, r *http.Request) {
 		badRequestResponse(w, r, err)
 		return
 	}
-	film.Id = id
+	film.ID = id
 
 	if errs := validator.ValidateStruct(film); errs != nil {
 		failedValidationResponse(w, r, errs)
@@ -220,24 +220,24 @@ func updateFilmHandler(w http.ResponseWriter, r *http.Request) {
 // @Security JWTAuth
 // @Router /films/{film_id} [delete]
 func deleteFilmHandler(w http.ResponseWriter, r *http.Request) {
-	filmId, err := parseIdParam(r, "filmId")
+	id, err := parseIDParam(r, "filmID")
 	if err != nil {
 		badRequestResponse(w, r, err)
 		return
 	}
 
 	// Verify that the film exists in the database.
-	if _, err := postgres.GetFilm(filmId); err != nil {
+	if _, err := postgres.GetFilm(id); err != nil {
 		handleDBError(w, r, err)
 		return
 	}
 
-	if err := postgres.DeleteFilm(filmId); err != nil {
+	if err := postgres.DeleteFilm(id); err != nil {
 		handleDBError(w, r, err)
 		return
 	}
 
-	if err := deletePermissionCodes(filmId, "film"); err != nil {
+	if err := deletePermissionCodes(id, "film"); err != nil {
 		handleDBError(w, r, err)
 		return
 	}

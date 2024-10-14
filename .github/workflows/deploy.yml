@@ -56,9 +56,10 @@ jobs:
             # Export environment variables 
             export SERVER_HOST=${{ secrets.SSH_HOST }}
             export APP_PORT=${{ secrets.APP_PORT }}  
-            export APP_SECRET=${{ secrets.APP_SECRET }}  
             export APP_ENV=${{ secrets.APP_ENV }}  
             export APP_MIGRATIONS=${{ secrets.APP_MIGRATIONS }}  
+            export APP_SECRET=${{ secrets.APP_SECRET }}  
+            export APP_TELEGRAM=${{ secrets.APP_TELEGRAM }}
             export POSTGRES_USER=${{ secrets.POSTGRES_USER }}  
             export POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}  
             export POSTGRES_DB=${{ secrets.POSTGRES_DB }}  

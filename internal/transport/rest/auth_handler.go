@@ -7,9 +7,9 @@ import (
 	"net/http"
 )
 
-// Register godoc
-// @Summary Register a new user
-// @Description Register a new user using a username, email and password. Returns user information and tokens.
+// RegisterWithCredentials godoc
+// @Summary Register a new user with credentials
+// @Description Register a new user using a username and password. Returns user information and tokens.
 // @Description Basic permissions are available to you: creating films and collections.
 // @Tags auth
 // @Accept json
@@ -22,21 +22,21 @@ import (
 // @Failure 422 {object} swagger.ErrorResponse
 // @Failure 500 {object} swagger.ErrorResponse
 // @Router /auth/register [post]
-func registerHandler(w http.ResponseWriter, r *http.Request) {
-	var user models.User
+func registerWithCredentialsHandler(w http.ResponseWriter, r *http.Request) {
+	var credentials models.Credentials
 
-	if err := parseRequestBody(r, &user); err != nil {
+	if err := parseRequestBody(r, &credentials); err != nil {
 		badRequestResponse(w, r, err)
 		return
 	}
 
-	if errs := validator.ValidateStruct(&user); errs != nil {
+	if errs := validator.ValidateStruct(&credentials); errs != nil {
 		failedValidationResponse(w, r, errs)
 		return
 	}
 
 	// Register the user in the system.
-	resp, err := register(&user)
+	user, err := registerWithCredentials(&credentials)
 	if err != nil {
 		handleDBError(w, r, err)
 		return
@@ -45,16 +45,52 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 	// Assign default permissions to the user.
 	permissionCodes := []string{"film:create", "collection:create"}
 
-	if err = postgres.AddUserPermissions(user.Id, permissionCodes...); err != nil {
+	if err = postgres.AddUserPermissions(user.ID, permissionCodes...); err != nil {
 		serverErrorResponse(w, r, err)
 		return
 	}
 
-	writeJSON(w, r, http.StatusCreated, envelope{"user": resp})
+	writeJSON(w, r, http.StatusCreated, envelope{"user": user})
 }
 
-// Login godoc
-// @Summary Log in to your account
+// RegisterByTelegram godoc
+// @Summary Register a new user by Telegram
+// @Description Register a new user using verification token from header. Returns user information and tokens.
+// @Description Basic permissions are available to you: creating films and collections.
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param Verification header string true "Verification token from Telegram"
+// @Success 201 {object} swagger.AuthResponse
+// @Failure 400 {object} swagger.ErrorResponse
+// @Failure 404 {object} swagger.ErrorResponse
+// @Failure 409 {object} swagger.ErrorResponse
+// @Failure 422 {object} swagger.ErrorResponse
+// @Failure 500 {object} swagger.ErrorResponse
+// @Router /auth/register/telegram [post]
+func registerByTelegramHandler(w http.ResponseWriter, r *http.Request) {
+	telegramID := r.Context().Value("telegramID").(int)
+
+	// Register the user in the system.
+	user, err := registerByTelegram(telegramID)
+	if err != nil {
+		handleDBError(w, r, err)
+		return
+	}
+
+	// Assign default permissions to the user.
+	permissionCodes := []string{"film:create", "collection:create"}
+
+	if err = postgres.AddUserPermissions(user.ID, permissionCodes...); err != nil {
+		serverErrorResponse(w, r, err)
+		return
+	}
+
+	writeJSON(w, r, http.StatusCreated, envelope{"user": user})
+}
+
+// LoginWithCredentials godoc
+// @Summary Log in to your account with credentials
 // @Description Log in to your account using your email and password. Returns tokens.
 // @Tags auth
 // @Accept json
@@ -66,24 +102,47 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 // @Failure 422 {object} swagger.ErrorResponse
 // @Failure 500 {object} swagger.ErrorResponse
 // @Router /auth/login [post]
-func loginHandler(w http.ResponseWriter, r *http.Request) {
-	var input struct {
-		Email    string `json:"email" validate:"required,email"`
-		Password string `json:"password" validate:"required"`
-	}
+func loginWithCredentialsHandler(w http.ResponseWriter, r *http.Request) {
+	var credentials models.Credentials
 
-	if err := parseRequestBody(r, &input); err != nil {
+	if err := parseRequestBody(r, &credentials); err != nil {
 		badRequestResponse(w, r, err)
 		return
 	}
 
-	if errs := validator.ValidateStruct(&input); errs != nil {
+	if errs := validator.ValidateStruct(&credentials); errs != nil {
 		failedValidationResponse(w, r, errs)
 		return
 	}
 
 	// Authenticate the user.
-	resp, err := login(input.Email, input.Password)
+	resp, err := loginWithCredentials(credentials.Username, credentials.Password)
+	if err != nil {
+		handleDBError(w, r, err)
+		return
+	}
+
+	writeJSON(w, r, http.StatusOK, envelope{"user": resp})
+}
+
+// LoginByTelegram godoc
+// @Summary Log in to your account by Telegram
+// @Description Log in to your account using verification token from header. Returns tokens.
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param Verification header string true "Verification token from Telegram"
+// @Success 200 {object} swagger.AuthResponse
+// @Failure 403 {object} swagger.ErrorResponse
+// @Failure 404 {object} swagger.ErrorResponse
+// @Failure 422 {object} swagger.ErrorResponse
+// @Failure 500 {object} swagger.ErrorResponse
+// @Router /auth/login/telegram [post]
+func loginByTelegramHandler(w http.ResponseWriter, r *http.Request) {
+	telegramID := r.Context().Value("telegramID").(int)
+
+	// Authenticate the user.
+	resp, err := loginByTelegram(telegramID)
 	if err != nil {
 		handleDBError(w, r, err)
 		return

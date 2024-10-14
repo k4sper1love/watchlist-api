@@ -21,7 +21,7 @@ func AddFilm(f *models.Film) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	return GetDB().QueryRowContext(ctx, query, f.UserId, f.Title, f.Year, f.Genre, f.Description, f.Rating, f.PhotoUrl, f.Comment, f.IsViewed, f.UserRating, f.Review).Scan(&f.Id, &f.CreatedAt, &f.UpdatedAt)
+	return GetDB().QueryRowContext(ctx, query, f.UserID, f.Title, f.Year, f.Genre, f.Description, f.Rating, f.PhotoUrl, f.Comment, f.IsViewed, f.UserRating, f.Review).Scan(&f.ID, &f.CreatedAt, &f.UpdatedAt)
 }
 
 // GetFilm retrieves a film by its ID.
@@ -32,7 +32,7 @@ func GetFilm(id int) (*models.Film, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	if err := GetDB().QueryRowContext(ctx, query, id).Scan(&f.Id, &f.UserId, &f.Title, &f.Year, &f.Genre, &f.Description, &f.Rating, &f.PhotoUrl, &f.Comment, &f.IsViewed, &f.UserRating, &f.Review, &f.CreatedAt, &f.UpdatedAt); err != nil {
+	if err := GetDB().QueryRowContext(ctx, query, id).Scan(&f.ID, &f.UserID, &f.Title, &f.Year, &f.Genre, &f.Description, &f.Rating, &f.PhotoUrl, &f.Comment, &f.IsViewed, &f.UserRating, &f.Review, &f.CreatedAt, &f.UpdatedAt); err != nil {
 		return nil, err
 	}
 
@@ -40,7 +40,7 @@ func GetFilm(id int) (*models.Film, error) {
 }
 
 // GetFilmsByUser retrieves films for a specific user based on filters and pagination.
-func GetFilmsByUser(userId int, title string, min, max float64, f filters.Filters) ([]*models.Film, filters.Metadata, error) {
+func GetFilmsByUser(userID int, title string, min, max float64, f filters.Filters) ([]*models.Film, filters.Metadata, error) {
 	query := fmt.Sprintf(
 		`		
 			SELECT count(*) OVER(), * 
@@ -57,7 +57,7 @@ func GetFilmsByUser(userId int, title string, min, max float64, f filters.Filter
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	rows, err := GetDB().QueryContext(ctx, query, userId, title, min, max, f.Limit(), f.Offset())
+	rows, err := GetDB().QueryContext(ctx, query, userID, title, min, max, f.Limit(), f.Offset())
 	if err != nil {
 		return nil, filters.Metadata{}, err
 	}
@@ -73,7 +73,7 @@ func GetFilmsByUser(userId int, title string, min, max float64, f filters.Filter
 
 	for rows.Next() {
 		var film models.Film
-		if err := rows.Scan(&totalRecords, &film.Id, &film.UserId, &film.Title, &film.Year, &film.Genre, &film.Description, &film.Rating, &film.PhotoUrl, &film.Comment, &film.IsViewed, &film.UserRating, &film.Review, &film.CreatedAt, &film.UpdatedAt); err != nil {
+		if err := rows.Scan(&totalRecords, &film.ID, &film.UserID, &film.Title, &film.Year, &film.Genre, &film.Description, &film.Rating, &film.PhotoUrl, &film.Comment, &film.IsViewed, &film.UserRating, &film.Review, &film.CreatedAt, &film.UpdatedAt); err != nil {
 			return nil, filters.Metadata{}, err
 		}
 		films = append(films, &film)
@@ -99,7 +99,7 @@ func UpdateFilm(film *models.Film) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	return GetDB().QueryRowContext(ctx, query, film.Id, film.UpdatedAt, film.Title, film.Year, film.Genre, film.Description, film.Rating, film.PhotoUrl, film.Comment, film.IsViewed, film.UserRating, film.Review).Scan(&film.UserId, &film.UpdatedAt)
+	return GetDB().QueryRowContext(ctx, query, film.ID, film.UpdatedAt, film.Title, film.Year, film.Genre, film.Description, film.Rating, film.PhotoUrl, film.Comment, film.IsViewed, film.UserRating, film.Review).Scan(&film.UserID, &film.UpdatedAt)
 }
 
 // DeleteFilm removes a film by its ID.

@@ -45,13 +45,13 @@ definitions:
         description: JWT Refresh Token used to obtain a new Access Token when it expires.
         example: eyJhbGciOI6IkpXVCJ9.eyJzdk5EbifQ.4CfEaMw6Ur_fszI
         type: string
+      telegram_id:
+        example: 123456789
+        type: integer
       username:
         description: Username of the user; must be unique and valid.
         example: john_doe
         type: string
-    required:
-    - email
-    - username
     type: object
   models.Collection:
     properties:
@@ -192,13 +192,13 @@ definitions:
         description: Unique identifier for the user.
         example: 1
         type: integer
+      telegram_id:
+        example: 123456789
+        type: integer
       username:
         description: Username of the user; must be unique and valid.
         example: john_doe
         type: string
-    required:
-    - email
-    - username
     type: object
   rest.Dependency:
     properties:
@@ -342,11 +342,11 @@ definitions:
     type: object
   swagger.LoginRequest:
     properties:
-      email:
-        example: john_doe@example.com
-        type: string
       password:
         example: Secret1!
+        type: string
+      username:
+        example: k4sper1love
         type: string
     type: object
   swagger.MessageResponse:
@@ -357,18 +357,18 @@ definitions:
     type: object
   swagger.RegisterRequest:
     properties:
-      email:
-        example: john_doe@example.com
-        type: string
       password:
         example: Secret1!
         type: string
       username:
-        example: john_doe
+        example: k4sper1love
         type: string
     type: object
   swagger.UpdateUserRequest:
     properties:
+      email:
+        example: new@example.com
+        type: string
       username:
         example: new_username
         type: string
@@ -444,7 +444,45 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/swagger.ErrorResponse'
-      summary: Log in to your account
+      summary: Log in to your account with credentials
+      tags:
+      - auth
+  /auth/login/telegram:
+    post:
+      consumes:
+      - application/json
+      description: Log in to your account using verification token from header. Returns
+        tokens.
+      parameters:
+      - description: Verification token from Telegram
+        in: header
+        name: Verification
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/swagger.AuthResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+      summary: Log in to your account by Telegram
       tags:
       - auth
   /auth/logout:
@@ -504,7 +542,7 @@ paths:
       consumes:
       - application/json
       description: |-
-        Register a new user using a username, email and password. Returns user information and tokens.
+        Register a new user using a username and password. Returns user information and tokens.
         Basic permissions are available to you: creating films and collections.
       parameters:
       - description: 'Information about the new user '
@@ -540,7 +578,50 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/swagger.ErrorResponse'
-      summary: Register a new user
+      summary: Register a new user with credentials
+      tags:
+      - auth
+  /auth/register/telegram:
+    post:
+      consumes:
+      - application/json
+      description: |-
+        Register a new user using verification token from header. Returns user information and tokens.
+        Basic permissions are available to you: creating films and collections.
+      parameters:
+      - description: Verification token from Telegram
+        in: header
+        name: Verification
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/swagger.AuthResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+      summary: Register a new user by Telegram
       tags:
       - auth
   /collections:
@@ -1352,7 +1433,7 @@ paths:
       parameters:
       - description: New information about the user
         in: body
-        name: username
+        name: data
         required: true
         schema:
           $ref: '#/definitions/swagger.UpdateUserRequest'

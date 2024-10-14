@@ -3,17 +3,17 @@ package swagger
 import "time"
 
 type LoginRequest struct {
-	Email    string `json:"email" example:"john_doe@example.com"`
+	Username string `json:"username" example:"k4sper1love"`
 	Password string `json:"password" example:"Secret1!"`
 }
 
 type RegisterRequest struct {
 	LoginRequest
-	Username string `json:"username" example:"john_doe"`
 }
 
 type UpdateUserRequest struct {
 	Username string `json:"username" example:"new_username"`
+	Email    string `json:"email" example:"new@example.com"`
 }
 
 type FilmRequest struct {

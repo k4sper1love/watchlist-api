@@ -64,8 +64,10 @@ func route() *mux.Router {
 
 func setupAuthRoutes(router *mux.Router) {
 	auth := router.PathPrefix("/api/v1/auth").Subrouter()
-	auth.HandleFunc("/register", registerHandler).Methods(http.MethodPost)
-	auth.HandleFunc("/login", loginHandler).Methods(http.MethodPost)
+	auth.HandleFunc("/register", registerWithCredentialsHandler).Methods(http.MethodPost)
+	auth.HandleFunc("/register/telegram", verificate(registerByTelegramHandler)).Methods(http.MethodPost)
+	auth.HandleFunc("/login", loginWithCredentialsHandler).Methods(http.MethodPost)
+	auth.HandleFunc("/login/telegram", verificate(loginByTelegramHandler)).Methods(http.MethodPost)
 	auth.HandleFunc("/refresh", refreshAccessTokenHandler).Methods(http.MethodPost)
 	auth.HandleFunc("/logout", logoutHandler).Methods(http.MethodPost)
 	auth.HandleFunc("/check-token", checkTokenHandler).Methods(http.MethodGet)
@@ -82,25 +84,25 @@ func setupFilmRoutes(router *mux.Router) {
 	films := router.PathPrefix("/api/v1/films").Subrouter()
 	films.HandleFunc("", getFilmsHandler).Methods(http.MethodGet)
 	films.HandleFunc("", requirePermissions("film", "create", addFilmHandler)).Methods(http.MethodPost)
-	films.HandleFunc("/{filmId:[0-9]+}", requirePermissions("film", "read", getFilmHandler)).Methods(http.MethodGet)
-	films.HandleFunc("/{filmId:[0-9]+}", requirePermissions("film", "update", updateFilmHandler)).Methods(http.MethodPut)
-	films.HandleFunc("/{filmId:[0-9]+}", requirePermissions("film", "delete", deleteFilmHandler)).Methods(http.MethodDelete)
+	films.HandleFunc("/{filmID:[0-9]+}", requirePermissions("film", "read", getFilmHandler)).Methods(http.MethodGet)
+	films.HandleFunc("/{filmID:[0-9]+}", requirePermissions("film", "update", updateFilmHandler)).Methods(http.MethodPut)
+	films.HandleFunc("/{filmID:[0-9]+}", requirePermissions("film", "delete", deleteFilmHandler)).Methods(http.MethodDelete)
 }
 
 func setupCollectionRoutes(router *mux.Router) {
 	collections := router.PathPrefix("/api/v1/collections").Subrouter()
 	collections.HandleFunc("", getCollectionsHandler).Methods(http.MethodGet)
 	collections.HandleFunc("", requirePermissions("collection", "create", addCollectionHandler)).Methods(http.MethodPost)
-	collections.HandleFunc("/{collectionId:[0-9]+}", requirePermissions("collection", "read", getCollectionHandler)).Methods(http.MethodGet)
-	collections.HandleFunc("/{collectionId:[0-9]+}", requirePermissions("collection", "update", updateCollectionHandler)).Methods(http.MethodPut)
-	collections.HandleFunc("/{collectionId:[0-9]+}", requirePermissions("collection", "delete", deleteCollectionHandler)).Methods(http.MethodDelete)
+	collections.HandleFunc("/{collectionID:[0-9]+}", requirePermissions("collection", "read", getCollectionHandler)).Methods(http.MethodGet)
+	collections.HandleFunc("/{collectionID:[0-9]+}", requirePermissions("collection", "update", updateCollectionHandler)).Methods(http.MethodPut)
+	collections.HandleFunc("/{collectionID:[0-9]+}", requirePermissions("collection", "delete", deleteCollectionHandler)).Methods(http.MethodDelete)
 }
 
 func setupCollectionFilmRoutes(router *mux.Router) {
-	collectionFilms := router.PathPrefix("/api/v1/collections/{collectionId:[0-9]+}/films").Subrouter()
+	collectionFilms := router.PathPrefix("/api/v1/collections/{collectionID:[0-9]+}/films").Subrouter()
 	collectionFilms.HandleFunc("", requirePermissions("collectionFilm", "read", getCollectionFilmsHandler)).Methods(http.MethodGet)
-	collectionFilms.HandleFunc("/{filmId:[0-9]+}", requirePermissions("collectionFilm", "create", addCollectionFilmHandler)).Methods(http.MethodPost)
-	collectionFilms.HandleFunc("/{filmId:[0-9]+}", requirePermissions("collectionFilm", "read", getCollectionFilmHandler)).Methods(http.MethodGet)
-	collectionFilms.HandleFunc("/{filmId:[0-9]+}", requirePermissions("collectionFilm", "update", updateCollectionFilmHandler)).Methods(http.MethodPut)
-	collectionFilms.HandleFunc("/{filmId:[0-9]+}", requirePermissions("collectionFilm", "delete", deleteCollectionFilmHandler)).Methods(http.MethodDelete)
+	collectionFilms.HandleFunc("/{filmID:[0-9]+}", requirePermissions("collectionFilm", "create", addCollectionFilmHandler)).Methods(http.MethodPost)
+	collectionFilms.HandleFunc("/{filmID:[0-9]+}", requirePermissions("collectionFilm", "read", getCollectionFilmHandler)).Methods(http.MethodGet)
+	collectionFilms.HandleFunc("/{filmID:[0-9]+}", requirePermissions("collectionFilm", "update", updateCollectionFilmHandler)).Methods(http.MethodPut)
+	collectionFilms.HandleFunc("/{filmID:[0-9]+}", requirePermissions("collectionFilm", "delete", deleteCollectionFilmHandler)).Methods(http.MethodDelete)
 }

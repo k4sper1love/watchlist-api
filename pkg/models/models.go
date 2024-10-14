@@ -11,18 +11,42 @@ and timestamps for tracking creation and update times.
 package models
 
 import (
+	"github.com/golang-jwt/jwt"
 	"time"
 )
 
-type User struct {
-	Id        int       `json:"id" example:"1"`                                                       // Unique identifier for the user.
-	Username  string    `json:"username" validate:"required,username" example:"john_doe"`             // Username of the user; must be unique and valid.
-	Email     string    `json:"email" validate:"required,email" example:"john_doe@example.com"`       // Email address of the user; must be a valid email format.
-	Password  string    `json:"password,omitempty" validate:"required,password" swaggerignore:"true"` // Password for the user account; omitted in responses for security.
-	CreatedAt time.Time `json:"created_at" example:"2024-09-04T13:37:24.87653+05:00"`                 // Timestamp when the user was created.
-	Version   int       `json:"-"`                                                                    // Internal version tracking; not included in JSON responses.
+// AuthClaims defines the structure of JWT claims for user authentication by credentials.
+type AuthClaims struct {
+	UserID int `json:"user_id"`
+	jwt.StandardClaims
 }
 
+// TelegramClaims defines the structure of JWT claims for user authentication by Telegram.
+type TelegramClaims struct {
+	TelegramID int `json:"telegram_id"`
+	jwt.StandardClaims
+}
+
+// Credentials represents the information required for user registration and authentication.
+type Credentials struct {
+	TelegramID int    `json:"telegram_id,omitempty"`
+	Username   string `json:"username" validate:"required,username" example:"john_doe"`                  // Username of the user; must be unique and valid.
+	Email      string `json:"email,omitempty" validate:"omitempty,email" example:"john_doe@example.com"` // Email address of the user; must be a valid email format.
+	Password   string `json:"password,omitempty" validate:"required,password" swaggerignore:"true"`      // Password for the user account; omitted in responses for security.
+}
+
+// User represents the user data stored in the system.
+type User struct {
+	ID         int       `json:"id" example:"1"` // Unique identifier for the user.
+	TelegramID int       `json:"telegram_id,omitempty" example:"123456789"`
+	Username   string    `json:"username,omitempty" example:"john_doe"`                // Username of the user; must be unique and valid.
+	Email      string    `json:"email,omitempty" example:"john_doe@example.com"`       // Email address of the user; must be a valid email format.
+	Password   string    `json:"password,omitempty" swaggerignore:"true"`              // Password for the user account; omitted in responses for security.
+	CreatedAt  time.Time `json:"created_at" example:"2024-09-04T13:37:24.87653+05:00"` // Timestamp when the user was created.
+	Version    int       `json:"-"`                                                    // Internal version tracking; not included in JSON responses.
+}
+
+// AuthResponse represents the response returned upon successful authentication.
 type AuthResponse struct {
 	*User
 	AccessToken  string `json:"access_token" example:"eyJhbGciOiJIUzI1NiIs.eyJzdWIilIn0.iTNuOHMObmeRmKU"` // JWT Access Token used to access protected resources.
@@ -31,8 +55,8 @@ type AuthResponse struct {
 
 // Collection represents a collection of films created by a user.
 type Collection struct {
-	Id          int       `json:"id" example:"1"`                                                                   // Unique identifier for the collection.
-	UserId      int       `json:"user_id" example:"1"`                                                              // Identifier of the user who created the collection.
+	ID          int       `json:"id" example:"1"`                                                                   // Unique identifier for the collection.
+	UserID      int       `json:"user_id" example:"1"`                                                              // Identifier of the user who created the collection.
 	Name        string    `json:"name" validate:"required,min=3,max=100" example:"My collection"`                   // Name of the collection; required, between 3 and 100 characters.
 	Description string    `json:"description,omitempty" validate:"omitempty,max=500" example:"This is description"` // Description of the collection; optional, up to 500 characters.
 	CreatedAt   time.Time `json:"created_at" example:"2024-09-04T13:37:24.87653+05:00"`                             // Timestamp when the collection was created.
@@ -41,8 +65,8 @@ type Collection struct {
 
 // Film represents a film with its details and user-specific attributes.
 type Film struct {
-	Id          int       `json:"id"  example:"1"`                                                                     // Unique identifier for the film.
-	UserId      int       `json:"user_id" example:"1"`                                                                 // Identifier of the user who added the film.
+	ID          int       `json:"id"  example:"1"`                                                                     // Unique identifier for the film.
+	UserID      int       `json:"user_id" example:"1"`                                                                 // Identifier of the user who added the film.
 	Title       string    `json:"title" validate:"required,min=3,max=100" example:"My film"`                           // Title of the film; required, between 3 and 100 characters.
 	Year        int       `json:"year,omitempty" validate:"omitempty,gte=1888,lte=2100" example:"2001"`                // Release year of the film; optional, must be between 1888 and 2100.
 	Genre       string    `json:"genre,omitempty" validate:"omitempty,alpha,max=100" example:"Horror"`                 // Genre of the film; optional, only alphabetic characters.
@@ -59,8 +83,8 @@ type Film struct {
 
 // CollectionFilm represents the association between a film and a collection.
 type CollectionFilm struct {
-	CollectionId int       `json:"collection_id" example:"1"`                            // Identifier of the collection.
-	FilmId       int       `json:"film_id" example:"1"`                                  // Identifier of the film.
+	CollectionID int       `json:"collection_id" example:"1"`                            // Identifier of the collection.
+	FilmID       int       `json:"film_id" example:"1"`                                  // Identifier of the film.
 	AddedAt      time.Time `json:"added_at" example:"2024-09-04T13:37:24.87653+05:00"`   // Timestamp when the film was added to the collection.
 	UpdatedAt    time.Time `json:"updated_at" example:"2024-09-04T13:37:24.87653+05:00"` // Timestamp when the association was last updated.
 }

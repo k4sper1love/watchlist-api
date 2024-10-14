@@ -4,10 +4,11 @@ CREATE EXTENSION IF NOT EXISTS citext;
 
 CREATE TABLE IF NOT EXISTS users
 (
-    id         BIGSERIAL PRIMARY KEY,
-    username   CITEXT                   NOT NULL UNIQUE,
-    email      CITEXT                   NOT NULL UNIQUE,
-    password   TEXT                     NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
-    version    BIGINT                   NOT NULL DEFAULT 1
+    id          BIGSERIAL PRIMARY KEY,
+    telegram_id BIGINT UNIQUE,
+    username    CITEXT UNIQUE,
+    email       CITEXT,
+    password    TEXT,
+    created_at  TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    version     BIGINT                   NOT NULL DEFAULT 1
 );

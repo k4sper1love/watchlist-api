@@ -1,48 +1,73 @@
 package rest
 
 import (
+	"github.com/k4sper1love/watchlist-api/internal/config"
 	"github.com/k4sper1love/watchlist-api/internal/database/postgres"
 	"github.com/k4sper1love/watchlist-api/pkg/models"
 	"golang.org/x/crypto/bcrypt"
 )
 
-// register creates a new user and generates authentication tokens.
-func register(user *models.User) (*models.AuthResponse, error) {
-	if err := hashPassword(user); err != nil {
+// registerWithCredentials creates a new user using provided credentials and generates authentication tokens.
+func registerWithCredentials(credentials *models.Credentials) (*models.AuthResponse, error) {
+	if err := hashPassword(credentials); err != nil {
 		return nil, err
 	}
 
-	if err := postgres.AddUser(user); err != nil {
+	user, err := postgres.AddUserWithCredentials(credentials)
+	if err != nil {
 		return nil, err
 	}
 
 	user.Password = "" // Clear the password before returning.
 
-	accessToken, err := generateAccessToken(user.Id)
+	accessToken, err := generateAccessToken(user.ID)
 	if err != nil {
 		return nil, err
 	}
 
-	refreshToken, err := generateAndSaveRefreshToken(user.Id)
+	refreshToken, err := generateAndSaveRefreshToken(user.ID)
 	if err != nil {
 		return nil, err
 	}
 
-	res := &models.AuthResponse{
-		AccessToken:  accessToken,
-		RefreshToken: refreshToken,
-		User:         user,
-	}
-
-	return res, nil
+	return createAuthResponse(user, accessToken, refreshToken), nil
 }
 
-// login authenticates a user by email and password, and generates authentication tokens.
-func login(email, password string) (*models.AuthResponse, error) {
-	// Retrieve the user from the database by email.
-	user, err := postgres.GetUserByEmail(email)
+// registerByTelegram creates a new user with the provided Telegram ID and generates authentication tokens.
+func registerByTelegram(telegramID int) (*models.AuthResponse, error) {
+	credentials := &models.Credentials{
+		TelegramID: telegramID,
+		Username:   generateUniqueUsername(4, telegramID),
+	}
+
+	user, err := postgres.AddUserByTelegramID(credentials)
 	if err != nil {
 		return nil, err
+	}
+
+	accessToken, err := generateAccessToken(user.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	refreshToken, err := generateAndSaveRefreshToken(user.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	return createAuthResponse(user, accessToken, refreshToken), nil
+}
+
+// loginWithCredentials authenticates a user by their username and password, generating authentication tokens upon success.
+func loginWithCredentials(username, password string) (*models.AuthResponse, error) {
+	// Retrieve the user from the database by email.
+	user, err := postgres.GetUserByUsername(username)
+	if err != nil {
+		return nil, err
+	}
+
+	if user.Password == "" {
+		return nil, errRequiredPassword
 	}
 
 	if err := comparePasswords(user.Password, password); err != nil {
@@ -51,12 +76,33 @@ func login(email, password string) (*models.AuthResponse, error) {
 
 	user.Password = "" // Clear the password before returning.
 
-	accessToken, err := generateAccessToken(user.Id)
+	accessToken, err := generateAccessToken(user.ID)
 	if err != nil {
 		return nil, err
 	}
 
-	refreshToken, err := generateAndSaveRefreshToken(user.Id)
+	refreshToken, err := generateAndSaveRefreshToken(user.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	return createAuthResponse(user, accessToken, refreshToken), nil
+}
+
+// loginByTelegram authenticates a user using their Telegram ID and generates authentication tokens.
+func loginByTelegram(telegramID int) (*models.AuthResponse, error) {
+	// Retrieve the user from the database by email.
+	user, err := postgres.GetUserByTelegramID(telegramID)
+	if err != nil {
+		return nil, err
+	}
+
+	accessToken, err := generateAccessToken(user.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	refreshToken, err := generateAndSaveRefreshToken(user.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -95,20 +141,26 @@ func logout(refreshToken string) error {
 	return postgres.RevokeRefreshToken(refreshToken)
 }
 
+// checkToken verifies the validity of the provided authentication token.
 func checkToken(token string) error {
-	if claims := parseTokenClaims(token); claims == nil {
+	claims, err := parseAuthClaims(token, config.JWTSecret)
+	if err != nil {
+		return err
+	}
+
+	if claims == nil {
 		return errInvalidRefreshToken
 	}
 	return nil
 }
 
 // hashPassword hashes the user's password using bcrypt.
-func hashPassword(user *models.User) error {
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
+func hashPassword(credentials *models.Credentials) error {
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(credentials.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return err
 	}
-	user.Password = string(hashedPassword)
+	credentials.Password = string(hashedPassword)
 	return nil
 }
 
