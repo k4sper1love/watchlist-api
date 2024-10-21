@@ -80,12 +80,6 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/swagger.AuthResponse"
-                        }
-                    },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
@@ -274,12 +268,6 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
-                    "201": {
-                        "description": "Created",
-                        "schema": {
-                            "$ref": "#/definitions/swagger.AuthResponse"
-                        }
-                    },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
@@ -733,7 +721,7 @@ const docTemplate = `{
                         "JWTAuth": []
                     }
                 ],
-                "description": "Get a list of films from collection by collection ID. It also returns metadata.\nYou must have permissions to get this collection.",
+                "description": "Retrieves a list of films from a specified collection. This includes pagination and sorting metadata.\nYou must have permissions to access this collection.",
                 "consumes": [
                     "application/json"
                 ],
@@ -766,7 +754,7 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Sorting by ` + "`" + `film_id` + "`" + `, ` + "`" + `added_at` + "`" + `. Use ` + "`" + `-` + "`" + ` for desc",
+                        "description": "Sorting by ` + "`" + `id` + "`" + `, ` + "`" + `title` + "`" + `, ` + "`" + `rating` + "`" + `. Use ` + "`" + `-` + "`" + ` for descending order",
                         "name": "sort",
                         "in": "query"
                     }
@@ -798,6 +786,80 @@ const docTemplate = `{
                     },
                     "422": {
                         "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/swagger.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/swagger.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "JWTAuth": []
+                    }
+                ],
+                "description": "Create a new film and add it to the specified collection. You must have rights to create a film and update the collection.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "collectionFilms"
+                ],
+                "summary": "Add new film and associate with collection",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Collection ID",
+                        "name": "collection_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Information about the new film",
+                        "name": "film",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/swagger.FilmRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/swagger.CollectionFilmResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/swagger.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/swagger.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/swagger.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
                         "schema": {
                             "$ref": "#/definitions/swagger.ErrorResponse"
                         }
@@ -884,94 +946,13 @@ const docTemplate = `{
                     }
                 }
             },
-            "put": {
-                "security": [
-                    {
-                        "JWTAuth": []
-                    }
-                ],
-                "description": "Update the film in the collection by ID` + "`" + `s. You must have the permissions to update collection.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "collectionFilms"
-                ],
-                "summary": "Update film in collection",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Collection ID",
-                        "name": "collection_id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "integer",
-                        "description": "Film ID",
-                        "name": "film_id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "New information about the film in the collection",
-                        "name": "film",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/swagger.CollectionFilmRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/swagger.CollectionFilmResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/swagger.ErrorResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/swagger.ErrorResponse"
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "$ref": "#/definitions/swagger.ErrorResponse"
-                        }
-                    },
-                    "409": {
-                        "description": "Conflict",
-                        "schema": {
-                            "$ref": "#/definitions/swagger.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/swagger.ErrorResponse"
-                        }
-                    }
-                }
-            },
             "post": {
                 "security": [
                     {
                         "JWTAuth": []
                     }
                 ],
-                "description": "Add a film to the collection. You must have rights to get the film and update the collection.",
+                "description": "Add existing film to the collection. You must have rights to get the film and update the collection.",
                 "consumes": [
                     "application/json"
                 ],
@@ -981,7 +962,7 @@ const docTemplate = `{
                 "tags": [
                     "collectionFilms"
                 ],
-                "summary": "Add film to collection",
+                "summary": "Add existing film to collection",
                 "parameters": [
                     {
                         "type": "integer",
@@ -1002,7 +983,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/swagger.CollectionResponse"
+                            "$ref": "#/definitions/swagger.CollectionFilmResponse"
                         }
                     },
                     "400": {
@@ -1224,12 +1205,6 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
-                    "201": {
-                        "description": "Created",
-                        "schema": {
-                            "$ref": "#/definitions/swagger.FilmResponse"
-                        }
-                    },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
@@ -1359,12 +1334,6 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/swagger.FilmResponse"
-                        }
-                    },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
@@ -1767,6 +1736,11 @@ const docTemplate = `{
                     "minLength": 3,
                     "example": "My collection"
                 },
+                "total_films": {
+                    "description": "Total number of films in the collection.",
+                    "type": "integer",
+                    "example": 5
+                },
                 "updated_at": {
                     "description": "Timestamp when the collection was last updated.",
                     "type": "string",
@@ -1787,20 +1761,46 @@ const docTemplate = `{
                     "type": "string",
                     "example": "2024-09-04T13:37:24.87653+05:00"
                 },
-                "collection_id": {
+                "collection": {
                     "description": "Identifier of the collection.",
-                    "type": "integer",
-                    "example": 1
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/models.Collection"
+                        }
+                    ]
                 },
-                "film_id": {
+                "film": {
                     "description": "Identifier of the film.",
-                    "type": "integer",
-                    "example": 1
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/models.Film"
+                        }
+                    ]
                 },
                 "updated_at": {
                     "description": "Timestamp when the association was last updated.",
                     "type": "string",
                     "example": "2024-09-04T13:37:24.87653+05:00"
+                }
+            }
+        },
+        "models.CollectionFilms": {
+            "type": "object",
+            "properties": {
+                "collection": {
+                    "description": "Identifier of the collection.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/models.Collection"
+                        }
+                    ]
+                },
+                "films": {
+                    "description": "Identifier of the film.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Film"
+                    }
                 }
             }
         },
@@ -1988,15 +1988,6 @@ const docTemplate = `{
                 }
             }
         },
-        "swagger.CollectionFilmRequest": {
-            "type": "object",
-            "properties": {
-                "added_at": {
-                    "type": "string",
-                    "example": "2024-09-04T13:37:24.87653+05:00"
-                }
-            }
-        },
         "swagger.CollectionFilmResponse": {
             "type": "object",
             "properties": {
@@ -2009,10 +2000,7 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "collection_films": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/models.CollectionFilm"
-                    }
+                    "$ref": "#/definitions/models.CollectionFilms"
                 },
                 "metadata": {
                     "$ref": "#/definitions/filters.Metadata"

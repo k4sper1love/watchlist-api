@@ -121,8 +121,8 @@ func getCollectionsHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Define safe sortable fields.
 	input.Filters.SortSafeList = []string{
-		"id", "name", "created_at",
-		"-id", "-name", "-created_at",
+		"id", "name", "created_at", "total_films",
+		"-id", "-name", "-created_at", "-total_films",
 	}
 
 	if errs, err := filters.ValidateFilters(input.Filters); err != nil {

@@ -29,6 +29,8 @@ var notRequireAuth = map[string]struct{}{
 var internalPaths = []string{
 	"/swagger",
 	"/metrics",
+	"/images/",
+	"/upload",
 }
 
 // authenticate ensures that requests have a valid authentication token or are to an excluded path.
@@ -116,8 +118,10 @@ func requirePermissions(resource, action string, next http.HandlerFunc) http.Han
 		// Determine permission codes based on the resource type and action.
 		switch resource {
 		case "collectionFilm":
-			if action == "create" {
+			if action == "add" {
 				permissionCodes = append(permissionCodes, "film"+":"+params["filmID"]+":"+"read")
+				permissionCodes = append(permissionCodes, "collection"+":"+params["collectionID"]+":"+"update")
+			} else if action == "create" {
 				permissionCodes = append(permissionCodes, "collection"+":"+params["collectionID"]+":"+"update")
 			} else if action == "read" {
 				permissionCodes = append(permissionCodes, "collection"+":"+params["collectionID"]+":"+"read")

@@ -201,40 +201,45 @@ http://localhost:3000
 
 ## 🌐 Watchlist REST API Endpoints
 ```bash
+# Image Section
+POST /upload
+GET /images/:filename
+
 # Auth section
-POST /auth/register
-POST /auth/login/telegram
-POST /auth/login
-POST /auth/login/telegram
-POST /auth/refresh
-POST /auth/logout
-GET /auth/check-token
+POST /api/v1/auth/register
+POST /api/v1/auth/login/telegram
+POST /api/v1/auth/login
+POST /api/v1/auth/login/telegram
+POST /api/v1/auth/refresh
+POST /api/v1/auth/logout
+GET /api/v1/auth/check-token
 
 # User section
-GET /user
-PUT /user
-DELETE /user
+GET /api/v1/user
+PUT /api/v1/user
+DELETE /api/v1/user
 
 # Films section
-GET /films
-POST /films
-GET /films/:film_id
-PUT /films/:film_id
-DELETE /films/:film_id
+GET /api/v1/films
+POST /api/v1/films
+GET /api/v1/films/:film_id
+PUT /api/v1/films/:film_id
+DELETE /api/v1/films/:film_id
 
 # Collections section
-GET /collections
-POST /collections
-GET /collections/:collection_id
-PUT /collections/:collection_id
-DELETE /collections/:collection_id
+GET /api/v1/collections
+POST /api/v1/collections
+GET /api/v1/collections/:collection_id
+PUT /api/v1/collections/:collection_id
+DELETE /api/v1/collections/:collection_id
 
 # Collection_films section
-GET /collections/:collection_id/films
-POST /collections/:collection_id/films/:film_id
-GET /collections/:collection_id/films/:film_id
-PUT /collections/:collection_id/films/:film_id
-DELETE /collections/:collection_id/films/:film_id
+GET /api/v1/collections/:collection_id/films
+POST //v1/collections/:collection_id/films
+POST /api/v1/collections/:collection_id/films/:film_id
+GET /api/v1/collections/:collection_id/films/:film_id
+PUT /api/v1/collections/:collection_id/films/:film_id
+DELETE /api/v1/collections/:collection_id/films/:film_id
 ```
 
 ## 📊 Database Structure

@@ -1,23 +1,21 @@
 package rest
 
 import (
-	"database/sql"
-	"errors"
 	"github.com/k4sper1love/watchlist-api/internal/database/postgres"
-	"github.com/k4sper1love/watchlist-api/pkg/filters"
 	"github.com/k4sper1love/watchlist-api/pkg/models"
+	"github.com/k4sper1love/watchlist-api/pkg/validator"
 	"net/http"
 )
 
 // AddCollectionFilm godoc
-// @Summary Add film to collection
-// @Description Add a film to the collection. You must have rights to get the film and update the collection.
+// @Summary Add existing film to collection
+// @Description Add existing film to the collection. You must have rights to get the film and update the collection.
 // @Tags collectionFilms
 // @Accept json
 // @Produce json
 // @Param collection_id path int true "Collection ID"
 // @Param film_id path int true "Film ID"
-// @Success 201 {object} swagger.CollectionResponse
+// @Success 201 {object} swagger.CollectionFilmResponse
 // @Failure 400 {object} swagger.ErrorResponse
 // @Failure 401 {object} swagger.ErrorResponse
 // @Failure 403 {object} swagger.ErrorResponse
@@ -40,13 +38,80 @@ func addCollectionFilmHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Create a new CollectionFilm object with the parsed IDs.
 	collectionFilm := models.CollectionFilm{
-		CollectionID: collectionID,
-		FilmID:       filmID,
+		Collection: models.Collection{ID: collectionID},
+		Film:       models.Film{ID: filmID},
 	}
 
 	if err := postgres.AddCollectionFilm(&collectionFilm); err != nil {
 		handleDBError(w, r, err)
 		return
+	}
+
+	writeJSON(w, r, http.StatusCreated, envelope{"collection_film": collectionFilm})
+}
+
+// addNewCollectionFilmHandler godoc
+// @Summary Add new film and associate with collection
+// @Description Create a new film and add it to the specified collection. You must have rights to create a film and update the collection.
+// @Tags collectionFilms
+// @Accept json
+// @Produce json
+// @Param collection_id path int true "Collection ID"
+// @Param film body swagger.FilmRequest true "Information about the new film".
+// @Success 201 {object} swagger.CollectionFilmResponse
+// @Failure 400 {object} swagger.ErrorResponse
+// @Failure 401 {object} swagger.ErrorResponse
+// @Failure 403 {object} swagger.ErrorResponse
+// @Failure 409 {object} swagger.ErrorResponse
+// @Failure 500 {object} swagger.ErrorResponse
+// @Security JWTAuth
+// @Router /collections/{collection_id}/films [post]
+func addNewCollectionFilmHandler(w http.ResponseWriter, r *http.Request) {
+	userID := r.Context().Value("userID").(int)
+
+	collectionID, err := parseIDParam(r, "collectionID")
+	if err != nil {
+		badRequestResponse(w, r, err)
+		return
+	}
+
+	var film models.Film
+	if err := parseRequestBody(r, &film); err != nil {
+		badRequestResponse(w, r, err)
+		return
+	}
+	film.UserID = userID
+
+	setDefaultImage(r, &film)
+
+	if errs := validator.ValidateStruct(&film); errs != nil {
+		failedValidationResponse(w, r, errs)
+		return
+	}
+
+	if err := postgres.AddFilm(&film); err != nil {
+		handleDBError(w, r, err)
+		return
+	}
+
+	// Create a new CollectionFilm object with the parsed IDs.
+	collectionFilm := models.CollectionFilm{
+		Collection: models.Collection{ID: collectionID},
+		Film:       models.Film{ID: film.ID},
+	}
+
+	if err := postgres.AddCollectionFilm(&collectionFilm); err != nil {
+		handleDBError(w, r, err)
+		return
+	}
+
+	// Define permissions for the film.
+	actions := []string{"read", "update", "delete"}
+	for _, action := range actions {
+		if err := addPermissionAndAssignToUser(userID, film.ID, "film", action); err != nil {
+			serverErrorResponse(w, r, err)
+			return
+		}
 	}
 
 	writeJSON(w, r, http.StatusCreated, envelope{"collection_film": collectionFilm})
@@ -81,10 +146,9 @@ func getCollectionFilmHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	collectionFilm, err := postgres.GetCollectionFilm(collectionID, filmID)
-	if err != nil {
-		handleDBError(w, r, err)
-		return
+	collectionFilm := models.CollectionFilm{
+		Collection: models.Collection{ID: collectionID},
+		Film:       models.Film{ID: filmID},
 	}
 
 	writeJSON(w, r, http.StatusOK, envelope{"collection_film": collectionFilm})
@@ -92,15 +156,15 @@ func getCollectionFilmHandler(w http.ResponseWriter, r *http.Request) {
 
 // GetCollectionFilms godoc
 // @Summary Get films from collection
-// @Description Get a list of films from collection by collection ID. It also returns metadata.
-// @Description You must have permissions to get this collection.
+// @Description Retrieves a list of films from a specified collection. This includes pagination and sorting metadata.
+// @Description You must have permissions to access this collection.
 // @Tags collectionFilms
 // @Accept json
 // @Produce json
 // @Param collection_id path int true "Collection ID"
 // @Param page query int false "Specify the desired `page`"
 // @Param page_size query int false "Specify the desired `page size`"
-// @Param sort query string false "Sorting by `film_id`, `added_at`. Use `-` for desc"
+// @Param sort query string false "Sorting by `id`, `title`, `rating`. Use `-` for descending order"
 // @Success 200 {object} swagger.CollectionFilmsResponse
 // @Failure 400 {object} swagger.ErrorResponse
 // @Failure 401 {object} swagger.ErrorResponse
@@ -116,25 +180,8 @@ func getCollectionFilmsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Define an input structure to hold filter and pagination parameters.
-	var input struct {
-		filters.Filters
-	}
-
-	// Parse query string parameters.
-	qs := r.URL.Query()
-	input.Filters.Page = parseQueryInt(qs, "page", 1)
-	input.Filters.PageSize = parseQueryInt(qs, "page_size", 5)
-	input.Filters.Sort = parseQueryString(qs, "sort", "film_id")
-
-	// Define safe sortable fields.
-	input.Filters.SortSafeList = []string{
-		"film_id", "added_at",
-		"-film_id", "-added_at",
-	}
-
-	// Validate the filters.
-	if errs, err := filters.ValidateFilters(input.Filters); err != nil {
+	input, errs, err := parseAndValidateFilmsFilters(r)
+	if err != nil {
 		serverErrorResponse(w, r, err)
 		return
 	} else if errs != nil {
@@ -142,70 +189,13 @@ func getCollectionFilmsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Retrieve the list of collection-films based on the filters.
-	collectionFilms, metadata, err := postgres.GetCollectionFilms(collectionID, input.Filters)
-	if err != nil {
-		handleDBError(w, r, err)
-		return
+	collectionFilms := models.CollectionFilms{
+		Collection: models.Collection{ID: collectionID},
 	}
+
+	metadata, err := postgres.GetCollectionFilms(&collectionFilms, input.Title, input.MinRating, input.MaxRating, input.Filters)
 
 	writeJSON(w, r, http.StatusOK, envelope{"collection_films": collectionFilms, "metadata": metadata})
-}
-
-// UpdateCollectionFilm godoc
-// @Summary Update film in collection
-// @Description Update the film in the collection by ID`s. You must have the permissions to update collection.
-// @Tags collectionFilms
-// @Accept json
-// @Produce json
-// @Param collection_id path int true "Collection ID"
-// @Param film_id path int true "Film ID"
-// @Param film body swagger.CollectionFilmRequest true "New information about the film in the collection"
-// @Success 200 {object} swagger.CollectionFilmResponse
-// @Failure 400 {object} swagger.ErrorResponse
-// @Failure 401 {object} swagger.ErrorResponse
-// @Failure 403 {object} swagger.ErrorResponse
-// @Failure 409 {object} swagger.ErrorResponse
-// @Failure 500 {object} swagger.ErrorResponse
-// @Security JWTAuth
-// @Router /collections/{collection_id}/films/{film_id} [put]
-func updateCollectionFilmHandler(w http.ResponseWriter, r *http.Request) {
-	collectionID, err := parseIDParam(r, "collectionID")
-	if err != nil {
-		badRequestResponse(w, r, err)
-		return
-	}
-
-	filmID, err := parseIDParam(r, "filmID")
-	if err != nil {
-		badRequestResponse(w, r, err)
-		return
-	}
-
-	collectionFilm, err := postgres.GetCollectionFilm(collectionID, filmID)
-	if err != nil {
-		handleDBError(w, r, err)
-		return
-	}
-
-	if err := parseRequestBody(r, collectionFilm); err != nil {
-		badRequestResponse(w, r, err)
-		return
-	}
-	collectionFilm.CollectionID = collectionID
-	collectionFilm.FilmID = filmID
-
-	if err := postgres.UpdateCollectionFilm(collectionFilm); err != nil {
-		switch {
-		case errors.Is(err, sql.ErrNoRows):
-			editConflictResponse(w, r)
-		default:
-			handleDBError(w, r, err)
-		}
-		return
-	}
-
-	writeJSON(w, r, http.StatusOK, envelope{"collection_film": collectionFilm})
 }
 
 // DeleteCollectionFilms godoc
@@ -237,13 +227,18 @@ func deleteCollectionFilmHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	collectionFilm := models.CollectionFilm{
+		Collection: models.Collection{ID: collectionID},
+		Film:       models.Film{ID: filmID},
+	}
+
 	// Verify that the collection-film relationship exists in the database.
-	if _, err := postgres.GetCollectionFilm(collectionID, filmID); err != nil {
+	if err := postgres.GetCollectionFilm(&collectionFilm); err != nil {
 		handleDBError(w, r, err)
 		return
 	}
 
-	if err = postgres.DeleteCollectionFilm(collectionID, filmID); err != nil {
+	if err = postgres.DeleteCollectionFilm(&collectionFilm); err != nil {
 		handleDBError(w, r, err)
 		return
 	}
