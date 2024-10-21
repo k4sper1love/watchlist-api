@@ -122,5 +122,5 @@ jobs:
             BASE_URL="http://${{ secrets.SSH_HOST }}:${{ secrets.APP_PORT }}"
           
             # Run the Newman tests
-            newman run postman_collection.json --environment postman_environment.json --env-var "BASE_URL=$BASE_URL"
+            newman run postman_collection.json --environment postman_environment.json --env-var "BASE_URL=$BASE_URL" --file /static/images/default.png
           EOF
