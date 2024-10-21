@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS films
     genre       TEXT,
     description TEXT,
     rating      FLOAT,
-    photo_url   TEXT,
+    image_url   TEXT,
     comment     TEXT,
     is_viewed   BOOLEAN                  NOT NULL DEFAULT FALSE,
     user_rating FLOAT,

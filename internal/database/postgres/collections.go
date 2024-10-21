@@ -7,17 +7,17 @@ import (
 	"github.com/k4sper1love/watchlist-api/pkg/logger/sl"
 	"github.com/k4sper1love/watchlist-api/pkg/models"
 	"log/slog"
+	"strings"
 	"time"
 )
 
 // AddCollection inserts a new collection into the collections table.
 func AddCollection(c *models.Collection) error {
-	query := `
-		INSERT INTO collections (user_id, name, description) 
-		VALUES ($1, $2, $3) 
-		RETURNING id, created_at, updated_at
-	`
-
+	query := `  
+       INSERT INTO collections (user_id, name, description)      
+       VALUES ($1, $2, $3)   
+       RETURNING id, created_at, updated_at  
+    `
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
@@ -26,13 +26,18 @@ func AddCollection(c *models.Collection) error {
 
 // GetCollection retrieves a collection by its ID.
 func GetCollection(collectionID int) (*models.Collection, error) {
-	query := `SELECT * FROM collections WHERE id = $1`
-
+	query := `
+       SELECT c.id, c.user_id, c.name, c.description, COUNT(cf.film_id) AS total_films, c.created_at, c.updated_at
+       FROM collections c
+       LEFT JOIN collection_films cf ON c.id = cf.collection_id
+       WHERE c.id = $1
+       GROUP BY c.id
+    `
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
 	var c models.Collection
-	if err := GetDB().QueryRowContext(ctx, query, collectionID).Scan(&c.ID, &c.UserID, &c.Name, &c.Description, &c.CreatedAt, &c.UpdatedAt); err != nil {
+	if err := GetDB().QueryRowContext(ctx, query, collectionID).Scan(&c.ID, &c.UserID, &c.Name, &c.Description, &c.TotalFilms, &c.CreatedAt, &c.UpdatedAt); err != nil {
 		return nil, err
 	}
 
@@ -42,15 +47,17 @@ func GetCollection(collectionID int) (*models.Collection, error) {
 // GetCollections retrieves collections for a user with optional filtering and pagination.
 func GetCollections(userID int, name string, f filters.Filters) ([]*models.Collection, filters.Metadata, error) {
 	query := fmt.Sprintf(
-		`	
-			SELECT count(*) OVER(), * 
-			FROM collections 
-			WHERE user_id = $1 
-			  AND (LOWER(name) = LOWER($2) OR $2 = '')
-			ORDER BY %s %s, id
-			LIMIT $3 OFFSET $4
-			`,
-		f.SortColumn(), f.SortDirection())
+		`
+          SELECT COUNT(*) OVER(), c.id, c.user_id, c.name, c.description, COUNT(cf.film_id) AS total_films, c.created_at, c.updated_at
+          FROM collections c
+          LEFT JOIN collection_films cf ON c.id = cf.collection_id
+          WHERE c.user_id = $1
+            AND (LOWER(c.name) = LOWER($2) OR $2 = '')
+          GROUP BY c.id
+          ORDER BY %s %s, c.id
+          LIMIT $3 OFFSET $4
+        `,
+		collectionSortColumn(&f), f.SortDirection())
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
@@ -71,7 +78,7 @@ func GetCollections(userID int, name string, f filters.Filters) ([]*models.Colle
 
 	for rows.Next() {
 		var c models.Collection
-		if err := rows.Scan(&totalRecords, &c.ID, &c.UserID, &c.Name, &c.Description, &c.CreatedAt, &c.UpdatedAt); err != nil {
+		if err := rows.Scan(&totalRecords, &c.ID, &c.UserID, &c.Name, &c.Description, &c.TotalFilms, &c.CreatedAt, &c.UpdatedAt); err != nil {
 			return nil, filters.Metadata{}, err
 		}
 		collections = append(collections, &c)
@@ -88,16 +95,15 @@ func GetCollections(userID int, name string, f filters.Filters) ([]*models.Colle
 // UpdateCollection updates an existing collection's details.
 func UpdateCollection(c *models.Collection) error {
 	query := `
-		UPDATE collections 
-		SET name = $3, description = $4, updated_at = CURRENT_TIMESTAMP
-		WHERE id = $1 AND updated_at = $2
-		RETURNING user_id, created_at, updated_at
-	`
-
+       UPDATE collections
+       SET name = $3, description = $4, updated_at = CURRENT_TIMESTAMP
+       WHERE id = $1 AND updated_at = $2
+       RETURNING user_id, (SELECT COUNT(film_id) FROM collection_films WHERE collection_id = $1) AS total_films, created_at, updated_at
+    `
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	return GetDB().QueryRowContext(ctx, query, c.ID, c.UpdatedAt, c.Name, c.Description).Scan(&c.UserID, &c.CreatedAt, &c.UpdatedAt)
+	return GetDB().QueryRowContext(ctx, query, c.ID, c.UpdatedAt, c.Name, c.Description).Scan(&c.UserID, &c.TotalFilms, &c.CreatedAt, &c.UpdatedAt)
 }
 
 // DeleteCollection removes a collection by its ID.
@@ -109,4 +115,28 @@ func DeleteCollection(id int) error {
 
 	_, err := GetDB().ExecContext(ctx, query, id)
 	return err
+}
+
+// collectionSortColumn modifies the sort column for collections based on the provided filters.
+func collectionSortColumn(f *filters.Filters) string {
+	var newSort string
+	if strings.HasPrefix(f.Sort, "-") {
+		newSort += "-"
+	}
+	f.Sort = strings.TrimPrefix(f.Sort, "-")
+
+	switch f.Sort {
+	case "total_films":
+		newSort += "COUNT(cf.film_id)"
+	case "name":
+		newSort += "c.name"
+	case "created_at":
+		newSort += "c.created_at"
+	default:
+		newSort += "c.id"
+	}
+
+	f.Sort = newSort
+
+	return f.SortColumn()
 }

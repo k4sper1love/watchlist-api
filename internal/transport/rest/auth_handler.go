@@ -14,8 +14,7 @@ import (
 // @Tags auth
 // @Accept json
 // @Produce json
-// @Param credentials body swagger.RegisterRequest true "Information about the new user "
-// @Success 201 {object} swagger.AuthResponse
+// @Param credentials body swagger.RegisterRequest true "Information about the new user "// @Success 201 {object} swagger.AuthResponse
 // @Failure 400 {object} swagger.ErrorResponse
 // @Failure 404 {object} swagger.ErrorResponse
 // @Failure 409 {object} swagger.ErrorResponse
@@ -95,8 +94,7 @@ func registerByTelegramHandler(w http.ResponseWriter, r *http.Request) {
 // @Tags auth
 // @Accept json
 // @Produce json
-// @Param credentials body swagger.LoginRequest true "Login information"
-// @Success 200 {object} swagger.AuthResponse
+// @Param credentials body swagger.LoginRequest true "Login information"// @Success 200 {object} swagger.AuthResponse
 // @Failure 400 {object} swagger.ErrorResponse
 // @Failure 404 {object} swagger.ErrorResponse
 // @Failure 422 {object} swagger.ErrorResponse
@@ -116,13 +114,13 @@ func loginWithCredentialsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Authenticate the user.
-	resp, err := loginWithCredentials(credentials.Username, credentials.Password)
+	user, err := loginWithCredentials(credentials.Username, credentials.Password)
 	if err != nil {
 		handleDBError(w, r, err)
 		return
 	}
 
-	writeJSON(w, r, http.StatusOK, envelope{"user": resp})
+	writeJSON(w, r, http.StatusOK, envelope{"user": user})
 }
 
 // LoginByTelegram godoc
@@ -142,13 +140,13 @@ func loginByTelegramHandler(w http.ResponseWriter, r *http.Request) {
 	telegramID := r.Context().Value("telegramID").(int)
 
 	// Authenticate the user.
-	resp, err := loginByTelegram(telegramID)
+	user, err := loginByTelegram(telegramID)
 	if err != nil {
 		handleDBError(w, r, err)
 		return
 	}
 
-	writeJSON(w, r, http.StatusOK, envelope{"user": resp})
+	writeJSON(w, r, http.StatusOK, envelope{"user": user})
 }
 
 // Refresh godoc

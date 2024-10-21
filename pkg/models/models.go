@@ -53,6 +53,7 @@ type Collection struct {
 	UserID      int       `json:"user_id" example:"1"`                                                              // Identifier of the user who created the collection.
 	Name        string    `json:"name" validate:"required,min=3,max=100" example:"My collection"`                   // Name of the collection; required, between 3 and 100 characters.
 	Description string    `json:"description,omitempty" validate:"omitempty,max=500" example:"This is description"` // Description of the collection; optional, up to 500 characters.
+	TotalFilms  int       `json:"total_films" example:"5"`                                                          // Total number of films in the collection.
 	CreatedAt   time.Time `json:"created_at" example:"2024-09-04T13:37:24.87653+05:00"`                             // Timestamp when the collection was created.
 	UpdatedAt   time.Time `json:"updated_at" example:"2024-09-04T13:37:24.87653+05:00"`                             // Timestamp when the collection was last updated.
 }
@@ -66,8 +67,8 @@ type Film struct {
 	Genre       string    `json:"genre,omitempty" validate:"omitempty,alpha,max=100" example:"Horror"`                 // Genre of the film; optional, only alphabetic characters.
 	Description string    `json:"description,omitempty" validate:"omitempty,max=1000" example:"This is description"`   // Description of the film; optional, up to 1000 characters.
 	Rating      float64   `json:"rating,omitempty" validate:"omitempty,gte=1,lte=10" example:"6.7"`                    // Rating of the film; optional, must be between 1 and 10.
-	PhotoUrl    string    `json:"photo_url,omitempty" validate:"omitempty,url" example:"https://placeimg.com/640/480"` // URL of the film's photo; optional, must be a valid URL.
-	Comment     string    `json:"comment,omitempty" validate:"omitempty,max=500" example:"This is comment"`            // URL of the film's photo; optional, must be a valid URL.
+	ImageURL    string    `json:"image_url,omitempty" validate:"omitempty,url" example:"https://placeimg.com/640/480"` // URL of the film's image; optional, must be a valid URL.
+	Comment     string    `json:"comment,omitempty" validate:"omitempty,max=500" example:"This is comment"`            // User's comment of the film; optional, up to 500 characters.
 	IsViewed    bool      `json:"is_viewed" example:"false"`                                                           // Indicates if the user has viewed the film.
 	UserRating  float64   `json:"user_rating,omitempty" validate:"omitempty,gte=1,lte=10" example:"5.5"`               // User's rating of the film; optional, between 1 and 10.
 	Review      string    `json:"review,omitempty" validate:"omitempty,max=500" example:"This is review"`              // User's review of the film; optional, up to 500 characters.
@@ -77,8 +78,14 @@ type Film struct {
 
 // CollectionFilm represents the association between a film and a collection.
 type CollectionFilm struct {
-	CollectionID int       `json:"collection_id" example:"1"`                            // Identifier of the collection.
-	FilmID       int       `json:"film_id" example:"1"`                                  // Identifier of the film.
-	AddedAt      time.Time `json:"added_at" example:"2024-09-04T13:37:24.87653+05:00"`   // Timestamp when the film was added to the collection.
-	UpdatedAt    time.Time `json:"updated_at" example:"2024-09-04T13:37:24.87653+05:00"` // Timestamp when the association was last updated.
+	Collection Collection `json:"collection"`                                           // Identifier of the collection.
+	Film       Film       `json:"film"`                                                 // Identifier of the film.
+	AddedAt    time.Time  `json:"added_at" example:"2024-09-04T13:37:24.87653+05:00"`   // Timestamp when the film was added to the collection.
+	UpdatedAt  time.Time  `json:"updated_at" example:"2024-09-04T13:37:24.87653+05:00"` // Timestamp when the association was last updated.
+}
+
+// CollectionFilms represents the association between a film and a collection.
+type CollectionFilms struct {
+	Collection Collection `json:"collection"` // Identifier of the collection.
+	Films      []Film     `json:"films"`      // Identifier of the film.
 }

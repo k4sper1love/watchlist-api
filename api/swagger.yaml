@@ -74,6 +74,10 @@ definitions:
         maxLength: 100
         minLength: 3
         type: string
+      total_films:
+        description: Total number of films in the collection.
+        example: 5
+        type: integer
       updated_at:
         description: Timestamp when the collection was last updated.
         example: "2024-09-04T13:37:24.87653+05:00"
@@ -91,18 +95,30 @@ definitions:
         description: Timestamp when the film was added to the collection.
         example: "2024-09-04T13:37:24.87653+05:00"
         type: string
-      collection_id:
+      collection:
+        allOf:
+        - $ref: '#/definitions/models.Collection'
         description: Identifier of the collection.
-        example: 1
-        type: integer
-      film_id:
+      film:
+        allOf:
+        - $ref: '#/definitions/models.Film'
         description: Identifier of the film.
-        example: 1
-        type: integer
       updated_at:
         description: Timestamp when the association was last updated.
         example: "2024-09-04T13:37:24.87653+05:00"
         type: string
+    type: object
+  models.CollectionFilms:
+    properties:
+      collection:
+        allOf:
+        - $ref: '#/definitions/models.Collection'
+        description: Identifier of the collection.
+      films:
+        description: Identifier of the film.
+        items:
+          $ref: '#/definitions/models.Film'
+        type: array
     type: object
   models.Film:
     properties:
@@ -244,12 +260,6 @@ definitions:
       user:
         $ref: '#/definitions/models.AuthResponse'
     type: object
-  swagger.CollectionFilmRequest:
-    properties:
-      added_at:
-        example: "2024-09-04T13:37:24.87653+05:00"
-        type: string
-    type: object
   swagger.CollectionFilmResponse:
     properties:
       collection_film:
@@ -258,9 +268,7 @@ definitions:
   swagger.CollectionFilmsResponse:
     properties:
       collection_films:
-        items:
-          $ref: '#/definitions/models.CollectionFilm'
-        type: array
+        $ref: '#/definitions/models.CollectionFilms'
       metadata:
         $ref: '#/definitions/filters.Metadata'
     type: object
@@ -424,10 +432,6 @@ paths:
       produces:
       - application/json
       responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/swagger.AuthResponse'
         "400":
           description: Bad Request
           schema:
@@ -554,10 +558,6 @@ paths:
       produces:
       - application/json
       responses:
-        "201":
-          description: Created
-          schema:
-            $ref: '#/definitions/swagger.AuthResponse'
         "400":
           description: Bad Request
           schema:
@@ -860,8 +860,8 @@ paths:
       consumes:
       - application/json
       description: |-
-        Get a list of films from collection by collection ID. It also returns metadata.
-        You must have permissions to get this collection.
+        Retrieves a list of films from a specified collection. This includes pagination and sorting metadata.
+        You must have permissions to access this collection.
       parameters:
       - description: Collection ID
         in: path
@@ -876,7 +876,7 @@ paths:
         in: query
         name: page_size
         type: integer
-      - description: Sorting by `film_id`, `added_at`. Use `-` for desc
+      - description: Sorting by `id`, `title`, `rating`. Use `-` for descending order
         in: query
         name: sort
         type: string
@@ -910,6 +910,55 @@ paths:
       security:
       - JWTAuth: []
       summary: Get films from collection
+      tags:
+      - collectionFilms
+    post:
+      consumes:
+      - application/json
+      description: Create a new film and add it to the specified collection. You must
+        have rights to create a film and update the collection.
+      parameters:
+      - description: Collection ID
+        in: path
+        name: collection_id
+        required: true
+        type: integer
+      - description: Information about the new film
+        in: body
+        name: film
+        required: true
+        schema:
+          $ref: '#/definitions/swagger.FilmRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/swagger.CollectionFilmResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/swagger.ErrorResponse'
+      security:
+      - JWTAuth: []
+      summary: Add new film and associate with collection
       tags:
       - collectionFilms
   /collections/{collection_id}/films/{film_id}:
@@ -964,8 +1013,8 @@ paths:
     post:
       consumes:
       - application/json
-      description: Add a film to the collection. You must have rights to get the film
-        and update the collection.
+      description: Add existing film to the collection. You must have rights to get
+        the film and update the collection.
       parameters:
       - description: Collection ID
         in: path
@@ -982,60 +1031,6 @@ paths:
       responses:
         "201":
           description: Created
-          schema:
-            $ref: '#/definitions/swagger.CollectionResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/swagger.ErrorResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/swagger.ErrorResponse'
-        "403":
-          description: Forbidden
-          schema:
-            $ref: '#/definitions/swagger.ErrorResponse'
-        "409":
-          description: Conflict
-          schema:
-            $ref: '#/definitions/swagger.ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/swagger.ErrorResponse'
-      security:
-      - JWTAuth: []
-      summary: Add film to collection
-      tags:
-      - collectionFilms
-    put:
-      consumes:
-      - application/json
-      description: Update the film in the collection by ID`s. You must have the permissions
-        to update collection.
-      parameters:
-      - description: Collection ID
-        in: path
-        name: collection_id
-        required: true
-        type: integer
-      - description: Film ID
-        in: path
-        name: film_id
-        required: true
-        type: integer
-      - description: New information about the film in the collection
-        in: body
-        name: film
-        required: true
-        schema:
-          $ref: '#/definitions/swagger.CollectionFilmRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
           schema:
             $ref: '#/definitions/swagger.CollectionFilmResponse'
         "400":
@@ -1060,7 +1055,7 @@ paths:
             $ref: '#/definitions/swagger.ErrorResponse'
       security:
       - JWTAuth: []
-      summary: Update film in collection
+      summary: Add existing film to collection
       tags:
       - collectionFilms
   /collections/{collection_id}/films/{films_id}:
@@ -1182,10 +1177,6 @@ paths:
       produces:
       - application/json
       responses:
-        "201":
-          description: Created
-          schema:
-            $ref: '#/definitions/swagger.FilmResponse'
         "400":
           description: Bad Request
           schema:
@@ -1313,10 +1304,6 @@ paths:
       produces:
       - application/json
       responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/swagger.FilmResponse'
         "400":
           description: Bad Request
           schema:

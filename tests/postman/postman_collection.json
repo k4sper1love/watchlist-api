@@ -443,6 +443,11 @@
 							"listen": "test",
 							"script": {
 								"exec": [
+									"if (pm.response.code == 200) {\r",
+									"    var username = pm.response.json().user.username\r",
+									"    pm.environment.set(\"USERNAME\", username)\r",
+									"}\r",
+									"\r",
 									"pm.test(\"Response status code is 200\", function () {\r",
 									"  pm.expect(pm.response.code).to.equal(200);\r",
 									"});\r",
@@ -603,7 +608,7 @@
 									"    pm.expect(responseData.film).to.have.property('genre').that.is.a('string');\r",
 									"    pm.expect(responseData.film).to.have.property('description').that.is.a('string');\r",
 									"    pm.expect(responseData.film).to.have.property('rating').that.is.a('number');\r",
-									"    pm.expect(responseData.film).to.have.property('photo_url').that.is.a('string');\r",
+									"    pm.expect(responseData.film).to.have.property('image_url').that.is.a('string');\r",
 									"    pm.expect(responseData.film).to.have.property('comment').that.is.a('string');\r",
 									"    pm.expect(responseData.film).to.have.property('is_viewed').that.is.a('boolean');\r",
 									"    pm.expect(responseData.film).to.have.property('created_at').that.is.a('string');\r",
@@ -630,7 +635,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"title\": \"{{$randomWords}}\",\r\n    \"year\": 2010,\r\n    \"genre\": \"Action\",\r\n    \"description\": \"{{$randomPhrase}}\",\r\n    \"rating\": 7.1,\r\n    \"photo_url\": \"{{$randomImageUrl}}\",\r\n    \"comment\": \"{{$randomPhrase}}\"\r\n}",
+							"raw": "{\r\n    \"title\": \"{{$randomWords}}\",\r\n    \"year\": 2010,\r\n    \"genre\": \"Action\",\r\n    \"description\": \"{{$randomPhrase}}\",\r\n    \"rating\": 7.1,\r\n    \"image_url\": \"{{$randomImageUrl}}\",\r\n    \"comment\": \"{{$randomPhrase}}\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -681,7 +686,7 @@
 									"        pm.expect(film).to.have.property('genre');\r",
 									"        pm.expect(film).to.have.property('description');\r",
 									"        pm.expect(film).to.have.property('rating');\r",
-									"        pm.expect(film).to.have.property('photo_url');\r",
+									"        pm.expect(film).to.have.property('image_url');\r",
 									"        pm.expect(film).to.have.property('comment');\r",
 									"        pm.expect(film).to.have.property('is_viewed');\r",
 									"        pm.expect(film).to.have.property('created_at');\r",
@@ -869,7 +874,7 @@
 									"        \"genre\",\r",
 									"        \"description\",\r",
 									"        \"rating\",\r",
-									"        \"photo_url\",\r",
+									"        \"image_url\",\r",
 									"        \"comment\",\r",
 									"        \"is_viewed\",\r",
 									"        \"created_at\",\r",
@@ -943,7 +948,7 @@
 									"    pm.expect(responseData.film).to.have.property('genre').that.is.a('string');\r",
 									"    pm.expect(responseData.film).to.have.property('description').that.is.a('string');\r",
 									"    pm.expect(responseData.film).to.have.property('rating').that.is.a('number');\r",
-									"    pm.expect(responseData.film).to.have.property('photo_url').that.is.a('string');\r",
+									"    pm.expect(responseData.film).to.have.property('image_url').that.is.a('string');\r",
 									"    pm.expect(responseData.film).to.have.property('comment').that.is.a('string');\r",
 									"    pm.expect(responseData.film).to.have.property('is_viewed').that.is.a('boolean');\r",
 									"    pm.expect(responseData.film).to.have.property('user_rating').that.is.a('number');\r",
@@ -1221,7 +1226,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{BASE_URL}}/api/v1/collections?page_size=10&page=1&sort=-name",
+							"raw": "{{BASE_URL}}/api/v1/collections?page_size=10&page=1&sort=-total_films",
 							"host": [
 								"{{BASE_URL}}"
 							],
@@ -1241,7 +1246,7 @@
 								},
 								{
 									"key": "sort",
-									"value": "-name"
+									"value": "-total_films"
 								}
 							]
 						}
@@ -1413,12 +1418,11 @@
 							"script": {
 								"exec": [
 									"pm.test(\"Response status code is 201\", function () {\r",
-									"  pm.expect(pm.response.to.have.status(201));\r",
+									"    pm.expect(pm.response).to.have.status(201); // Исправлено: добавлено 'pm.response' перед 'to.have.status'\r",
 									"});\r",
 									"\r",
-									"\r",
 									"pm.test(\"Response time is less than 1000ms\", function () {\r",
-									"  pm.expect(pm.response.responseTime).to.be.below(1000);\r",
+									"    pm.expect(pm.response.responseTime).to.be.below(1000);\r",
 									"});\r",
 									"\r",
 									"pm.test(\"Content type is application/json\", function () {\r",
@@ -1429,8 +1433,8 @@
 									"    const responseData = pm.response.json();\r",
 									"\r",
 									"    pm.expect(responseData).to.be.an('object');\r",
-									"    pm.expect(responseData.collection_film).to.have.property('collection_id');\r",
-									"    pm.expect(responseData.collection_film).to.have.property('film_id');\r",
+									"    pm.expect(responseData.collection_film).to.have.property('collection');\r",
+									"    pm.expect(responseData.collection_film).to.have.property('film');\r",
 									"    pm.expect(responseData.collection_film).to.have.property('added_at');\r",
 									"    pm.expect(responseData.collection_film).to.have.property('updated_at');\r",
 									"});\r",
@@ -1485,6 +1489,83 @@
 					"response": []
 				},
 				{
+					"name": "Add new film to collection",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Response status code is 201\", function () {\r",
+									"    pm.expect(pm.response).to.have.status(201); // Исправлено: добавлено 'pm.response' перед 'to.have.status'\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Response time is less than 1000ms\", function () {\r",
+									"    pm.expect(pm.response.responseTime).to.be.below(1000);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Content type is application/json\", function () {\r",
+									"    pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Validate the structure of the 'collection_film' object\", function () {\r",
+									"    const responseData = pm.response.json();\r",
+									"\r",
+									"    pm.expect(responseData).to.be.an('object');\r",
+									"    pm.expect(responseData.collection_film).to.have.property('collection');\r",
+									"    pm.expect(responseData.collection_film).to.have.property('film');\r",
+									"    pm.expect(responseData.collection_film).to.have.property('added_at');\r",
+									"    pm.expect(responseData.collection_film).to.have.property('updated_at');\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Added_at and updated_at are in a valid date format\", function () {\r",
+									"    const responseData = pm.response.json().collection_film;\r",
+									"    \r",
+									"    pm.expect(responseData).to.be.an('object');\r",
+									"    pm.expect(responseData.added_at).to.match(/^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(.\\d+)?([+-]\\d{2}:\\d{2}|Z)$/);\r",
+									"    pm.expect(responseData.updated_at).to.match(/^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(.\\d+)?([+-]\\d{2}:\\d{2}|Z)$/);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{ACCESS_TOKEN}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"title\": \"{{$randomWords}}\",\r\n    \"year\": 2010,\r\n    \"genre\": \"Action\",\r\n    \"description\": \"{{$randomPhrase}}\",\r\n    \"rating\": 7.1,\r\n    \"comment\": \"{{$randomPhrase}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/api/v1/collections/{{COLLECTION_ID}}/films",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"collections",
+								"{{COLLECTION_ID}}",
+								"films"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "Get films from collection",
 					"event": [
 						{
@@ -1496,23 +1577,34 @@
 									"});\r",
 									"\r",
 									"pm.test(\"Response time is less than 1000ms\", function () {\r",
-									"  pm.expect(pm.response.responseTime).to.be.below(1000);\r",
+									"    pm.expect(pm.response.responseTime).to.be.below(1000);\r",
 									"});\r",
 									"\r",
 									"pm.test(\"Content type is application/json\", function () {\r",
 									"    pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\");\r",
 									"});\r",
 									"\r",
-									"\r",
-									"pm.test(\"Collection_films array has correct structure\", function () {\r",
+									"pm.test(\"Collection_film object has correct structure\", function () {\r",
 									"    const responseData = pm.response.json();\r",
 									"    \r",
-									"    pm.expect(responseData.collection_films).to.be.an('array').that.is.not.empty;\r",
-									"    \r",
-									"    responseData.collection_films.forEach(function(item) {\r",
-									"        pm.expect(item).to.have.property('collection_id').that.is.a('number');\r",
-									"        pm.expect(item).to.have.property('film_id').that.is.a('number');\r",
-									"        pm.expect(item).to.have.property('added_at').that.is.a('string');\r",
+									"    pm.expect(responseData).to.be.an('object');\r",
+									"    pm.expect(responseData).to.have.property('collection_films').that.is.an('object');\r",
+									"    pm.expect(responseData.collection_films).to.have.property('collection').that.is.an('object');\r",
+									"    pm.expect(responseData.collection_films).to.have.property('films').that.is.an('array').that.is.not.empty;\r",
+									"\r",
+									"    const films = responseData.collection_films.films;\r",
+									"    films.forEach(function(item) {\r",
+									"        pm.expect(item).to.have.property('id').that.is.a('number');\r",
+									"        pm.expect(item).to.have.property('user_id').that.is.a('number');\r",
+									"        pm.expect(item).to.have.property('title').that.is.a('string');\r",
+									"        pm.expect(item).to.have.property('year').that.is.a('number');\r",
+									"        pm.expect(item).to.have.property('genre').that.is.a('string');\r",
+									"        pm.expect(item).to.have.property('description').that.is.a('string');\r",
+									"        pm.expect(item).to.have.property('rating').that.is.a('number');\r",
+									"        pm.expect(item).to.have.property('image_url').that.is.a('string');\r",
+									"        pm.expect(item).to.have.property('comment').that.is.a('string');\r",
+									"        pm.expect(item).to.have.property('is_viewed').that.is.a('boolean');\r",
+									"        pm.expect(item).to.have.property('created_at').that.is.a('string');\r",
 									"        pm.expect(item).to.have.property('updated_at').that.is.a('string');\r",
 									"    });\r",
 									"});\r",
@@ -1521,12 +1613,14 @@
 									"    const responseData = pm.response.json();\r",
 									"    const metadata = responseData.metadata;\r",
 									"    \r",
+									"    pm.expect(metadata).to.be.an('object');\r",
 									"    pm.expect(metadata.current_page).to.be.a('number').and.to.equal(1);\r",
 									"    pm.expect(metadata.page_size).to.be.a('number').and.to.equal(5);\r",
 									"    pm.expect(metadata.first_page).to.be.a('number').and.to.equal(1);\r",
 									"    pm.expect(metadata.last_page).to.be.a('number').and.to.equal(1);\r",
-									"    pm.expect(metadata.total_records).to.be.a('number').and.to.equal(1);\r",
-									"});"
+									"    pm.expect(metadata.total_records).to.be.a('number').and.to.equal(2);\r",
+									"});\r",
+									""
 								],
 								"type": "text/javascript",
 								"packages": {}
@@ -1570,35 +1664,36 @@
 									"});\r",
 									"\r",
 									"pm.test(\"Response time is less than 1000ms\", function () {\r",
-									"  pm.expect(pm.response.responseTime).to.be.below(1000);\r",
+									"    pm.expect(pm.response.responseTime).to.be.below(1000);\r",
 									"});\r",
 									"\r",
 									"pm.test(\"Content type is application/json\", function () {\r",
 									"    pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\");\r",
 									"});\r",
 									"\r",
-									"pm.test(\"Collection films are sorted by film_id in descending order\", function () {\r",
+									"pm.test(\"Collection films are sorted by film id in descending order\", function () {\r",
 									"    const responseData = pm.response.json();\r",
-									"    const collectionFilms = responseData.collection_films;\r",
+									"    const collectionFilms = responseData.collection_films.films;\r",
 									"\r",
 									"    pm.expect(collectionFilms).to.be.an('array').that.is.not.empty;\r",
 									"\r",
 									"    if (collectionFilms.length > 1) {\r",
 									"        for (let i = 1; i < collectionFilms.length; i++) {\r",
-									"            pm.expect(collectionFilms[i].film_id).to.be.below(collectionFilms[i - 1].film_id);\r",
+									"            pm.expect(collectionFilms[i].id).to.be.below(collectionFilms[i - 1].id);\r",
 									"        }\r",
 									"    }\r",
 									"});\r",
 									"\r",
 									"pm.test(\"Page contains correct number of collection films\", function () {\r",
 									"    const responseData = pm.response.json();\r",
-									"    pm.expect(responseData.collection_films).to.have.length.of.at.most(10);\r",
+									"    pm.expect(responseData.collection_films.films).to.have.length.of.at.most(10);\r",
 									"});\r",
 									"\r",
 									"pm.test(\"Correct current page is returned\", function () {\r",
 									"    const responseData = pm.response.json();\r",
 									"    pm.expect(responseData.metadata.current_page).to.equal(1);\r",
-									"});"
+									"});\r",
+									""
 								],
 								"type": "text/javascript",
 								"packages": {}
@@ -1615,7 +1710,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{BASE_URL}}/api/v1/collections/{{COLLECTION_ID}}/films?page_size=10&page=1&sort=-film_id",
+							"raw": "{{BASE_URL}}/api/v1/collections/{{COLLECTION_ID}}/films?page_size=10&page=1&sort=-id",
 							"host": [
 								"{{BASE_URL}}"
 							],
@@ -1637,7 +1732,7 @@
 								},
 								{
 									"key": "sort",
-									"value": "-film_id"
+									"value": "-id"
 								}
 							]
 						}
@@ -1655,44 +1750,53 @@
 									"    pm.expect(pm.response.code).to.equal(200);",
 									"});",
 									"",
-									"pm.test(\"Validate the film object schema\", function () {",
-									"  const responseData = pm.response.json();",
-									"  ",
-									"  pm.expect(responseData.collection_film).to.be.an('object');",
-									"",
-									"  const collectionFilmProperties = [",
-									"    \"collection_id\",",
-									"    \"film_id\",",
-									"    \"added_at\",",
-									"    \"updated_at\"",
-									"  ];",
-									"",
-									"  collectionFilmProperties.forEach(property => {",
-									"    pm.expect(responseData.collection_film).to.have.property(property);",
-									"  });",
-									"});",
-									"",
-									"",
-									"pm.test(\"Collection_id and film_id are non-negative integers\", function () {",
+									"pm.test(\"Validate the collection_film object schema\", function () {",
 									"    const responseData = pm.response.json();",
-									"    ",
-									"    pm.expect(responseData.collection_film.collection_id).to.be.a('number').and.to.satisfy((num) => num >= 0, \"Collection_id should be a non-negative integer\");",
-									"    pm.expect(responseData.collection_film.film_id).to.be.a('number').and.to.satisfy((num) => num >= 0, \"Film_id should be a non-negative integer\");",
+									"",
+									"    pm.expect(responseData.collection_film).to.be.an('object');",
+									"",
+									"    const collectionFilmProperties = [",
+									"        \"collection\",",
+									"        \"film\",",
+									"        \"added_at\",",
+									"        \"updated_at\"",
+									"    ];",
+									"",
+									"    collectionFilmProperties.forEach(property => {",
+									"        pm.expect(responseData.collection_film).to.have.property(property);",
+									"    });",
 									"});",
 									"",
+									"pm.test(\"Collection and film objects are valid\", function () {",
+									"    const responseData = pm.response.json().collection_film;",
+									"",
+									"    // Validate collection object",
+									"    pm.expect(responseData.collection).to.be.an('object');",
+									"    pm.expect(responseData.collection.id).to.be.a('number').and.to.satisfy(num => num >= 0, \"Collection ID should be a non-negative integer\");",
+									"    pm.expect(responseData.collection.user_id).to.be.a('number').and.to.satisfy(num => num >= 0, \"User ID should be a non-negative integer\");",
+									"    pm.expect(responseData.collection.name).to.be.a('string');",
+									"    pm.expect(responseData.collection.total_films).to.be.a('number').and.to.satisfy(num => num >= 0, \"Total films should be a non-negative integer\");",
+									"    ",
+									"    // Validate film object",
+									"    pm.expect(responseData.film).to.be.an('object');",
+									"    pm.expect(responseData.film.id).to.be.a('number').and.to.satisfy(num => num >= 0, \"Film ID should be a non-negative integer\");",
+									"    pm.expect(responseData.film.user_id).to.be.a('number').and.to.satisfy(num => num >= 0, \"User ID should be a non-negative integer\");",
+									"    pm.expect(responseData.film.title).to.be.a('string');",
+									"    pm.expect(responseData.film.is_viewed).to.be.a('boolean');",
+									"});",
 									"",
 									"pm.test(\"Added_at and updated_at are in a valid date format\", function () {",
 									"    const responseData = pm.response.json().collection_film;",
-									"    ",
+									"",
 									"    pm.expect(responseData).to.be.an('object');",
 									"    pm.expect(responseData.added_at).to.match(/^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(.\\d+)?([+-]\\d{2}:\\d{2}|Z)$/);",
 									"    pm.expect(responseData.updated_at).to.match(/^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(.\\d+)?([+-]\\d{2}:\\d{2}|Z)$/);",
 									"});",
 									"",
-									"",
 									"pm.test(\"Content-Type header is application/json\", function () {",
 									"    pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\");",
-									"});"
+									"});",
+									""
 								],
 								"type": "text/javascript",
 								"packages": {}
@@ -1732,8 +1836,8 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"Response status code is 200\", function () {\r",
-									"    pm.expect(pm.response.code).to.equal(200);\r",
+									"pm.test(\"Response status code is 405\", function () {\r",
+									"    pm.expect(pm.response.code).to.equal(405);\r",
 									"});\r",
 									"\r",
 									"pm.test(\"Response time is less than 1000ms\", function () {\r",
@@ -1744,30 +1848,21 @@
 									"    pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\");\r",
 									"});\r",
 									"\r",
-									"pm.test(\"Validate the film object schema\", function () {\r",
+									"pm.test(\"Response body contains error message\", function () {\r",
 									"  const responseData = pm.response.json();\r",
 									"  \r",
-									"  pm.expect(responseData.collection_film).to.be.an('object');\r",
-									"\r",
-									"  const collectionFilmProperties = [\r",
-									"    \"collection_id\",\r",
-									"    \"film_id\",\r",
-									"    \"added_at\",\r",
-									"    \"updated_at\"\r",
-									"  ];\r",
-									"\r",
-									"  collectionFilmProperties.forEach(property => {\r",
-									"    pm.expect(responseData.collection_film).to.have.property(property);\r",
-									"  });\r",
+									"  pm.expect(responseData).to.be.an('object');\r",
+									"  pm.expect(responseData).to.have.property('error');\r",
+									"  pm.expect(responseData.error).to.be.a('string');\r",
 									"});\r",
 									"\r",
-									"pm.test(\"Added_at and updated_at are in a valid date format\", function () {\r",
-									"    const responseData = pm.response.json().collection_film;\r",
+									"pm.test(\"Error message is method not allowed\", function () {\r",
+									"    const responseData = pm.response.json();\r",
 									"    \r",
-									"    pm.expect(responseData).to.be.an('object');\r",
-									"    pm.expect(responseData.added_at).to.match(/^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(.\\d+)?([+-]\\d{2}:\\d{2}|Z)$/);\r",
-									"    pm.expect(responseData.updated_at).to.match(/^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(.\\d+)?([+-]\\d{2}:\\d{2}|Z)$/);\r",
+									"    pm.expect(responseData).to.have.property('error');\r",
+									"    pm.expect(responseData.error.toLowerCase()).to.include('not supported');\r",
 									"});\r",
+									"\r",
 									""
 								],
 								"type": "text/javascript",

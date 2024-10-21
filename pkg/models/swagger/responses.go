@@ -47,6 +47,6 @@ type CollectionFilmResponse struct {
 }
 
 type CollectionFilmsResponse struct {
-	CollectionFilms []models.CollectionFilm `json:"collection_films"`
-	Metadata        filters.Metadata        `json:"metadata"`
+	CollectionFilms models.CollectionFilms `json:"collection_films"`
+	Metadata        filters.Metadata       `json:"metadata"`
 }

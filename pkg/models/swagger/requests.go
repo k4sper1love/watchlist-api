@@ -22,7 +22,7 @@ type FilmRequest struct {
 	Genre       string  `json:"genre" example:"Horror"`
 	Description string  `json:"description" example:"This is description"`
 	Rating      float64 `json:"rating" example:"6.7"`
-	PhotoUrl    string  `json:"photo_url" example:"https://placeimg.com/640/480"`
+	ImageURL    string  `json:"image_url" example:"https://placeimg.com/640/480"`
 	Comment     string  `json:"comment" example:"This is comment"`
 	IsViewed    bool    `json:"is_viewed" example:"true"`
 	UserRating  float64 `json:"user_rating" example:"5.5"`

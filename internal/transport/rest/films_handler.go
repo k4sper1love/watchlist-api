@@ -3,6 +3,7 @@ package rest
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 	"github.com/k4sper1love/watchlist-api/internal/database/postgres"
 	"github.com/k4sper1love/watchlist-api/pkg/filters"
 	"github.com/k4sper1love/watchlist-api/pkg/models"
@@ -10,14 +11,21 @@ import (
 	"net/http"
 )
 
+// / filmsQueryInput holds the parameters for querying films, including title, rating range, and filter options.
+type filmsQueryInput struct {
+	Title     string
+	MinRating float64
+	MaxRating float64
+	filters.Filters
+}
+
 // AddFilm godoc
 // @Summary Add new film
 // @Description Add a new film. You will be granted the permissions to get, update, and delete it.
 // @Tags films
 // @Accept json
 // @Produce json
-// @Param film body swagger.FilmRequest true "Information about the new film".
-// @Success 201 {object} swagger.FilmResponse
+// @Param film body swagger.FilmRequest true "Information about the new film".// @Success 201 {object} swagger.FilmResponse
 // @Failure 400 {object} swagger.ErrorResponse
 // @Failure 401 {object} swagger.ErrorResponse
 // @Failure 409 {object} swagger.ErrorResponse
@@ -27,13 +35,15 @@ import (
 // @Router /films [post]
 func addFilmHandler(w http.ResponseWriter, r *http.Request) {
 	userID := r.Context().Value("userID").(int)
-	var film models.Film
 
+	var film models.Film
 	if err := parseRequestBody(r, &film); err != nil {
 		badRequestResponse(w, r, err)
 		return
 	}
 	film.UserID = userID
+
+	setDefaultImage(r, &film)
 
 	if errs := validator.ValidateStruct(&film); errs != nil {
 		failedValidationResponse(w, r, errs)
@@ -108,30 +118,8 @@ func getFilmHandler(w http.ResponseWriter, r *http.Request) {
 func getFilmsHandler(w http.ResponseWriter, r *http.Request) {
 	userId := r.Context().Value("userID").(int)
 
-	// Define an input structure to hold filter and pagination parameters.
-	var input struct {
-		Title     string
-		MinRating float64
-		MaxRating float64
-		filters.Filters
-	}
-
-	// Parse query string parameters.
-	qs := r.URL.Query()
-	input.Title = parseQueryString(qs, "title", "")
-	input.MinRating = parseQueryFloat(qs, "rating_min", 0)
-	input.MaxRating = parseQueryFloat(qs, "rating_max", 0)
-	input.Filters.Page = parseQueryInt(qs, "page", 1)
-	input.Filters.PageSize = parseQueryInt(qs, "page_size", 5)
-	input.Filters.Sort = parseQueryString(qs, "sort", "id")
-
-	// Define safe sortable fields.
-	input.Filters.SortSafeList = []string{
-		"id", "title", "rating",
-		"-id", "-title", "-rating",
-	}
-
-	if errs, err := filters.ValidateFilters(input.Filters); err != nil {
+	input, errs, err := parseAndValidateFilmsFilters(r)
+	if err != nil {
 		serverErrorResponse(w, r, err)
 		return
 	} else if errs != nil {
@@ -140,7 +128,7 @@ func getFilmsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Retrieve the list of films based on the filters.
-	films, metadata, err := postgres.GetFilmsByUser(userId, input.Title, input.MinRating, input.MaxRating, input.Filters)
+	films, metadata, err := postgres.GetFilms(userId, -1, input.Title, input.MinRating, input.MaxRating, input.Filters)
 	if err != nil {
 		handleDBError(w, r, err)
 		return
@@ -156,8 +144,7 @@ func getFilmsHandler(w http.ResponseWriter, r *http.Request) {
 // @Accept json
 // @Produce json
 // @Param film_id path int true "Film ID"
-// @Param film body swagger.FilmRequest true "New information about the film"
-// @Success 200 {object} swagger.FilmResponse
+// @Param film body swagger.FilmRequest true "New information about the film"// @Success 200 {object} swagger.FilmResponse
 // @Failure 400 {object} swagger.ErrorResponse
 // @Failure 401 {object} swagger.ErrorResponse
 // @Failure 403 {object} swagger.ErrorResponse
@@ -243,4 +230,34 @@ func deleteFilmHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeJSON(w, r, http.StatusOK, envelope{"message": "film deleted"})
+}
+
+// parseAndValidateFilmsFilters parses the incoming HTTP request for film filter and pagination parameters.
+func parseAndValidateFilmsFilters(r *http.Request) (*filmsQueryInput, map[string]string, error) {
+	// Define an input structure to hold filter and pagination parameters.
+	input := filmsQueryInput{}
+	// Parse query string parameters.
+	qs := r.URL.Query()
+	input.Title = parseQueryString(qs, "title", "")
+	input.MinRating = parseQueryFloat(qs, "rating_min", 0)
+	input.MaxRating = parseQueryFloat(qs, "rating_max", 0)
+	input.Filters.Page = parseQueryInt(qs, "page", 1)
+	input.Filters.PageSize = parseQueryInt(qs, "page_size", 5)
+	input.Filters.Sort = parseQueryString(qs, "sort", "id")
+
+	// Define safe sortable fields.
+	input.Filters.SortSafeList = []string{
+		"id", "title", "rating",
+		"-id", "-title", "-rating",
+	}
+
+	errs, err := filters.ValidateFilters(input.Filters)
+
+	return &input, errs, err
+}
+
+func setDefaultImage(r *http.Request, f *models.Film) {
+	if f.ImageURL == "" {
+		f.ImageURL = fmt.Sprintf("http://%s/images/default.png", r.Host)
+	}
 }

@@ -29,6 +29,10 @@ func route() *mux.Router {
 		http.ServeFile(w, r, "static/favicon.ico")
 	})
 
+	router.HandleFunc("/upload", uploadImageHandler).Methods(http.MethodPost)
+
+	router.HandleFunc("/images/{filename}", getImageHandler).Methods(http.MethodGet)
+
 	// Handle 404 Not Found
 	router.NotFoundHandler = http.HandlerFunc(notFoundResponse)
 
@@ -101,8 +105,8 @@ func setupCollectionRoutes(router *mux.Router) {
 func setupCollectionFilmRoutes(router *mux.Router) {
 	collectionFilms := router.PathPrefix("/api/v1/collections/{collectionID:[0-9]+}/films").Subrouter()
 	collectionFilms.HandleFunc("", requirePermissions("collectionFilm", "read", getCollectionFilmsHandler)).Methods(http.MethodGet)
-	collectionFilms.HandleFunc("/{filmID:[0-9]+}", requirePermissions("collectionFilm", "create", addCollectionFilmHandler)).Methods(http.MethodPost)
+	collectionFilms.HandleFunc("", requirePermissions("collectionFilm", "create", addNewCollectionFilmHandler)).Methods(http.MethodPost)
+	collectionFilms.HandleFunc("/{filmID:[0-9]+}", requirePermissions("collectionFilm", "add", addCollectionFilmHandler)).Methods(http.MethodPost)
 	collectionFilms.HandleFunc("/{filmID:[0-9]+}", requirePermissions("collectionFilm", "read", getCollectionFilmHandler)).Methods(http.MethodGet)
-	collectionFilms.HandleFunc("/{filmID:[0-9]+}", requirePermissions("collectionFilm", "update", updateCollectionFilmHandler)).Methods(http.MethodPut)
 	collectionFilms.HandleFunc("/{filmID:[0-9]+}", requirePermissions("collectionFilm", "delete", deleteCollectionFilmHandler)).Methods(http.MethodDelete)
 }
