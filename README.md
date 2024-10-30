@@ -207,7 +207,7 @@ GET /images/:filename
 
 # Auth section
 POST /api/v1/auth/register
-POST /api/v1/auth/login/telegram
+POST /api/v1/auth/register/telegram
 POST /api/v1/auth/login
 POST /api/v1/auth/login/telegram
 POST /api/v1/auth/refresh
@@ -235,7 +235,7 @@ DELETE /api/v1/collections/:collection_id
 
 # Collection_films section
 GET /api/v1/collections/:collection_id/films
-POST //v1/collections/:collection_id/films
+POST /api/v1/collections/:collection_id/films
 POST /api/v1/collections/:collection_id/films/:film_id
 GET /api/v1/collections/:collection_id/films/:film_id
 PUT /api/v1/collections/:collection_id/films/:film_id

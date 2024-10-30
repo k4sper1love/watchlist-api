@@ -151,6 +151,11 @@ func getCollectionFilmHandler(w http.ResponseWriter, r *http.Request) {
 		Film:       models.Film{ID: filmID},
 	}
 
+	if err := postgres.GetCollectionFilm(&collectionFilm); err != nil {
+		handleDBError(w, r, err)
+		return
+	}
+
 	writeJSON(w, r, http.StatusOK, envelope{"collection_film": collectionFilm})
 }
 
@@ -194,6 +199,10 @@ func getCollectionFilmsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	metadata, err := postgres.GetCollectionFilms(&collectionFilms, input.Title, input.MinRating, input.MaxRating, input.Filters)
+	if err != nil {
+		handleDBError(w, r, err)
+		return
+	}
 
 	writeJSON(w, r, http.StatusOK, envelope{"collection_films": collectionFilms, "metadata": metadata})
 }
