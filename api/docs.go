@@ -390,6 +390,18 @@ const docTemplate = `{
                     },
                     {
                         "type": "integer",
+                        "description": "Filter by ` + "`" + `film` + "`" + `",
+                        "name": "film",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Filter by ` + "`" + `exclude film` + "`" + `",
+                        "name": "exclude_film",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
                         "description": "Specify the desired ` + "`" + `page` + "`" + `",
                         "name": "page",
                         "in": "query"
@@ -1132,6 +1144,12 @@ const docTemplate = `{
                     },
                     {
                         "type": "integer",
+                        "description": "Filter by ` + "`" + `exclude collection` + "`" + `",
+                        "name": "exclude_collection",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
                         "description": "Specify the desired ` + "`" + `page` + "`" + `",
                         "name": "page",
                         "in": "query"
@@ -1811,7 +1829,7 @@ const docTemplate = `{
             ],
             "properties": {
                 "comment": {
-                    "description": "URL of the film's photo; optional, must be a valid URL.",
+                    "description": "User's comment of the film; optional, up to 500 characters.",
                     "type": "string",
                     "maxLength": 500,
                     "example": "This is comment"
@@ -1828,7 +1846,7 @@ const docTemplate = `{
                     "example": "This is description"
                 },
                 "genre": {
-                    "description": "Genre of the film; optional, only alphabetic characters.",
+                    "description": "Genre of the film; optional.",
                     "type": "string",
                     "maxLength": 100,
                     "example": "Horror"
@@ -1838,15 +1856,15 @@ const docTemplate = `{
                     "type": "integer",
                     "example": 1
                 },
+                "image_url": {
+                    "description": "URL of the film's image; optional, must be a valid URL.",
+                    "type": "string",
+                    "example": "https://placeimg.com/640/480"
+                },
                 "is_viewed": {
                     "description": "Indicates if the user has viewed the film.",
                     "type": "boolean",
                     "example": false
-                },
-                "photo_url": {
-                    "description": "URL of the film's photo; optional, must be a valid URL.",
-                    "type": "string",
-                    "example": "https://placeimg.com/640/480"
                 },
                 "rating": {
                     "description": "Rating of the film; optional, must be between 1 and 10.",
@@ -2066,6 +2084,10 @@ const docTemplate = `{
                     "type": "string",
                     "example": "Horror"
                 },
+                "image_url": {
+                    "type": "string",
+                    "example": "http://k4sper1love.kz/images/default.png"
+                },
                 "int": {
                     "type": "integer",
                     "example": 2001
@@ -2073,10 +2095,6 @@ const docTemplate = `{
                 "is_viewed": {
                     "type": "boolean",
                     "example": true
-                },
-                "photo_url": {
-                    "type": "string",
-                    "example": "https://placeimg.com/640/480"
                 },
                 "rating": {
                     "type": "number",

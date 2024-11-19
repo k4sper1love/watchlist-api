@@ -123,7 +123,7 @@ definitions:
   models.Film:
     properties:
       comment:
-        description: URL of the film's photo; optional, must be a valid URL.
+        description: User's comment of the film; optional, up to 500 characters.
         example: This is comment
         maxLength: 500
         type: string
@@ -137,7 +137,7 @@ definitions:
         maxLength: 1000
         type: string
       genre:
-        description: Genre of the film; optional, only alphabetic characters.
+        description: Genre of the film; optional.
         example: Horror
         maxLength: 100
         type: string
@@ -145,14 +145,14 @@ definitions:
         description: Unique identifier for the film.
         example: 1
         type: integer
+      image_url:
+        description: URL of the film's image; optional, must be a valid URL.
+        example: https://placeimg.com/640/480
+        type: string
       is_viewed:
         description: Indicates if the user has viewed the film.
         example: false
         type: boolean
-      photo_url:
-        description: URL of the film's photo; optional, must be a valid URL.
-        example: https://placeimg.com/640/480
-        type: string
       rating:
         description: Rating of the film; optional, must be between 1 and 10.
         example: 6.7
@@ -312,15 +312,15 @@ definitions:
       genre:
         example: Horror
         type: string
+      image_url:
+        example: http://k4sper1love.kz/images/default.png
+        type: string
       int:
         example: 2001
         type: integer
       is_viewed:
         example: true
         type: boolean
-      photo_url:
-        example: https://placeimg.com/640/480
-        type: string
       rating:
         example: 6.7
         type: number
@@ -635,6 +635,14 @@ paths:
         in: query
         name: name
         type: string
+      - description: Filter by `film`
+        in: query
+        name: film
+        type: integer
+      - description: Filter by `exclude film`
+        in: query
+        name: exclude_film
+        type: integer
       - description: Specify the desired `page`
         in: query
         name: page
@@ -1126,6 +1134,10 @@ paths:
         in: query
         name: rating_max
         type: number
+      - description: Filter by `exclude collection`
+        in: query
+        name: exclude_collection
+        type: integer
       - description: Specify the desired `page`
         in: query
         name: page

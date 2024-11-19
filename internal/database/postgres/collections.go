@@ -45,7 +45,7 @@ func GetCollection(collectionID int) (*models.Collection, error) {
 }
 
 // GetCollections retrieves collections for a user with optional filtering and pagination.
-func GetCollections(userID int, name string, f filters.Filters) ([]*models.Collection, filters.Metadata, error) {
+func GetCollections(userID int, name string, filmID int, excludeFilmID int, f filters.Filters) ([]*models.Collection, filters.Metadata, error) {
 	query := fmt.Sprintf(
 		`
           SELECT COUNT(*) OVER(), c.id, c.user_id, c.name, c.description, COUNT(cf.film_id) AS total_films, c.created_at, c.updated_at
@@ -53,16 +53,22 @@ func GetCollections(userID int, name string, f filters.Filters) ([]*models.Colle
           LEFT JOIN collection_films cf ON c.id = cf.collection_id
           WHERE c.user_id = $1
             AND (LOWER(c.name) = LOWER($2) OR $2 = '')
+            AND (cf.film_id = $3 OR $3 = -1)
+            AND c.id NOT IN (
+            SELECT cf.collection_id
+            FROM collection_films cf
+            WHERE cf.film_id = $4
+          )
           GROUP BY c.id
           ORDER BY %s %s, c.id
-          LIMIT $3 OFFSET $4
+          LIMIT $5 OFFSET $6
         `,
 		collectionSortColumn(&f), f.SortDirection())
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	rows, err := GetDB().QueryContext(ctx, query, userID, name, f.Limit(), f.Offset())
+	rows, err := GetDB().QueryContext(ctx, query, userID, name, filmID, excludeFilmID, f.Limit(), f.Offset())
 	if err != nil {
 		return nil, filters.Metadata{}, err
 	}

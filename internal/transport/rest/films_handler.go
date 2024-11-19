@@ -3,7 +3,6 @@ package rest
 import (
 	"database/sql"
 	"errors"
-	"fmt"
 	"github.com/k4sper1love/watchlist-api/internal/database/postgres"
 	"github.com/k4sper1love/watchlist-api/pkg/filters"
 	"github.com/k4sper1love/watchlist-api/pkg/models"
@@ -13,9 +12,10 @@ import (
 
 // / filmsQueryInput holds the parameters for querying films, including title, rating range, and filter options.
 type filmsQueryInput struct {
-	Title     string
-	MinRating float64
-	MaxRating float64
+	Title             string
+	MinRating         float64
+	MaxRating         float64
+	ExcludeCollection int
 	filters.Filters
 }
 
@@ -106,6 +106,7 @@ func getFilmHandler(w http.ResponseWriter, r *http.Request) {
 // @Param title query string false "Filter by `title`"
 // @Param rating_min query number false "Filter by `minimum rating`"
 // @Param rating_max query number false "Filter by `maximum rating`"
+// @Param exclude_collection query int false "Filter by `exclude collection`"
 // @Param page query int false "Specify the desired `page`"
 // @Param page_size query int false "Specify the desired `page size`"
 // @Param sort query string false "Sorting by `id`, `title`, `rating`. Use `-` for desc"
@@ -122,13 +123,14 @@ func getFilmsHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		serverErrorResponse(w, r, err)
 		return
-	} else if errs != nil {
+	}
+	if errs != nil {
 		failedValidationResponse(w, r, errs)
 		return
 	}
 
 	// Retrieve the list of films based on the filters.
-	films, metadata, err := postgres.GetFilms(userId, -1, input.Title, input.MinRating, input.MaxRating, input.Filters)
+	films, metadata, err := postgres.GetFilms(userId, input.Title, input.MinRating, input.MaxRating, input.ExcludeCollection, input.Filters)
 	if err != nil {
 		handleDBError(w, r, err)
 		return
@@ -171,7 +173,8 @@ func updateFilmHandler(w http.ResponseWriter, r *http.Request) {
 		badRequestResponse(w, r, err)
 		return
 	}
-	film.ID = id
+
+	setDefaultImage(r, film)
 
 	if errs := validator.ValidateStruct(film); errs != nil {
 		failedValidationResponse(w, r, errs)
@@ -241,6 +244,9 @@ func parseAndValidateFilmsFilters(r *http.Request) (*filmsQueryInput, map[string
 	input.Title = parseQueryString(qs, "title", "")
 	input.MinRating = parseQueryFloat(qs, "rating_min", 0)
 	input.MaxRating = parseQueryFloat(qs, "rating_max", 0)
+
+	input.ExcludeCollection = parseQueryInt(qs, "exclude_collection", -1)
+
 	input.Filters.Page = parseQueryInt(qs, "page", 1)
 	input.Filters.PageSize = parseQueryInt(qs, "page_size", 5)
 	input.Filters.Sort = parseQueryString(qs, "sort", "id")
@@ -254,10 +260,4 @@ func parseAndValidateFilmsFilters(r *http.Request) (*filmsQueryInput, map[string
 	errs, err := filters.ValidateFilters(input.Filters)
 
 	return &input, errs, err
-}
-
-func setDefaultImage(r *http.Request, f *models.Film) {
-	if f.ImageURL == "" {
-		f.ImageURL = fmt.Sprintf("http://%s/images/default.png", r.Host)
-	}
 }

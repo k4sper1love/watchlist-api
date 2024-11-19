@@ -10,6 +10,14 @@ import (
 	"net/http"
 )
 
+// / collectionsQueryInput holds the parameters for querying collections, including name and filter options.
+type collectionsQueryInput struct {
+	Name        string
+	Film        int
+	ExcludeFilm int
+	filters.Filters
+}
+
 // AddCollection godoc
 // @Summary Add new collection
 // @Description Add a new collection. You will be granted the permissions to get, update, and delete it.
@@ -94,6 +102,8 @@ func getCollectionHandler(w http.ResponseWriter, r *http.Request) {
 // @Accept json
 // @Produce json
 // @Param name query string false "Filter by `name`"
+// @Param film query int false "Filter by `film`"
+// @Param exclude_film query int false "Filter by `exclude film`"
 // @Param page query int false "Specify the desired `page`"
 // @Param page_size query int false "Specify the desired `page size`"
 // @Param sort query string false "Sorting by `id`, `name`, `created_at`. Use `-` for desc"
@@ -106,35 +116,18 @@ func getCollectionHandler(w http.ResponseWriter, r *http.Request) {
 func getCollectionsHandler(w http.ResponseWriter, r *http.Request) {
 	userID := r.Context().Value("userID").(int)
 
-	// Define an input structure to hold filter and pagination parameters.
-	var input struct {
-		Name string
-		filters.Filters
-	}
-
-	// Parse query string parameters.
-	qs := r.URL.Query()
-	input.Name = parseQueryString(qs, "name", "")
-	input.Filters.Page = parseQueryInt(qs, "page", 1)
-	input.Filters.PageSize = parseQueryInt(qs, "page_size", 5)
-	input.Filters.Sort = parseQueryString(qs, "sort", "id")
-
-	// Define safe sortable fields.
-	input.Filters.SortSafeList = []string{
-		"id", "name", "created_at", "total_films",
-		"-id", "-name", "-created_at", "-total_films",
-	}
-
-	if errs, err := filters.ValidateFilters(input.Filters); err != nil {
+	input, errs, err := parseAndValidateCollectionsFilters(r)
+	if err != nil {
 		serverErrorResponse(w, r, err)
 		return
-	} else if errs != nil {
+	}
+	if errs != nil {
 		failedValidationResponse(w, r, errs)
 		return
 	}
 
 	// Retrieve the list of collections based on the filters.
-	collections, metadata, err := postgres.GetCollections(userID, input.Name, input.Filters)
+	collections, metadata, err := postgres.GetCollections(userID, input.Name, input.Film, input.ExcludeFilm, input.Filters)
 	if err != nil {
 		handleDBError(w, r, err)
 		return
@@ -174,11 +167,10 @@ func updateCollectionHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err = parseRequestBody(r, collection); err != nil {
+	if err := parseRequestBody(r, collection); err != nil {
 		badRequestResponse(w, r, err)
 		return
 	}
-	collection.ID = collectionID
 
 	if errs := validator.ValidateStruct(collection); errs != nil {
 		failedValidationResponse(w, r, errs)
@@ -237,4 +229,31 @@ func deleteCollectionHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeJSON(w, r, http.StatusOK, envelope{"message": "collection deleted"})
+}
+
+// parseAndValidateCollectionsFilters parses the incoming HTTP request for collection filter and pagination parameters.
+func parseAndValidateCollectionsFilters(r *http.Request) (*collectionsQueryInput, map[string]string, error) {
+	// Define an input structure to hold filter and pagination parameters.
+	input := collectionsQueryInput{}
+	// Parse query string parameters.
+	qs := r.URL.Query()
+	input.Name = parseQueryString(qs, "name", "")
+
+	input.Film = parseQueryInt(qs, "film", -1)
+
+	input.ExcludeFilm = parseQueryInt(qs, "exclude_film", -1)
+
+	input.Filters.Page = parseQueryInt(qs, "page", 1)
+	input.Filters.PageSize = parseQueryInt(qs, "page_size", 5)
+	input.Filters.Sort = parseQueryString(qs, "sort", "id")
+
+	// Define safe sortable fields.
+	input.Filters.SortSafeList = []string{
+		"id", "name", "created_at", "total_films",
+		"-id", "-name", "-created_at", "-total_films",
+	}
+
+	errs, err := filters.ValidateFilters(input.Filters)
+
+	return &input, errs, err
 }

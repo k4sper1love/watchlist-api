@@ -33,11 +33,11 @@ type Credentials struct {
 type User struct {
 	ID         int       `json:"id" example:"1"` // Unique identifier for the user.
 	TelegramID int       `json:"telegram_id,omitempty" example:"123456789"`
-	Username   string    `json:"username,omitempty" example:"john_doe"`                // Username of the user; must be unique and valid.
-	Email      string    `json:"email,omitempty" example:"john_doe@example.com"`       // Email address of the user; must be a valid email format.
-	Password   string    `json:"password,omitempty" swaggerignore:"true"`              // Password for the user account; omitted in responses for security.
-	CreatedAt  time.Time `json:"created_at" example:"2024-09-04T13:37:24.87653+05:00"` // Timestamp when the user was created.
-	Version    int       `json:"-"`                                                    // Internal version tracking; not included in JSON responses.
+	Username   string    `json:"username,omitempty" validate:"omitempty,username" example:"john_doe"`       // Username of the user; must be unique and valid.
+	Email      string    `json:"email,omitempty" validate:"omitempty,email" example:"john_doe@example.com"` // Email address of the user; must be a valid email format.
+	Password   string    `json:"password,omitempty" swaggerignore:"true"`                                   // Password for the user account; omitted in responses for security.
+	CreatedAt  time.Time `json:"created_at" example:"2024-09-04T13:37:24.87653+05:00"`                      // Timestamp when the user was created.
+	Version    int       `json:"-"`                                                                         // Internal version tracking; not included in JSON responses.
 }
 
 // AuthResponse represents the response returned upon successful authentication.
@@ -64,7 +64,7 @@ type Film struct {
 	UserID      int       `json:"user_id" example:"1"`                                                                 // Identifier of the user who added the film.
 	Title       string    `json:"title" validate:"required,min=3,max=100" example:"My film"`                           // Title of the film; required, between 3 and 100 characters.
 	Year        int       `json:"year,omitempty" validate:"omitempty,gte=1888,lte=2100" example:"2001"`                // Release year of the film; optional, must be between 1888 and 2100.
-	Genre       string    `json:"genre,omitempty" validate:"omitempty,alpha,max=100" example:"Horror"`                 // Genre of the film; optional, only alphabetic characters.
+	Genre       string    `json:"genre,omitempty" validate:"omitempty,max=100" example:"Horror"`                       // Genre of the film; optional.
 	Description string    `json:"description,omitempty" validate:"omitempty,max=1000" example:"This is description"`   // Description of the film; optional, up to 1000 characters.
 	Rating      float64   `json:"rating,omitempty" validate:"omitempty,gte=1,lte=10" example:"6.7"`                    // Rating of the film; optional, must be between 1 and 10.
 	ImageURL    string    `json:"image_url,omitempty" validate:"omitempty,url" example:"https://placeimg.com/640/480"` // URL of the film's image; optional, must be a valid URL.

@@ -4,9 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/k4sper1love/watchlist-api/pkg/filters"
-	"github.com/k4sper1love/watchlist-api/pkg/logger/sl"
 	"github.com/k4sper1love/watchlist-api/pkg/models"
-	"log/slog"
 	"time"
 )
 
@@ -37,34 +35,32 @@ func GetFilm(id int) (*models.Film, error) {
 }
 
 // GetFilms retrieves films for a specific user based on filters and pagination.
-func GetFilms(userID int, collectionID int, title string, min, max float64, f filters.Filters) ([]models.Film, filters.Metadata, error) {
-	query := fmt.Sprintf(`              
-               SELECT count(*) OVER(), f.*   
-               FROM films f  
-                    LEFT JOIN collection_films cf ON f.id = cf.film_id       
-               WHERE (f.user_id = $1 OR $1 = -1 )           
-                 AND (cf.collection_id = $2 OR $2 = -1)          
-                 AND (LOWER(f.title) = LOWER($3) OR $3 = '')          
-                 AND (f.rating >= $4 OR $6 = 0)   
-                 AND (f.rating <= $5 OR $5 = 0)   
-               ORDER BY f.%s %s, f.id  
-               LIMIT $6 OFFSET $7         
-               `,
+func GetFilms(userID int, title string, min, max float64, excludeCollectionID int, f filters.Filters) ([]models.Film, filters.Metadata, error) {
+	query := fmt.Sprintf(`
+        SELECT COUNT(*) OVER(), f.*
+        FROM films f
+        WHERE f.user_id = $1
+          AND (LOWER(f.title) = LOWER($2) OR $2 = '') 
+          AND (f.rating >= $3 OR $3 = 0)
+          AND (f.rating <= $4 OR $4 = 0)
+          AND f.id NOT IN (
+              SELECT cf.film_id
+              FROM collection_films cf
+              WHERE cf.collection_id = $5
+          )
+        ORDER BY %s %s, f.id
+        LIMIT $6 OFFSET $7
+    `,
 		f.SortColumn(), f.SortDirection())
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	rows, err := GetDB().QueryContext(ctx, query, userID, collectionID, title, min, max, f.Limit(), f.Offset())
+	rows, err := GetDB().QueryContext(ctx, query, userID, title, min, max, excludeCollectionID, f.Limit(), f.Offset())
 	if err != nil {
 		return nil, filters.Metadata{}, err
 	}
-
-	defer func() {
-		if err := rows.Close(); err != nil {
-			sl.Log.Error("failed to close rows", slog.Any("error", err))
-		}
-	}()
+	defer rows.Close()
 
 	var films []models.Film
 	totalRecords := 0

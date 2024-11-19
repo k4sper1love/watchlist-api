@@ -42,7 +42,7 @@ func getValidationMessage(fe validator.FieldError) string {
 func usernameValidator(fl validator.FieldLevel) bool {
 	username := fl.Field().String()
 	validUsername := regexp.MustCompile(`^[a-zA-Z0-9._]+$`)
-	return validUsername.MatchString(username)
+	return validUsername.MatchString(username) && len(username) > 2
 }
 
 // passwordValidator ensures a password meets security criteria:

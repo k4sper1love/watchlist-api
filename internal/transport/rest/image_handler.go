@@ -3,6 +3,7 @@ package rest
 import (
 	"fmt"
 	"github.com/gorilla/mux"
+	"github.com/k4sper1love/watchlist-api/pkg/models"
 	"io"
 	"net/http"
 	"os"
@@ -24,7 +25,7 @@ func uploadImageHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer imageFile.Close()
 
-	filename := fmt.Sprintf("%d_%s", time.Now().UnixNano(), "uploaded_image.jpg")
+	filename := fmt.Sprintf("%d_%s.jpg", time.Now().UnixNano(), generateString(5))
 	filePath := filepath.Join("static/images", filename)
 
 	out, err := os.Create(filePath)
@@ -56,4 +57,10 @@ func getImageHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	http.ServeFile(w, r, pathToFile)
+}
+
+func setDefaultImage(r *http.Request, f *models.Film) {
+	if f.ImageURL == "" {
+		f.ImageURL = fmt.Sprintf("http://%s/images/default.png", r.Host)
+	}
 }
