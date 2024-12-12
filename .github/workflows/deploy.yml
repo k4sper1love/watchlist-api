@@ -53,6 +53,9 @@ jobs:
             # Setting the script execution rights
             chmod +x ./services/metrics/prometheus/generate_prometheus_config.sh
           
+            # Setting a unique project name
+            export COMPOSE_PROJECT_NAME=watchlist-api
+          
             # Export environment variables 
             export SERVER_HOST=${{ secrets.SSH_HOST }}
             export APP_PORT=${{ secrets.APP_PORT }}  
