@@ -106,7 +106,7 @@ jobs:
             # Install Newman if not present
             if ! command -v newman &> /dev/null; then
               echo "Newman not found, installing..."
-              npm install -g newman
+              sudo npm install -g newman
             else
               echo "Newman is already installed"
             fi

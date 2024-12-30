@@ -1891,6 +1891,11 @@ const docTemplate = `{
                     "type": "string",
                     "example": "2024-09-04T13:37:24.87653+05:00"
                 },
+                "url": {
+                    "description": "URL for additional film information (e.g., IMDb or trailer); optional, must be valid.",
+                    "type": "string",
+                    "example": "https://www.imdb.com/video"
+                },
                 "user_id": {
                     "description": "Identifier of the user who added the film.",
                     "type": "integer",
@@ -2107,6 +2112,10 @@ const docTemplate = `{
                 "title": {
                     "type": "string",
                     "example": "My film"
+                },
+                "url": {
+                    "type": "string",
+                    "example": "https://www.kino.kz/film/689/"
                 },
                 "user_rating": {
                     "type": "number",

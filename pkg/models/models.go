@@ -72,6 +72,7 @@ type Film struct {
 	IsViewed    bool      `json:"is_viewed" example:"false"`                                                           // Indicates if the user has viewed the film.
 	UserRating  float64   `json:"user_rating,omitempty" validate:"omitempty,gte=1,lte=10" example:"5.5"`               // User's rating of the film; optional, between 1 and 10.
 	Review      string    `json:"review,omitempty" validate:"omitempty,max=500" example:"This is review"`              // User's review of the film; optional, up to 500 characters.
+	URL         string    `json:"url,omitempty" validate:"omitempty,url" example:"https://www.imdb.com/video"`         // URL for additional film information (e.g., IMDb or trailer); optional, must be valid.
 	CreatedAt   time.Time `json:"created_at" example:"2024-09-04T13:37:24.87653+05:00"`                                // Timestamp when the film was added.
 	UpdatedAt   time.Time `json:"updated_at" example:"2024-09-04T13:37:24.87653+05:00"`                                // Timestamp when the film details were last updated.
 }

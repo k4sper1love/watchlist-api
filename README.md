@@ -1,4 +1,4 @@
-# Watchlist API 🎬
+  # Watchlist API 🎬
 
 **Watchlist API** is a REST API that allows you to save and manage a list of films you want to watch. It includes features for registration, managing film collections, adding comments, and leaving feedback.
 

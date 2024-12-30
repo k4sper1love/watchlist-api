@@ -27,6 +27,7 @@ type FilmRequest struct {
 	IsViewed    bool    `json:"is_viewed" example:"true"`
 	UserRating  float64 `json:"user_rating" example:"5.5"`
 	Review      string  `json:"review" example:"This is review."`
+	URL         string  `json:"url" example:"https://www.kino.kz/film/689/"`
 }
 
 type CollectionRequest struct {
