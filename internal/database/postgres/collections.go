@@ -52,7 +52,7 @@ func GetCollections(userID int, name string, filmID int, excludeFilmID int, f fi
           FROM collections c
           LEFT JOIN collection_films cf ON c.id = cf.collection_id
           WHERE c.user_id = $1
-            AND (LOWER(c.name) = LOWER($2) OR $2 = '')
+        	AND (LOWER(c.name) ILIKE '%%' || LOWER($2) || '%%' OR $2 = '') 
             AND (cf.film_id = $3 OR $3 = -1)
             AND c.id NOT IN (
             SELECT cf.collection_id

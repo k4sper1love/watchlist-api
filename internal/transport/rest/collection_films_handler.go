@@ -167,6 +167,9 @@ func getCollectionFilmHandler(w http.ResponseWriter, r *http.Request) {
 // @Accept json
 // @Produce json
 // @Param collection_id path int true "Collection ID"
+// @Param title query string false "Filter by `title`"
+// @Param rating_min query number false "Filter by `minimum rating`"
+// @Param rating_max query number false "Filter by `maximum rating`"
 // @Param page query int false "Specify the desired `page`"
 // @Param page_size query int false "Specify the desired `page size`"
 // @Param sort query string false "Sorting by `id`, `title`, `rating`. Use `-` for descending order"

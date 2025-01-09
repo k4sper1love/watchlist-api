@@ -86,7 +86,7 @@ func GetCollectionFilms(c *models.CollectionFilms, title string, min, max float6
             FROM collection_films cf
             WHERE cf.collection_id = $1
         )
-          AND (LOWER(f.title) = LOWER($2) OR $2 = '') 
+ 		  AND (LOWER(f.title) ILIKE '%%' || LOWER($2) || '%%' OR $2 = '') 
           AND (f.rating >= $3 OR $3 = 0)
           AND (f.rating <= $4 OR $4 = 0)
         ORDER BY %s %s, f.id
@@ -108,7 +108,7 @@ func GetCollectionFilms(c *models.CollectionFilms, title string, min, max float6
 
 	for rows.Next() {
 		var film models.Film
-		if err := rows.Scan(&totalRecords, &film.ID, &film.UserID, &film.Title, &film.Year, &film.Genre, &film.Description, &film.Rating, &film.ImageURL, &film.Comment, &film.IsViewed, &film.UserRating, &film.Review, &film.CreatedAt, &film.UpdatedAt); err != nil {
+		if err := rows.Scan(&totalRecords, &film.ID, &film.UserID, &film.Title, &film.Year, &film.Genre, &film.Description, &film.Rating, &film.ImageURL, &film.Comment, &film.IsViewed, &film.UserRating, &film.Review, &film.URL, &film.CreatedAt, &film.UpdatedAt); err != nil {
 			return filters.Metadata{}, err
 		}
 		films = append(films, film)

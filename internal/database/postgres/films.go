@@ -40,7 +40,7 @@ func GetFilms(userID int, title string, min, max float64, excludeCollectionID in
         SELECT COUNT(*) OVER(), f.*
         FROM films f
         WHERE f.user_id = $1
-          AND (LOWER(f.title) = LOWER($2) OR $2 = '') 
+ 		  AND (LOWER(f.title) ILIKE '%%' || LOWER($2) || '%%' OR $2 = '') 
           AND (f.rating >= $3 OR $3 = 0)
           AND (f.rating <= $4 OR $4 = 0)
           AND f.id NOT IN (
