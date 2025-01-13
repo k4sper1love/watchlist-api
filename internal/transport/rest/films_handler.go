@@ -240,7 +240,7 @@ func parseAndValidateFilmsFilters(r *http.Request) (*models.FilmsQueryInput, map
 	input.ExcludeCollection = parseQueryInt(qs, "exclude_collection", -1)
 	input.Filters.Page = parseQueryInt(qs, "page", 1)
 	input.Filters.PageSize = parseQueryInt(qs, "page_size", 5)
-	input.Filters.Sort = parseQueryString(qs, "sort", "id")
+	input.Filters.Sort = parseQueryString(qs, "sort", "-is_favorite")
 
 	input.Rating = parseQueryString(qs, "rating", "")
 	input.Year = parseQueryString(qs, "year", "")
@@ -257,8 +257,8 @@ func parseAndValidateFilmsFilters(r *http.Request) (*models.FilmsQueryInput, map
 
 	// Define safe sortable fields.
 	input.Filters.SortSafeList = []string{
-		"id", "title", "rating", "year", "is_viewed", "user_rating", "created_at",
-		"-id", "-title", "-rating", "-year", "-is_viewed", "-user_rating", "-created_at",
+		"id", "title", "rating", "year", "is_viewed", "is_favorite", "user_rating", "created_at",
+		"-id", "-title", "-rating", "-year", "-is_viewed", "-is_favorite", "-user_rating", "-created_at",
 	}
 
 	errs, err := filters.ValidateFilters(input.Filters)

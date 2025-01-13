@@ -2,6 +2,7 @@ CREATE TABLE IF NOT EXISTS collections
 (
     id          BIGSERIAL PRIMARY KEY,
     user_id     BIGINT                   NOT NULL,
+    is_favorite   BOOLEAN                  NOT NULL DEFAULT FALSE,
     name        TEXT NOT NULL,
     description TEXT,
     created_at  TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),

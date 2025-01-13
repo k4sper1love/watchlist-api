@@ -14,20 +14,20 @@ import (
 // AddCollection inserts a new collection into the collections table.
 func AddCollection(c *models.Collection) error {
 	query := `  
-       INSERT INTO collections (user_id, name, description)      
-       VALUES ($1, $2, $3)   
+       INSERT INTO collections (user_id, is_favorite, name, description)      
+       VALUES ($1, $2, $3, $4)   
        RETURNING id, created_at, updated_at  
     `
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	return GetDB().QueryRowContext(ctx, query, c.UserID, c.Name, c.Description).Scan(&c.ID, &c.CreatedAt, &c.UpdatedAt)
+	return GetDB().QueryRowContext(ctx, query, c.UserID, c.IsFavorite, c.Name, c.Description).Scan(&c.ID, &c.CreatedAt, &c.UpdatedAt)
 }
 
 // GetCollection retrieves a collection by its ID.
 func GetCollection(collectionID int) (*models.Collection, error) {
 	query := `
-       SELECT c.id, c.user_id, c.name, c.description, COUNT(cf.film_id) AS total_films, c.created_at, c.updated_at
+       SELECT c.id, c.user_id, c.is_favorite, c.name, c.description, COUNT(cf.film_id) AS total_films, c.created_at, c.updated_at
        FROM collections c
        LEFT JOIN collection_films cf ON c.id = cf.collection_id
        WHERE c.id = $1
@@ -37,7 +37,7 @@ func GetCollection(collectionID int) (*models.Collection, error) {
 	defer cancel()
 
 	var c models.Collection
-	if err := GetDB().QueryRowContext(ctx, query, collectionID).Scan(&c.ID, &c.UserID, &c.Name, &c.Description, &c.TotalFilms, &c.CreatedAt, &c.UpdatedAt); err != nil {
+	if err := GetDB().QueryRowContext(ctx, query, collectionID).Scan(&c.ID, &c.UserID, &c.IsFavorite, &c.Name, &c.Description, &c.TotalFilms, &c.CreatedAt, &c.UpdatedAt); err != nil {
 		return nil, err
 	}
 
@@ -48,7 +48,7 @@ func GetCollection(collectionID int) (*models.Collection, error) {
 func GetCollections(userID int, name string, filmID int, excludeFilmID int, f filters.Filters) ([]*models.Collection, filters.Metadata, error) {
 	query := fmt.Sprintf(
 		`
-          SELECT COUNT(*) OVER(), c.id, c.user_id, c.name, c.description, COUNT(cf.film_id) AS total_films, c.created_at, c.updated_at
+          SELECT COUNT(*) OVER(), c.id, c.user_id, c.is_favorite, c.name, c.description, COUNT(cf.film_id) AS total_films, c.created_at, c.updated_at
           FROM collections c
           LEFT JOIN collection_films cf ON c.id = cf.collection_id
           WHERE c.user_id = $1
@@ -84,7 +84,7 @@ func GetCollections(userID int, name string, filmID int, excludeFilmID int, f fi
 
 	for rows.Next() {
 		var c models.Collection
-		if err := rows.Scan(&totalRecords, &c.ID, &c.UserID, &c.Name, &c.Description, &c.TotalFilms, &c.CreatedAt, &c.UpdatedAt); err != nil {
+		if err := rows.Scan(&totalRecords, &c.ID, &c.UserID, &c.IsFavorite, &c.Name, &c.Description, &c.TotalFilms, &c.CreatedAt, &c.UpdatedAt); err != nil {
 			return nil, filters.Metadata{}, err
 		}
 		collections = append(collections, &c)
@@ -102,14 +102,14 @@ func GetCollections(userID int, name string, filmID int, excludeFilmID int, f fi
 func UpdateCollection(c *models.Collection) error {
 	query := `
        UPDATE collections
-       SET name = $3, description = $4, updated_at = CURRENT_TIMESTAMP
+       SET name = $3, description = $4, is_favorite = $5, updated_at = CURRENT_TIMESTAMP
        WHERE id = $1 AND updated_at = $2
        RETURNING user_id, (SELECT COUNT(film_id) FROM collection_films WHERE collection_id = $1) AS total_films, created_at, updated_at
     `
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	return GetDB().QueryRowContext(ctx, query, c.ID, c.UpdatedAt, c.Name, c.Description).Scan(&c.UserID, &c.TotalFilms, &c.CreatedAt, &c.UpdatedAt)
+	return GetDB().QueryRowContext(ctx, query, c.ID, c.UpdatedAt, c.Name, c.Description, c.IsFavorite).Scan(&c.UserID, &c.TotalFilms, &c.CreatedAt, &c.UpdatedAt)
 }
 
 // DeleteCollection removes a collection by its ID.
@@ -138,6 +138,8 @@ func collectionSortColumn(f *filters.Filters) string {
 		newSort += "c.name"
 	case "created_at":
 		newSort += "c.created_at"
+	case "is_favorite":
+		newSort += "c.is_favorite"
 	default:
 		newSort += "c.id"
 	}

@@ -32,6 +32,7 @@ type FilmRequest struct {
 }
 
 type CollectionRequest struct {
+	IsFavorite  bool   `json:"is_favorite" example:"false"`
 	Name        string `json:"name" example:"My collection"`
 	Description string `json:"description,omitempty" example:"This is description"`
 }

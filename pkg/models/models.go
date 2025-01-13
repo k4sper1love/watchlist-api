@@ -50,8 +50,9 @@ type AuthResponse struct {
 
 // Collection represents a collection of films created by a user.
 type Collection struct {
-	ID          int       `json:"id" example:"1"`                                                                   // Unique identifier for the collection.
-	UserID      int       `json:"user_id" example:"1"`                                                              // Identifier of the user who created the collection.
+	ID          int       `json:"id" example:"1"`      // Unique identifier for the collection.
+	UserID      int       `json:"user_id" example:"1"` // Identifier of the user who created the collection.
+	IsFavorite  bool      `json:"is_favorite" example:"false"`
 	Name        string    `json:"name" validate:"required,min=3,max=100" example:"My collection"`                   // Name of the collection; required, between 3 and 100 characters.
 	Description string    `json:"description,omitempty" validate:"omitempty,max=500" example:"This is description"` // Description of the collection; optional, up to 500 characters.
 	TotalFilms  int       `json:"total_films" example:"5"`                                                          // Total number of films in the collection.
