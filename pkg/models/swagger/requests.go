@@ -17,8 +17,9 @@ type UpdateUserRequest struct {
 }
 
 type FilmRequest struct {
+	IsFavorite  bool    `json:"is_favorite" example:"false"`
 	Title       string  `json:"title" example:"My film"`
-	Year        int     `json:"int" example:"2001"`
+	Year        int     `json:"year" example:"2001"`
 	Genre       string  `json:"genre" example:"Horror"`
 	Description string  `json:"description" example:"This is description"`
 	Rating      float64 `json:"rating" example:"6.7"`

@@ -10,15 +10,6 @@ import (
 	"net/http"
 )
 
-// / filmsQueryInput holds the parameters for querying films, including title, rating range, and filter options.
-type filmsQueryInput struct {
-	Title             string
-	MinRating         float64
-	MaxRating         float64
-	ExcludeCollection int
-	filters.Filters
-}
-
 // AddFilm godoc
 // @Summary Add new film
 // @Description Add a new film. You will be granted the permissions to get, update, and delete it.
@@ -104,12 +95,16 @@ func getFilmHandler(w http.ResponseWriter, r *http.Request) {
 // @Accept json
 // @Produce json
 // @Param title query string false "Filter by `title`"
-// @Param rating_min query number false "Filter by `minimum rating`"
-// @Param rating_max query number false "Filter by `maximum rating`"
+// @Param rating query string false "Filter by `rating`, can be a specific value or a range like 'min-max'"
+// @Param year query string false "Filter by `year`"
+// @Param user_rating query string false "Filter by `user_rating`"
+// @Param is_viewed query bool false "Filter by `is_viewed` (true/false)"
+// @Param is_favorite query bool false "Filter by `is_favorite` (true/false)"
+// @Param has_url query bool false "Filter by `url` (true/false)"
 // @Param exclude_collection query int false "Filter by `exclude collection`"
 // @Param page query int false "Specify the desired `page`"
 // @Param page_size query int false "Specify the desired `page size`"
-// @Param sort query string false "Sorting by `id`, `title`, `rating`. Use `-` for desc"
+// @Param sort query string false "Sorting by `id`, `title`, `rating`, `year`, `user_rating`, `is_viewed`. Use `-` for desc"
 // @Success 200 {object} swagger.FilmsResponse
 // @Failure 401 {object} swagger.ErrorResponse
 // @Failure 422 {object} swagger.ErrorResponse
@@ -130,7 +125,7 @@ func getFilmsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Retrieve the list of films based on the filters.
-	films, metadata, err := postgres.GetFilms(userId, input.Title, input.MinRating, input.MaxRating, input.ExcludeCollection, input.Filters)
+	films, metadata, err := postgres.GetFilms(userId, input)
 	if err != nil {
 		handleDBError(w, r, err)
 		return
@@ -236,25 +231,34 @@ func deleteFilmHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // parseAndValidateFilmsFilters parses the incoming HTTP request for film filter and pagination parameters.
-func parseAndValidateFilmsFilters(r *http.Request) (*filmsQueryInput, map[string]string, error) {
+func parseAndValidateFilmsFilters(r *http.Request) (*models.FilmsQueryInput, map[string]string, error) {
 	// Define an input structure to hold filter and pagination parameters.
-	input := filmsQueryInput{}
+	input := models.FilmsQueryInput{}
 	// Parse query string parameters.
 	qs := r.URL.Query()
 	input.Title = parseQueryString(qs, "title", "")
-	input.MinRating = parseQueryFloat(qs, "rating_min", 0)
-	input.MaxRating = parseQueryFloat(qs, "rating_max", 0)
-
 	input.ExcludeCollection = parseQueryInt(qs, "exclude_collection", -1)
-
 	input.Filters.Page = parseQueryInt(qs, "page", 1)
 	input.Filters.PageSize = parseQueryInt(qs, "page_size", 5)
 	input.Filters.Sort = parseQueryString(qs, "sort", "id")
 
+	input.Rating = parseQueryString(qs, "rating", "")
+	input.Year = parseQueryString(qs, "year", "")
+	input.UserRating = parseQueryString(qs, "user_rating", "")
+
+	isViewed := parseQueryBoolPtr(qs, "is_viewed")
+	input.IsViewed = isViewed
+
+	isFavorite := parseQueryBoolPtr(qs, "is_favorite")
+	input.IsFavorite = isFavorite
+
+	hasURL := parseQueryBoolPtr(qs, "has_url")
+	input.HasURL = hasURL
+
 	// Define safe sortable fields.
 	input.Filters.SortSafeList = []string{
-		"id", "title", "rating",
-		"-id", "-title", "-rating",
+		"id", "title", "rating", "year", "is_viewed", "user_rating", "created_at",
+		"-id", "-title", "-rating", "-year", "-is_viewed", "-user_rating", "-created_at",
 	}
 
 	errs, err := filters.ValidateFilters(input.Filters)

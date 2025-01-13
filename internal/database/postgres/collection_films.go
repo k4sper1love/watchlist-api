@@ -2,7 +2,6 @@ package postgres
 
 import (
 	"context"
-	"fmt"
 	"github.com/k4sper1love/watchlist-api/pkg/filters"
 	"github.com/k4sper1love/watchlist-api/pkg/models"
 	"time"
@@ -72,32 +71,18 @@ func GetCollectionFilm(c *models.CollectionFilm) error {
 }
 
 // GetCollectionFilms retrieves all films in a collection with optional pagination and sorting.
-func GetCollectionFilms(c *models.CollectionFilms, title string, min, max float64, f filters.Filters) (filters.Metadata, error) {
+func GetCollectionFilms(c *models.CollectionFilms, input *models.FilmsQueryInput) (filters.Metadata, error) {
 	collection, err := GetCollection(c.Collection.ID)
 	if err != nil {
 		return filters.Metadata{}, err
 	}
 
-	query := fmt.Sprintf(`
-        SELECT COUNT(*) OVER(), f.*
-        FROM films f
-        WHERE f.id IN (
-            SELECT cf.film_id
-            FROM collection_films cf
-            WHERE cf.collection_id = $1
-        )
- 		  AND (LOWER(f.title) ILIKE '%%' || LOWER($2) || '%%' OR $2 = '') 
-          AND (f.rating >= $3 OR $3 = 0)
-          AND (f.rating <= $4 OR $4 = 0)
-        ORDER BY %s %s, f.id
-        LIMIT $5 OFFSET $6
-    `,
-		f.SortColumn(), f.SortDirection())
+	query, args := buildCollectionFilmsQuery(c.Collection.ID, input)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	rows, err := GetDB().QueryContext(ctx, query, c.Collection.ID, title, min, max, f.Limit(), f.Offset())
+	rows, err := GetDB().QueryContext(ctx, query, args...)
 	if err != nil {
 		return filters.Metadata{}, err
 	}
@@ -108,7 +93,7 @@ func GetCollectionFilms(c *models.CollectionFilms, title string, min, max float6
 
 	for rows.Next() {
 		var film models.Film
-		if err := rows.Scan(&totalRecords, &film.ID, &film.UserID, &film.Title, &film.Year, &film.Genre, &film.Description, &film.Rating, &film.ImageURL, &film.Comment, &film.IsViewed, &film.UserRating, &film.Review, &film.URL, &film.CreatedAt, &film.UpdatedAt); err != nil {
+		if err := rows.Scan(&totalRecords, &film.ID, &film.UserID, &film.IsFavorite, &film.Title, &film.Year, &film.Genre, &film.Description, &film.Rating, &film.ImageURL, &film.Comment, &film.IsViewed, &film.UserRating, &film.Review, &film.URL, &film.CreatedAt, &film.UpdatedAt); err != nil {
 			return filters.Metadata{}, err
 		}
 		films = append(films, film)
@@ -121,7 +106,7 @@ func GetCollectionFilms(c *models.CollectionFilms, title string, min, max float6
 	c.Collection = *collection
 	c.Films = films
 
-	metadata := filters.CalculateMetadata(totalRecords, f.Page, f.PageSize)
+	metadata := filters.CalculateMetadata(totalRecords, input.Filters.Page, input.Filters.PageSize)
 	return metadata, nil
 }
 
@@ -156,4 +141,21 @@ func DeleteCollectionFilm(c *models.CollectionFilm) error {
 
 	_, err := GetDB().ExecContext(ctx, query, c.Collection.ID, c.Film.ID)
 	return err
+}
+
+func buildCollectionFilmsQuery(collectionID int, input *models.FilmsQueryInput) (string, []interface{}) {
+	query := `
+        SELECT COUNT(*) OVER(), f.*
+        FROM films f
+        WHERE f.id IN (
+            SELECT cf.film_id
+            FROM collection_films cf
+            WHERE cf.collection_id = $1
+        )
+ 		  AND (LOWER(f.title) ILIKE '%%' || LOWER($2) || '%%' OR $2 = '') 
+    `
+
+	args := []interface{}{collectionID, input.Title}
+
+	return addFilmsFiltersToQuery(query, args, input)
 }

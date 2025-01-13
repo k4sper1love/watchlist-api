@@ -414,7 +414,7 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Sorting by ` + "`" + `id` + "`" + `, ` + "`" + `name` + "`" + `, ` + "`" + `created_at` + "`" + `. Use ` + "`" + `-` + "`" + ` for desc",
+                        "description": "Sorting by ` + "`" + `id` + "`" + `, ` + "`" + `name` + "`" + `, ` + "`" + `created_at, total_films` + "`" + `. Use ` + "`" + `-` + "`" + ` for desc",
                         "name": "sort",
                         "in": "query"
                     }
@@ -753,6 +753,54 @@ const docTemplate = `{
                         "required": true
                     },
                     {
+                        "type": "string",
+                        "description": "Filter by ` + "`" + `title` + "`" + `",
+                        "name": "title",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by ` + "`" + `rating` + "`" + `, can be a specific value or a range like 'min-max'",
+                        "name": "rating",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by ` + "`" + `year` + "`" + `",
+                        "name": "year",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by ` + "`" + `user_rating` + "`" + `",
+                        "name": "user_rating",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Filter by ` + "`" + `is_viewed` + "`" + ` (true/false)",
+                        "name": "is_viewed",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Filter by ` + "`" + `is_favorite` + "`" + ` (true/false)",
+                        "name": "is_favorite",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Filter by ` + "`" + `url` + "`" + ` (true/false)",
+                        "name": "has_url",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Filter by ` + "`" + `exclude collection` + "`" + `",
+                        "name": "exclude_collection",
+                        "in": "query"
+                    },
+                    {
                         "type": "integer",
                         "description": "Specify the desired ` + "`" + `page` + "`" + `",
                         "name": "page",
@@ -766,7 +814,7 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Sorting by ` + "`" + `id` + "`" + `, ` + "`" + `title` + "`" + `, ` + "`" + `rating` + "`" + `. Use ` + "`" + `-` + "`" + ` for descending order",
+                        "description": "Sorting by ` + "`" + `id` + "`" + `, ` + "`" + `title` + "`" + `, ` + "`" + `rating` + "`" + `, ` + "`" + `year` + "`" + `, ` + "`" + `user_rating` + "`" + `, ` + "`" + `is_viewed` + "`" + `. Use ` + "`" + `-` + "`" + ` for desc",
                         "name": "sort",
                         "in": "query"
                     }
@@ -1131,15 +1179,39 @@ const docTemplate = `{
                         "in": "query"
                     },
                     {
-                        "type": "number",
-                        "description": "Filter by ` + "`" + `minimum rating` + "`" + `",
-                        "name": "rating_min",
+                        "type": "string",
+                        "description": "Filter by ` + "`" + `rating` + "`" + `, can be a specific value or a range like 'min-max'",
+                        "name": "rating",
                         "in": "query"
                     },
                     {
-                        "type": "number",
-                        "description": "Filter by ` + "`" + `maximum rating` + "`" + `",
-                        "name": "rating_max",
+                        "type": "string",
+                        "description": "Filter by ` + "`" + `year` + "`" + `",
+                        "name": "year",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by ` + "`" + `user_rating` + "`" + `",
+                        "name": "user_rating",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Filter by ` + "`" + `is_viewed` + "`" + ` (true/false)",
+                        "name": "is_viewed",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Filter by ` + "`" + `is_favorite` + "`" + ` (true/false)",
+                        "name": "is_favorite",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Filter by ` + "`" + `url` + "`" + ` (true/false)",
+                        "name": "has_url",
                         "in": "query"
                     },
                     {
@@ -1162,7 +1234,7 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Sorting by ` + "`" + `id` + "`" + `, ` + "`" + `title` + "`" + `, ` + "`" + `rating` + "`" + `. Use ` + "`" + `-` + "`" + ` for desc",
+                        "description": "Sorting by ` + "`" + `id` + "`" + `, ` + "`" + `title` + "`" + `, ` + "`" + `rating` + "`" + `, ` + "`" + `year` + "`" + `, ` + "`" + `user_rating` + "`" + `, ` + "`" + `is_viewed` + "`" + `. Use ` + "`" + `-` + "`" + ` for desc",
                         "name": "sort",
                         "in": "query"
                     }
@@ -1861,10 +1933,14 @@ const docTemplate = `{
                     "type": "string",
                     "example": "https://placeimg.com/640/480"
                 },
+                "is_favorite": {
+                    "type": "boolean",
+                    "example": false
+                },
                 "is_viewed": {
                     "description": "Indicates if the user has viewed the film.",
                     "type": "boolean",
-                    "example": false
+                    "example": true
                 },
                 "rating": {
                     "description": "Rating of the film; optional, must be between 1 and 10.",
@@ -2093,9 +2169,9 @@ const docTemplate = `{
                     "type": "string",
                     "example": "http://k4sper1love.kz/images/default.png"
                 },
-                "int": {
-                    "type": "integer",
-                    "example": 2001
+                "is_favorite": {
+                    "type": "boolean",
+                    "example": false
                 },
                 "is_viewed": {
                     "type": "boolean",
@@ -2120,6 +2196,10 @@ const docTemplate = `{
                 "user_rating": {
                     "type": "number",
                     "example": 5.5
+                },
+                "year": {
+                    "type": "integer",
+                    "example": 2001
                 }
             }
         },

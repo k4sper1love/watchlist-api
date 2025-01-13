@@ -149,9 +149,12 @@ definitions:
         description: URL of the film's image; optional, must be a valid URL.
         example: https://placeimg.com/640/480
         type: string
+      is_favorite:
+        example: false
+        type: boolean
       is_viewed:
         description: Indicates if the user has viewed the film.
-        example: false
+        example: true
         type: boolean
       rating:
         description: Rating of the film; optional, must be between 1 and 10.
@@ -320,9 +323,9 @@ definitions:
       image_url:
         example: http://k4sper1love.kz/images/default.png
         type: string
-      int:
-        example: 2001
-        type: integer
+      is_favorite:
+        example: false
+        type: boolean
       is_viewed:
         example: true
         type: boolean
@@ -341,6 +344,9 @@ definitions:
       user_rating:
         example: 5.5
         type: number
+      year:
+        example: 2001
+        type: integer
     type: object
   swagger.FilmResponse:
     properties:
@@ -659,7 +665,8 @@ paths:
         in: query
         name: page_size
         type: integer
-      - description: Sorting by `id`, `name`, `created_at`. Use `-` for desc
+      - description: Sorting by `id`, `name`, `created_at, total_films`. Use `-` for
+          desc
         in: query
         name: sort
         type: string
@@ -884,6 +891,38 @@ paths:
         name: collection_id
         required: true
         type: integer
+      - description: Filter by `title`
+        in: query
+        name: title
+        type: string
+      - description: Filter by `rating`, can be a specific value or a range like 'min-max'
+        in: query
+        name: rating
+        type: string
+      - description: Filter by `year`
+        in: query
+        name: year
+        type: string
+      - description: Filter by `user_rating`
+        in: query
+        name: user_rating
+        type: string
+      - description: Filter by `is_viewed` (true/false)
+        in: query
+        name: is_viewed
+        type: boolean
+      - description: Filter by `is_favorite` (true/false)
+        in: query
+        name: is_favorite
+        type: boolean
+      - description: Filter by `url` (true/false)
+        in: query
+        name: has_url
+        type: boolean
+      - description: Filter by `exclude collection`
+        in: query
+        name: exclude_collection
+        type: integer
       - description: Specify the desired `page`
         in: query
         name: page
@@ -892,7 +931,8 @@ paths:
         in: query
         name: page_size
         type: integer
-      - description: Sorting by `id`, `title`, `rating`. Use `-` for descending order
+      - description: Sorting by `id`, `title`, `rating`, `year`, `user_rating`, `is_viewed`.
+          Use `-` for desc
         in: query
         name: sort
         type: string
@@ -1134,14 +1174,30 @@ paths:
         in: query
         name: title
         type: string
-      - description: Filter by `minimum rating`
+      - description: Filter by `rating`, can be a specific value or a range like 'min-max'
         in: query
-        name: rating_min
-        type: number
-      - description: Filter by `maximum rating`
+        name: rating
+        type: string
+      - description: Filter by `year`
         in: query
-        name: rating_max
-        type: number
+        name: year
+        type: string
+      - description: Filter by `user_rating`
+        in: query
+        name: user_rating
+        type: string
+      - description: Filter by `is_viewed` (true/false)
+        in: query
+        name: is_viewed
+        type: boolean
+      - description: Filter by `is_favorite` (true/false)
+        in: query
+        name: is_favorite
+        type: boolean
+      - description: Filter by `url` (true/false)
+        in: query
+        name: has_url
+        type: boolean
       - description: Filter by `exclude collection`
         in: query
         name: exclude_collection
@@ -1154,7 +1210,8 @@ paths:
         in: query
         name: page_size
         type: integer
-      - description: Sorting by `id`, `title`, `rating`. Use `-` for desc
+      - description: Sorting by `id`, `title`, `rating`, `year`, `user_rating`, `is_viewed`.
+          Use `-` for desc
         in: query
         name: sort
         type: string

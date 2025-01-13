@@ -106,7 +106,7 @@ func getCollectionHandler(w http.ResponseWriter, r *http.Request) {
 // @Param exclude_film query int false "Filter by `exclude film`"
 // @Param page query int false "Specify the desired `page`"
 // @Param page_size query int false "Specify the desired `page size`"
-// @Param sort query string false "Sorting by `id`, `name`, `created_at`. Use `-` for desc"
+// @Param sort query string false "Sorting by `id`, `name`, `created_at, total_films`. Use `-` for desc"
 // @Success 200 {object} swagger.CollectionsResponse
 // @Failure 401 {object} swagger.ErrorResponse
 // @Failure 422 {object} swagger.ErrorResponse

@@ -150,6 +150,25 @@ func parseQueryFloat(qs url.Values, key string, defaultValue float64) float64 {
 	})
 }
 
+func parseQueryBool(qs url.Values, key string, defaultValue bool) bool {
+	return parseQuery(qs, key, defaultValue, strconv.ParseBool)
+}
+
+func parseQueryBoolPtr(qs url.Values, key string) *bool {
+	value := qs.Get(key)
+
+	if value == "" {
+		return nil
+	}
+
+	parsedValue, err := strconv.ParseBool(value)
+	if err != nil {
+		return nil
+	}
+
+	return &parsedValue
+}
+
 // generateString creates a random string of specified length from a set of characters.
 func generateString(length int) string {
 	const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"

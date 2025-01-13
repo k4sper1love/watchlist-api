@@ -168,11 +168,16 @@ func getCollectionFilmHandler(w http.ResponseWriter, r *http.Request) {
 // @Produce json
 // @Param collection_id path int true "Collection ID"
 // @Param title query string false "Filter by `title`"
-// @Param rating_min query number false "Filter by `minimum rating`"
-// @Param rating_max query number false "Filter by `maximum rating`"
+// @Param rating query string false "Filter by `rating`, can be a specific value or a range like 'min-max'"
+// @Param year query string false "Filter by `year`"
+// @Param user_rating query string false "Filter by `user_rating`"
+// @Param is_viewed query bool false "Filter by `is_viewed` (true/false)"
+// @Param is_favorite query bool false "Filter by `is_favorite` (true/false)"
+// @Param has_url query bool false "Filter by `url` (true/false)"
+// @Param exclude_collection query int false "Filter by `exclude collection`"
 // @Param page query int false "Specify the desired `page`"
 // @Param page_size query int false "Specify the desired `page size`"
-// @Param sort query string false "Sorting by `id`, `title`, `rating`. Use `-` for descending order"
+// @Param sort query string false "Sorting by `id`, `title`, `rating`, `year`, `user_rating`, `is_viewed`. Use `-` for desc"
 // @Success 200 {object} swagger.CollectionFilmsResponse
 // @Failure 400 {object} swagger.ErrorResponse
 // @Failure 401 {object} swagger.ErrorResponse
@@ -201,7 +206,7 @@ func getCollectionFilmsHandler(w http.ResponseWriter, r *http.Request) {
 		Collection: models.Collection{ID: collectionID},
 	}
 
-	metadata, err := postgres.GetCollectionFilms(&collectionFilms, input.Title, input.MinRating, input.MaxRating, input.Filters)
+	metadata, err := postgres.GetCollectionFilms(&collectionFilms, input)
 	if err != nil {
 		handleDBError(w, r, err)
 		return
