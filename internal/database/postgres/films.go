@@ -112,17 +112,17 @@ func buildFilmsQuery(userID int, input *models.FilmsQueryInput) (string, []inter
 }
 
 func addFilmsFiltersToQuery(query string, args []interface{}, input *models.FilmsQueryInput) (string, []interface{}) {
-	minRating, maxRating, ratingFlag, err := parseRangeOrExact(input.Rating)
+	minRating, maxRating, ratingFlag, err := parseRangeOrExactFloat(input.Rating)
 	if err != nil {
 		return "", nil
 	}
 
-	minUserRating, maxUserRating, userRatingFlag, err := parseRangeOrExact(input.UserRating)
+	minUserRating, maxUserRating, userRatingFlag, err := parseRangeOrExactFloat(input.UserRating)
 	if err != nil {
 		return "", nil
 	}
 
-	minYear, maxYear, yearFlag, err := parseYearOrRange(input.Year)
+	minYear, maxYear, yearFlag, err := parseRangeOrExactInt(input.Year)
 	if err != nil {
 		return "", nil
 	}

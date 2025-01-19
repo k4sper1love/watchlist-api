@@ -132,6 +132,8 @@ func collectionSortColumn(f *filters.Filters) string {
 	f.Sort = strings.TrimPrefix(f.Sort, "-")
 
 	switch f.Sort {
+	case "id":
+		newSort += "c.id"
 	case "total_films":
 		newSort += "COUNT(cf.film_id)"
 	case "name":
@@ -141,7 +143,7 @@ func collectionSortColumn(f *filters.Filters) string {
 	case "is_favorite":
 		newSort += "c.is_favorite"
 	default:
-		newSort += "c.id"
+		newSort += "c.is_favorite"
 	}
 
 	f.Sort = newSort

@@ -245,7 +245,7 @@ func parseAndValidateCollectionsFilters(r *http.Request) (*collectionsQueryInput
 
 	input.Filters.Page = parseQueryInt(qs, "page", 1)
 	input.Filters.PageSize = parseQueryInt(qs, "page_size", 5)
-	input.Filters.Sort = parseQueryString(qs, "sort", "is_favorite")
+	input.Filters.Sort = parseQueryString(qs, "sort", "-is_favorite")
 
 	// Define safe sortable fields.
 	input.Filters.SortSafeList = []string{

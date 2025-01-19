@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-func parseRangeOrExact(value string) (float64, float64, int, error) {
+func parseRangeOrExactFloat(value string) (float64, float64, int, error) {
 	if value == "" {
 		return 0, 0, -1, nil
 	}
@@ -33,7 +33,7 @@ func parseRangeOrExact(value string) (float64, float64, int, error) {
 	return exact, exact, 0, nil
 }
 
-func parseYearOrRange(value string) (int, int, int, error) {
+func parseRangeOrExactInt(value string) (int, int, int, error) {
 	if value == "" {
 		return 0, 0, -1, nil
 	}

@@ -42,7 +42,7 @@ func getValidationMessage(fe validator.FieldError) string {
 func usernameValidator(fl validator.FieldLevel) bool {
 	username := fl.Field().String()
 	validUsername := regexp.MustCompile(`^[a-zA-Z0-9._]+$`)
-	return validUsername.MatchString(username) && len(username) > 2
+	return validUsername.MatchString(username)
 }
 
 // passwordValidator ensures a password meets security criteria:
@@ -50,8 +50,6 @@ func usernameValidator(fl validator.FieldLevel) bool {
 func passwordValidator(fl validator.FieldLevel) bool {
 	password := fl.Field().String()
 
-	const minLength = 8
-	hasMinLen := len(password) >= minLength
 	hasUpper := false
 	hasLower := false
 	hasNumber := false
@@ -73,5 +71,5 @@ func passwordValidator(fl validator.FieldLevel) bool {
 	}
 
 	// Return true if all criteria are met.
-	return hasMinLen && hasUpper && hasLower && hasNumber && hasSpecial
+	return hasUpper && hasLower && hasNumber && hasSpecial
 }

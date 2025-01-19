@@ -25,20 +25,20 @@ type JWTClaims struct {
 // Credentials represents the information required for user registration and authentication.
 type Credentials struct {
 	TelegramID int    `json:"telegram_id,omitempty"`
-	Username   string `json:"username" validate:"required,username" example:"john_doe"`                  // Username of the user; must be unique and valid.
-	Email      string `json:"email,omitempty" validate:"omitempty,email" example:"john_doe@example.com"` // Email address of the user; must be a valid email format.
-	Password   string `json:"password,omitempty" validate:"required,password" swaggerignore:"true"`      // Password for the user account; omitted in responses for security.
+	Username   string `json:"username" validate:"required,username,min=3,max=20" example:"john_doe"`                   // Username of the user; must be unique and valid.
+	Email      string `json:"email,omitempty" validate:"omitempty,email,min=6,max=254" example:"john_doe@example.com"` // Email address of the user; must be a valid email format.
+	Password   string `json:"password,omitempty" validate:"required,password,min=8,max=128" swaggerignore:"true"`      // Password for the user account; omitted in responses for security.
 }
 
 // User represents the user data stored in the system.
 type User struct {
 	ID         int       `json:"id" example:"1"` // Unique identifier for the user.
 	TelegramID int       `json:"telegram_id,omitempty" example:"123456789"`
-	Username   string    `json:"username,omitempty" validate:"omitempty,username" example:"john_doe"`       // Username of the user; must be unique and valid.
-	Email      string    `json:"email,omitempty" validate:"omitempty,email" example:"john_doe@example.com"` // Email address of the user; must be a valid email format.
-	Password   string    `json:"password,omitempty" swaggerignore:"true"`                                   // Password for the user account; omitted in responses for security.
-	CreatedAt  time.Time `json:"created_at" example:"2024-09-04T13:37:24.87653+05:00"`                      // Timestamp when the user was created.
-	Version    int       `json:"-"`                                                                         // Internal version tracking; not included in JSON responses.
+	Username   string    `json:"username,omitempty" validate:"omitempty,username,min=3,max=20" example:"john_doe"`        // Username of the user; must be unique and valid.
+	Email      string    `json:"email,omitempty" validate:"omitempty,email,min=6,max=254" example:"john_doe@example.com"` // Email address of the user; must be a valid email format.
+	Password   string    `json:"password,omitempty" swaggerignore:"true"`                                                 // Password for the user account; omitted in responses for security.
+	CreatedAt  time.Time `json:"created_at" example:"2024-09-04T13:37:24.87653+05:00"`                                    // Timestamp when the user was created.
+	Version    int       `json:"-"`                                                                                       // Internal version tracking; not included in JSON responses.
 }
 
 // AuthResponse represents the response returned upon successful authentication.
