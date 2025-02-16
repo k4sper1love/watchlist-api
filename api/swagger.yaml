@@ -36,6 +36,8 @@ definitions:
       email:
         description: Email address of the user; must be a valid email format.
         example: john_doe@example.com
+        maxLength: 254
+        minLength: 6
         type: string
       id:
         description: Unique identifier for the user.
@@ -51,6 +53,8 @@ definitions:
       username:
         description: Username of the user; must be unique and valid.
         example: john_doe
+        maxLength: 20
+        minLength: 3
         type: string
     type: object
   models.Collection:
@@ -68,6 +72,9 @@ definitions:
         description: Unique identifier for the collection.
         example: 1
         type: integer
+      is_favorite:
+        example: false
+        type: boolean
       name:
         description: Name of the collection; required, between 3 and 100 characters.
         example: My collection
@@ -211,6 +218,8 @@ definitions:
       email:
         description: Email address of the user; must be a valid email format.
         example: john_doe@example.com
+        maxLength: 254
+        minLength: 6
         type: string
       id:
         description: Unique identifier for the user.
@@ -222,6 +231,8 @@ definitions:
       username:
         description: Username of the user; must be unique and valid.
         example: john_doe
+        maxLength: 20
+        minLength: 3
         type: string
     type: object
   rest.Dependency:
@@ -285,6 +296,9 @@ definitions:
       description:
         example: This is description
         type: string
+      is_favorite:
+        example: false
+        type: boolean
       name:
         example: My collection
         type: string
@@ -405,7 +419,7 @@ info:
   description: This is a REST API for saving films you want to watch.
   title: Watchlist API
 paths:
-  /auth/check-token:
+  /auth/check:
     get:
       consumes:
       - application/json

@@ -64,7 +64,7 @@ func ParseFlags(args []string) error {
 		Env = "local"
 	}
 
-	sl.Log.Debug("parsed flags successfully")
+	sl.Log.Debug("successfully parsed flags")
 	return nil
 }
 

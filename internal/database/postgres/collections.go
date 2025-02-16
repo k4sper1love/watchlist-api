@@ -60,7 +60,7 @@ func GetCollections(userID int, name string, filmID int, excludeFilmID int, f fi
             WHERE cf.film_id = $4
           )
           GROUP BY c.id
-          ORDER BY %s %s, c.id
+          ORDER BY %s %s, total_films DESC, c.id
           LIMIT $5 OFFSET $6
         `,
 		collectionSortColumn(&f), f.SortDirection())

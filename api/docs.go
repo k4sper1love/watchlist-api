@@ -15,7 +15,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/auth/check-token": {
+        "/auth/check": {
             "get": {
                 "security": [
                     {
@@ -1774,6 +1774,8 @@ const docTemplate = `{
                 "email": {
                     "description": "Email address of the user; must be a valid email format.",
                     "type": "string",
+                    "maxLength": 254,
+                    "minLength": 6,
                     "example": "john_doe@example.com"
                 },
                 "id": {
@@ -1793,6 +1795,8 @@ const docTemplate = `{
                 "username": {
                     "description": "Username of the user; must be unique and valid.",
                     "type": "string",
+                    "maxLength": 20,
+                    "minLength": 3,
                     "example": "john_doe"
                 }
             }
@@ -1818,6 +1822,10 @@ const docTemplate = `{
                     "description": "Unique identifier for the collection.",
                     "type": "integer",
                     "example": 1
+                },
+                "is_favorite": {
+                    "type": "boolean",
+                    "example": false
                 },
                 "name": {
                     "description": "Name of the collection; required, between 3 and 100 characters.",
@@ -2004,6 +2012,8 @@ const docTemplate = `{
                 "email": {
                     "description": "Email address of the user; must be a valid email format.",
                     "type": "string",
+                    "maxLength": 254,
+                    "minLength": 6,
                     "example": "john_doe@example.com"
                 },
                 "id": {
@@ -2018,6 +2028,8 @@ const docTemplate = `{
                 "username": {
                     "description": "Username of the user; must be unique and valid.",
                     "type": "string",
+                    "maxLength": 20,
+                    "minLength": 3,
                     "example": "john_doe"
                 }
             }
@@ -2112,6 +2124,10 @@ const docTemplate = `{
                 "description": {
                     "type": "string",
                     "example": "This is description"
+                },
+                "is_favorite": {
+                    "type": "boolean",
+                    "example": false
                 },
                 "name": {
                     "type": "string",

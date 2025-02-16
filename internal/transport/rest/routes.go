@@ -74,7 +74,7 @@ func setupAuthRoutes(router *mux.Router) {
 	auth.HandleFunc("/login/telegram", verificate(loginByTelegramHandler)).Methods(http.MethodPost)
 	auth.HandleFunc("/refresh", refreshAccessTokenHandler).Methods(http.MethodPost)
 	auth.HandleFunc("/logout", logoutHandler).Methods(http.MethodPost)
-	auth.HandleFunc("/check-token", checkTokenHandler).Methods(http.MethodGet)
+	auth.HandleFunc("/check", checkTokenHandler).Methods(http.MethodGet)
 }
 
 func setupUserRoutes(router *mux.Router) {

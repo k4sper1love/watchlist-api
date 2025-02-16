@@ -214,7 +214,7 @@ func logoutHandler(w http.ResponseWriter, r *http.Request) {
 // @Failure 401 {object} swagger.ErrorResponse
 // @Failure 500 {object} swagger.ErrorResponse
 // @Security JWTAuth
-// @Router /auth/check-token [get]
+// @Router /auth/check [get]
 func checkTokenHandler(w http.ResponseWriter, r *http.Request) {
 	token := parseTokenFromHeader(r)
 	if token == "" {
