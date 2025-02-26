@@ -556,7 +556,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{BASE_URL}}/api/v1/auth/check-token",
+							"raw": "{{BASE_URL}}/api/v1/auth/check",
 							"host": [
 								"{{BASE_URL}}"
 							],
@@ -564,7 +564,7 @@
 								"api",
 								"v1",
 								"auth",
-								"check-token"
+								"check"
 							]
 						}
 					},
