@@ -2,7 +2,6 @@ package postgres
 
 import (
 	"context"
-	"github.com/k4sper1love/watchlist-api/pkg/logger/sl"
 	"github.com/lib/pq"
 	"log/slog"
 	"time"
@@ -71,7 +70,7 @@ func GetUserPermissions(userID int) (Permissions, error) {
 
 	defer func() {
 		if err := rows.Close(); err != nil {
-			sl.Log.Error("failed to close rows", slog.Any("error", err))
+			slog.Error("failed to close rows", slog.Any("error", err))
 		}
 	}()
 

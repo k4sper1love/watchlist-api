@@ -20,20 +20,20 @@ import (
 	"github.com/k4sper1love/watchlist-api/pkg/logger/sl"
 	"github.com/k4sper1love/watchlist-api/pkg/metrics"
 	"github.com/k4sper1love/watchlist-api/pkg/version"
+	"log/slog"
 )
 
 // Run initializes and starts the application, handling configuration,
 // logging, database connection, and server startup.
 func Run(args []string) error {
-	sl.SetupLogger("dev")
-	sl.Log.Info("starting application")
+	slog.Info("starting application")
 
 	if err := config.ParseFlags(args[1:]); err != nil {
 		return err
 	}
 
 	// Reconfigure logger based on the environment.
-	sl.SetupLogger(config.Env)
+	sl.Init(config.Env)
 	api.SwaggerInfo.Version = version.GetVersion()
 
 	// Open database connection

@@ -13,7 +13,6 @@ import (
 	"github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/k4sper1love/watchlist-api/internal/config"
-	"github.com/k4sper1love/watchlist-api/pkg/logger/sl"
 	_ "github.com/lib/pq"
 	"log/slog"
 )
@@ -29,48 +28,48 @@ func OpenDB() {
 	// Open a connection to the PostgreSQL database using the DSN from the configuration.
 	db, err = sql.Open("postgres", config.Dsn)
 	if err != nil {
-		sl.Log.Error("failed to open database connection", slog.Any("error", err))
+		slog.Error("failed to open database connection", slog.Any("error", err))
 	}
 
 	// Ping the database to ensure the connection is valid.
 	err = db.Ping()
 	if err != nil {
-		sl.Log.Error("failed to ping database", slog.Any("error", err))
+		slog.Error("failed to ping database", slog.Any("error", err))
 	}
 
-	sl.Log.Info("database connection established successfully")
+	slog.Info("database connection established successfully")
 
 	// Check if migrations need to be applied.
 	if config.Migrations != "" {
 		// Create a migration driver instance using the database connection.
 		driver, err := postgres.WithInstance(db, &postgres.Config{})
 		if err != nil {
-			sl.Log.Error("failed to create migration driver", slog.Any("error", err))
+			slog.Error("failed to create migration driver", slog.Any("error", err))
 		}
 
 		// Create a new migration instance with the specified migrations' path.
 		m, err := migrate.NewWithDatabaseInstance(config.Migrations, "postgres", driver)
 		if err != nil {
-			sl.Log.Error("failed to create migration instance", slog.Any("error", err))
+			slog.Error("failed to create migration instance", slog.Any("error", err))
 		}
 
 		// Apply any pending migrations.
 		err = m.Up()
 		if errors.Is(err, migrate.ErrNoChange) {
-			sl.Log.Info("no migrations to apply")
+			slog.Info("no migrations to apply")
 		} else if err != nil {
-			sl.Log.Error("migration failed", slog.Any("error", err))
+			slog.Error("migration failed", slog.Any("error", err))
 		} else {
-			sl.Log.Info("migrations applied successfully")
+			slog.Info("migrations applied successfully")
 		}
 	}
 }
 
 func CloseDB() {
 	if err := db.Close(); err != nil {
-		sl.Log.Error("failed to close database connection", slog.Any("error", err))
+		slog.Error("failed to close database connection", slog.Any("error", err))
 	}
-	sl.Log.Info("database connection closed")
+	slog.Info("database connection closed")
 }
 
 func PingDB() error {

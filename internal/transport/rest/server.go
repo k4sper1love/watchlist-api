@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/k4sper1love/watchlist-api/internal/config"
-	"github.com/k4sper1love/watchlist-api/pkg/logger/sl"
 	"log/slog"
 	"net/http"
 	"os"
@@ -28,11 +27,11 @@ func Serve() error {
 	}
 
 	if err := <-shutdownErr; err != nil {
-		sl.Log.Warn("shutdown error", slog.Any("error", err))
+		slog.Warn("shutdown error", slog.Any("error", err))
 		return err
 	}
 
-	sl.Log.Info("stopped server gracefully")
+	slog.Info("stopped server gracefully")
 	return nil
 }
 
@@ -49,10 +48,10 @@ func newServer(port string) *http.Server {
 
 // startHTTP configures and starts the HTTP server.
 func startHTTP(server *http.Server, host string) error {
-	sl.Log.Info("starting HTTP server", slog.String("address", "http://"+host+server.Addr))
+	slog.Info("starting HTTP server", slog.String("address", "http://"+host+server.Addr))
 
 	if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-		sl.Log.Error("HTTP server error", slog.Any("error", err))
+		slog.Error("HTTP server error", slog.Any("error", err))
 		return err
 	}
 	return nil
@@ -64,7 +63,7 @@ func handleGracefulShutdown(server *http.Server, shutdownErr chan error) {
 	signal.Notify(quit, os.Interrupt, os.Kill)
 
 	s := <-quit
-	sl.Log.Debug("caught signal", slog.String("signal", s.String()))
+	slog.Debug("caught signal", slog.String("signal", s.String()))
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()

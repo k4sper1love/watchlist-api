@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/k4sper1love/watchlist-api/pkg/filters"
-	"github.com/k4sper1love/watchlist-api/pkg/logger/sl"
 	"github.com/k4sper1love/watchlist-api/pkg/models"
 	"log/slog"
 	"strings"
@@ -75,7 +74,7 @@ func GetCollections(userID int, name string, filmID int, excludeFilmID int, f fi
 
 	defer func() {
 		if err := rows.Close(); err != nil {
-			sl.Log.Error("failed to close rows", slog.Any("error", err))
+			slog.Error("failed to close rows", slog.Any("error", err))
 		}
 	}()
 

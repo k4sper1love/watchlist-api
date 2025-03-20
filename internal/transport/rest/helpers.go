@@ -7,7 +7,6 @@ import (
 	"github.com/golang-jwt/jwt"
 	"github.com/gorilla/mux"
 	"github.com/k4sper1love/watchlist-api/internal/database/postgres"
-	"github.com/k4sper1love/watchlist-api/pkg/logger/sl"
 	"github.com/k4sper1love/watchlist-api/pkg/metrics"
 	"github.com/k4sper1love/watchlist-api/pkg/models"
 	"io"
@@ -39,7 +38,7 @@ func writeJSON(w http.ResponseWriter, r *http.Request, status int, data envelope
 	e.SetIndent("", "\t")
 
 	if err := e.Encode(data); err != nil {
-		sl.Log.Error("failed to encode response data", slog.Any("error", err), slog.Any("request", r))
+		slog.Error("failed to encode response data", slog.Any("error", err), slog.Any("request", r))
 		w.WriteHeader(http.StatusInternalServerError)
 		metrics.IncStatusCount(http.StatusInternalServerError)
 	}

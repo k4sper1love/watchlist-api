@@ -9,7 +9,6 @@ package config
 import (
 	"fmt"
 	"github.com/joho/godotenv"
-	"github.com/k4sper1love/watchlist-api/pkg/logger/sl"
 	"github.com/peterbourgon/ff/v4"
 	"log/slog"
 	"os"
@@ -46,12 +45,12 @@ func ParseFlags(args []string) error {
 
 	// Load environment variables from .env file
 	if err := godotenv.Load(); err != nil {
-		sl.Log.Debug("no .env file found")
+		slog.Debug("no .env file found")
 	}
 
 	// Parse flags and environment variables
 	if err := ff.Parse(flagSet, args, ff.WithEnvVarPrefix("APP")); err != nil {
-		sl.Log.Error("error parsing flags", slog.Any("error", err))
+		slog.Error("error parsing flags", slog.Any("error", err))
 		return err
 	}
 
@@ -60,11 +59,11 @@ func ParseFlags(args []string) error {
 
 	// Validate the application environment
 	if !isValidEnv(Env) {
-		sl.Log.Warn("invalid environment value; defaulting to 'local'", slog.Any("env", Env))
+		slog.Warn("invalid environment value; defaulting to 'local'", slog.Any("env", Env))
 		Env = "local"
 	}
 
-	sl.Log.Debug("successfully parsed flags")
+	slog.Debug("successfully parsed flags")
 	return nil
 }
 

@@ -8,7 +8,7 @@ package main
 
 import (
 	"github.com/k4sper1love/watchlist-api/internal/watchlist"
-	"github.com/k4sper1love/watchlist-api/pkg/logger/sl"
+	"log/slog"
 	"os"
 )
 
@@ -23,7 +23,7 @@ import (
 
 func main() {
 	if err := watchlist.Run(os.Args); err != nil {
-		sl.Log.Error("application terminated due to an error")
+		slog.Error("application terminated due to an error")
 		os.Exit(1)
 	}
 }

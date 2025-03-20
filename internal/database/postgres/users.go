@@ -3,7 +3,6 @@ package postgres
 import (
 	"context"
 	"database/sql"
-	"github.com/k4sper1love/watchlist-api/pkg/logger/sl"
 	"github.com/k4sper1love/watchlist-api/pkg/models"
 	"log/slog"
 	"time"
@@ -135,7 +134,7 @@ func GetUsers() ([]*models.User, error) {
 
 	defer func() {
 		if err := rows.Close(); err != nil {
-			sl.Log.Error("failed to close rows", slog.Any("error", err))
+			slog.Error("failed to close rows", slog.Any("error", err))
 		}
 	}()
 
