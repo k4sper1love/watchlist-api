@@ -1,9 +1,6 @@
-/*
-Package validator provides functionality to validate struct fields using custom and built-in validation rules.
-It supports registration of custom validation functions for fields like passwords and usernames.
-This package also handles the conversion of validation errors to human-readable messages.
-*/
-
+// Package validator provides functionality to validate struct fields using custom and built-in validation rules.
+// It supports registration of custom validation functions for fields like passwords and usernames.
+// This package also handles the conversion of validation errors to human-readable messages.
 package validator
 
 import (

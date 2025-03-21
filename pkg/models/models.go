@@ -1,13 +1,10 @@
-/*
-Package models defines the data structures used within the application.
-These structures represent the main entities in the system, including users, collections,
-films, and the relationships between them. The models include fields with JSON tags
-for serialization and validation tags for input validation.
-
-Each model contains fields relevant to its entity, including identifiers, attributes,
-and timestamps for tracking creation and update times.
-*/
-
+// Package models defines the data structures used within the application.
+// These structures represent the main entities in the system, including users, collections,
+// films, and the relationships between them. The models include fields with JSON tags
+// for serialization and validation tags for input validation.
+//
+// Each model contains fields relevant to its entity, including identifiers, attributes,
+// and timestamps for tracking creation and update times.
 package models
 
 import (

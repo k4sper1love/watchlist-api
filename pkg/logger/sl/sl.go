@@ -1,18 +1,15 @@
-/*
-Package sl provides a structured logging system based on the `slog` package.
-
-Features:
-- Supports different logging formats (JSON, text) based on the environment.
-- Can log to a file, console, or both, depending on the `LOG_OUTPUT` environment variable.
-- Uses `lumberjack` for log file rotation.
-- Provides helper functions for logging HTTP requests and errors.
-
-Configuration:
-- `LOG_OUTPUT`: Defines where logs should be written (`file`, `console`, `both`).
-- `LOGS_DIR`: Specifies the directory where log files are stored.
-- `env`: Defines the logging environment (`local`, `dev`, `prod`).
-*/
-
+// Package sl provides a structured logging system based on the `slog` package.
+//
+// Features:
+// - Supports different logging formats (JSON, text) based on the environment.
+// - Can log to a file, console, or both, depending on the `LOGS_OUTPUT` environment variable.
+// - Uses `lumberjack` for log file rotation.
+// - Provides helper functions for logging HTTP requests and errors.
+//
+// Configuration:
+// - `LOGS_OUTPUT`: Defines where logs should be written (`file`, `console`, `both`).
+// - `LOGS_DIR`: Specifies the directory where log files are stored.
+// - `env`: Defines the logging environment (`local`, `dev`, `prod`).
 package sl
 
 import (
@@ -35,7 +32,7 @@ func Init(env string) {
 
 // setupHandler configures and returns a logger handler based on the environment and log settings.
 func setupHandler(env string) slog.Handler {
-	logOutput := strings.ToLower(os.Getenv("LOG_OUTPUT"))
+	logOutput := strings.ToLower(os.Getenv("LOGS_OUTPUT"))
 	logsDir := os.Getenv("LOGS_DIR")
 
 	if logsDir == "" {
@@ -63,28 +60,24 @@ func setupHandler(env string) slog.Handler {
 		slog.Info("Logging to both console and file", slog.String("file", logFile.Filename))
 	default:
 		output = os.Stdout
-		slog.Warn("Invalid LOG_OUTPUT value, defaulting to console", slog.String("value", logOutput))
+		slog.Warn("Invalid LOGS_OUTPUT value, defaulting to console", slog.String("value", logOutput))
 	}
-
-	var handler slog.Handler
 
 	switch env {
 	case "local":
 		// Logger for local environment with text output and debug level.
-		handler = slog.NewTextHandler(output, &slog.HandlerOptions{Level: slog.LevelDebug})
+		return slog.NewTextHandler(output, &slog.HandlerOptions{Level: slog.LevelDebug})
 	case "dev":
 		// Logger for development environment with JSON output and debug level.
-		handler = slog.NewJSONHandler(output, &slog.HandlerOptions{Level: slog.LevelDebug})
+		return slog.NewJSONHandler(output, &slog.HandlerOptions{Level: slog.LevelDebug})
 	case "prod":
 		// Logger for production environment with JSON output and info level.
-		handler = slog.NewJSONHandler(output, &slog.HandlerOptions{Level: slog.LevelInfo})
+		return slog.NewJSONHandler(output, &slog.HandlerOptions{Level: slog.LevelInfo})
 	default:
 		// Default to local settings.
-		handler = slog.NewTextHandler(output, &slog.HandlerOptions{Level: slog.LevelDebug})
 		slog.Warn("Unknown environment, defaulting to local settings", slog.String("env", env))
+		return slog.NewTextHandler(output, &slog.HandlerOptions{Level: slog.LevelDebug})
 	}
-
-	return handler
 }
 
 // PrintEndpointInfo logs information about an incoming HTTP request.

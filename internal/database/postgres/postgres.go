@@ -3,7 +3,6 @@
 //
 // This package requires the `pq` and `golang-migrate` packages for PostgreSQL and migration support, respectively.
 // Ensure that `config.Dsn` and `config.Migrations` are properly configured.
-
 package postgres
 
 import (

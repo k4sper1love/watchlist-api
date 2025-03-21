@@ -1,9 +1,6 @@
-/*
-Package config handles configuration for the application from command-line flags.
-
-It provides functions to parse command-line flags for configuration.
-*/
-
+// Package config handles configuration for the application from command-line flags.
+//
+// It provides functions to parse command-line flags for configuration.
 package config
 
 import (

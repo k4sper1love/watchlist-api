@@ -1,15 +1,12 @@
-/*
-Package watchlist initializes and starts the application.
-
-It handles the following tasks:
-1. Sets up logging with configurable formats based on the environment.
-2. Loads configuration from environment variables and command-line flags.
-3. Establishes a connection to the PostgreSQL database.
-4. Starts the REST API server.
-
-The Run function is the entry point for starting the application and manages the overall setup and execution flow.
-*/
-
+// Package watchlist initializes and starts the application.
+//
+// It handles the following tasks:
+// 1. Sets up logging with configurable formats based on the environment.
+// 2. Loads configuration from environment variables and command-line flags.
+// 3. Establishes a connection to the PostgreSQL database.
+// 4. Starts the REST API server.
+//
+// The Run function is the entry point for starting the application and manages the overall setup and execution flow.
 package watchlist
 
 import (

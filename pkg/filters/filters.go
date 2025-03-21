@@ -1,9 +1,6 @@
-/*
-Package filters provides functionality for managing and validating filter parameters for data retrieval.
-It includes structures for specifying filters, functions for validating and calculating pagination metadata,
-and methods for handling sorting and pagination details.
-*/
-
+// Package filters provides functionality for managing and validating filter parameters for data retrieval.
+// It includes structures for specifying filters, functions for validating and calculating pagination metadata,
+// and methods for handling sorting and pagination details.
 package filters
 
 import (
