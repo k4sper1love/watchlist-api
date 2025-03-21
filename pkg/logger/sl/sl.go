@@ -41,7 +41,7 @@ func setupHandler(env string) slog.Handler {
 	}
 
 	logFile := &lumberjack.Logger{
-		Filename:   logsDir + "/bot.log",
+		Filename:   logsDir + "/app.log",
 		MaxSize:    10,   // Max file size in MB before rotation
 		MaxBackups: 30,   // Max number of old log files
 		Compress:   true, // Compress old logs
