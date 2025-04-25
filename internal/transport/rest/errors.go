@@ -19,6 +19,7 @@ var (
 	errInvalidToken        = errors.New("invalid token")
 	errInvalidRefreshToken = errors.New("invalid or revoked refresh token")
 	errRequiredPassword    = errors.New("password is required for this login method")
+	errInvalidFilterValue  = errors.New("invalid filter value")
 )
 
 // errorResponse sends a JSON response with an error message and status code.
@@ -110,6 +111,10 @@ func handleDBError(w http.ResponseWriter, r *http.Request, err error) {
 		}
 		if pqErr.Code == "23503" {
 			uniqueConflictResponse(w, r, errForeignKeyViolation)
+			return
+		}
+		if pqErr.Code == "22P02" {
+			badRequestResponse(w, r, errInvalidFilterValue)
 			return
 		}
 		serverErrorResponse(w, r, err)

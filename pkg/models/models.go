@@ -62,19 +62,19 @@ type Film struct {
 	ID          int       `json:"id"  example:"1"`     // Unique identifier for the film.
 	UserID      int       `json:"user_id" example:"1"` // Identifier of the user who added the film.
 	IsFavorite  bool      `json:"is_favorite" example:"false"`
-	Title       string    `json:"title" validate:"required,min=3,max=100" example:"My film"`                           // Title of the film; required, between 3 and 100 characters.
-	Year        int       `json:"year,omitempty" validate:"omitempty,gte=1888,lte=2100" example:"2001"`                // Release year of the film; optional, must be between 1888 and 2100.
-	Genre       string    `json:"genre,omitempty" validate:"omitempty,max=100" example:"Horror"`                       // Genre of the film; optional.
-	Description string    `json:"description,omitempty" validate:"omitempty,max=1000" example:"This is description"`   // Description of the film; optional, up to 1000 characters.
-	Rating      float64   `json:"rating,omitempty" validate:"omitempty,gte=1,lte=10" example:"6.7"`                    // Rating of the film; optional, must be between 1 and 10.
-	ImageURL    string    `json:"image_url,omitempty" validate:"omitempty,url" example:"https://placeimg.com/640/480"` // URL of the film's image; optional, must be a valid URL.
-	Comment     string    `json:"comment,omitempty" validate:"omitempty,max=500" example:"This is comment"`            // User's comment of the film; optional, up to 500 characters.
-	IsViewed    bool      `json:"is_viewed" example:"true"`                                                            // Indicates if the user has viewed the film.
-	UserRating  float64   `json:"user_rating,omitempty" validate:"omitempty,gte=1,lte=10" example:"5.5"`               // User's rating of the film; optional, between 1 and 10.
-	Review      string    `json:"review,omitempty" validate:"omitempty,max=500" example:"This is review"`              // User's review of the film; optional, up to 500 characters.
-	URL         string    `json:"url,omitempty" validate:"omitempty,url" example:"https://www.imdb.com/video"`         // URL for additional film information (e.g., IMDb or trailer); optional, must be valid.
-	CreatedAt   time.Time `json:"created_at" example:"2024-09-04T13:37:24.87653+05:00"`                                // Timestamp when the film was added.
-	UpdatedAt   time.Time `json:"updated_at" example:"2024-09-04T13:37:24.87653+05:00"`                                // Timestamp when the film details were last updated.
+	Title       string    `json:"title" validate:"required,min=3,max=100" example:"My film"`                                           // Title of the film; required, between 3 and 100 characters.
+	Year        int       `json:"year,omitempty" validate:"omitempty,gte=1888,lte=2100" example:"2001"`                                // Release year of the film; optional, must be between 1888 and 2100.
+	Genre       string    `json:"genre,omitempty" validate:"omitempty,max=100" example:"Horror"`                                       // Genre of the film; optional.
+	Description string    `json:"description,omitempty" validate:"omitempty,max=1000" example:"This is description"`                   // Description of the film; optional, up to 1000 characters.
+	Rating      float64   `json:"rating,omitempty" validate:"omitempty,gte=1,lte=10" example:"6.7"`                                    // Rating of the film; optional, must be between 1 and 10.
+	ImageURL    string    `json:"image_url,omitempty" validate:"omitempty,url" example:"https://placeimg.com/640/480"`                 // URL of the film's image; optional, must be a valid URL.
+	Comment     string    `json:"comment,omitempty" validate:"omitempty,max=500" example:"This is comment"`                            // User's comment of the film; optional, up to 500 characters.
+	ViewStatus  string    `json:"view_status,omitempty" example:"not_viewed" validate:"omitempty,oneof=not_viewed in_progress viewed"` // View status of the film; optional. Can be one of: "not_viewed", "in_progress", or "viewed".
+	UserRating  float64   `json:"user_rating,omitempty" validate:"omitempty,gte=1,lte=10" example:"5.5"`                               // User's rating of the film; optional, between 1 and 10.
+	Review      string    `json:"review,omitempty" validate:"omitempty,max=500" example:"This is review"`                              // User's review of the film; optional, up to 500 characters.
+	URL         string    `json:"url,omitempty" validate:"omitempty,url" example:"https://www.imdb.com/video"`                         // URL for additional film information (e.g., IMDb or trailer); optional, must be valid.
+	CreatedAt   time.Time `json:"created_at" example:"2024-09-04T13:37:24.87653+05:00"`                                                // Timestamp when the film was added.
+	UpdatedAt   time.Time `json:"updated_at" example:"2024-09-04T13:37:24.87653+05:00"`                                                // Timestamp when the film details were last updated.
 }
 
 // CollectionFilm represents the association between a film and a collection.
@@ -98,7 +98,7 @@ type FilmsQueryInput struct {
 	ExcludeCollection int
 	Rating            string
 	Year              string
-	IsViewed          *bool
+	ViewStatus        string
 	UserRating        string
 	HasURL            *bool
 	IsFavorite        *bool

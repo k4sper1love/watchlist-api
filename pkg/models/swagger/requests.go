@@ -1,6 +1,8 @@
 package swagger
 
-import "time"
+import (
+	"time"
+)
 
 type LoginRequest struct {
 	Username string `json:"username" example:"k4sper1love"`
@@ -25,7 +27,7 @@ type FilmRequest struct {
 	Rating      float64 `json:"rating" example:"6.7"`
 	ImageURL    string  `json:"image_url" example:"http://k4sper1love.kz/images/default.png"`
 	Comment     string  `json:"comment" example:"This is comment"`
-	IsViewed    bool    `json:"is_viewed" example:"true"`
+	ViewStatus  string  `json:"view_status" example:"not_viewed"`
 	UserRating  float64 `json:"user_rating" example:"5.5"`
 	Review      string  `json:"review" example:"This is review."`
 	URL         string  `json:"url" example:"https://www.kino.kz/film/689/"`
