@@ -1,3 +1,5 @@
+CREATE TYPE view_status AS ENUM ('not_viewed', 'in_progress', 'viewed');
+
 CREATE TABLE IF NOT EXISTS films
 (
     id          BIGSERIAL PRIMARY KEY,
@@ -10,7 +12,7 @@ CREATE TABLE IF NOT EXISTS films
     rating      NUMERIC(4, 2),
     image_url   TEXT,
     comment     TEXT,
-    is_viewed   BOOLEAN                  NOT NULL DEFAULT FALSE,
+    view_status view_status DEFAULT 'not_viewed',
     user_rating NUMERIC(4, 2),
     review      TEXT,
     url TEXT,

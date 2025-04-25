@@ -34,6 +34,7 @@ func addFilmHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	film.UserID = userID
 
+	setDefaultViewStatus(&film)
 	setDefaultImage(r, &film)
 
 	if errs := validator.ValidateStruct(&film); errs != nil {
@@ -98,7 +99,7 @@ func getFilmHandler(w http.ResponseWriter, r *http.Request) {
 // @Param rating query string false "Filter by `rating`, can be a specific value or a range like 'min-max'"
 // @Param year query string false "Filter by `year`"
 // @Param user_rating query string false "Filter by `user_rating`"
-// @Param is_viewed query bool false "Filter by `is_viewed` (true/false)"
+// @Param view_status query string false "Filter by `view_status`: not_viewed, in_progress, viewed"
 // @Param is_favorite query bool false "Filter by `is_favorite` (true/false)"
 // @Param has_url query bool false "Filter by `url` (true/false)"
 // @Param exclude_collection query int false "Filter by `exclude collection`"
@@ -141,7 +142,8 @@ func getFilmsHandler(w http.ResponseWriter, r *http.Request) {
 // @Accept json
 // @Produce json
 // @Param film_id path int true "Film ID"
-// @Param film body swagger.FilmRequest true "New information about the film"// @Success 200 {object} swagger.FilmResponse
+// @Param film body swagger.FilmRequest true "New information about the film"
+// @Success 200 {object} swagger.FilmResponse
 // @Failure 400 {object} swagger.ErrorResponse
 // @Failure 401 {object} swagger.ErrorResponse
 // @Failure 403 {object} swagger.ErrorResponse
@@ -169,6 +171,7 @@ func updateFilmHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	setDefaultViewStatus(film)
 	setDefaultImage(r, film)
 
 	if errs := validator.ValidateStruct(film); errs != nil {
@@ -246,8 +249,8 @@ func parseAndValidateFilmsFilters(r *http.Request) (*models.FilmsQueryInput, map
 	input.Year = parseQueryString(qs, "year", "")
 	input.UserRating = parseQueryString(qs, "user_rating", "")
 
-	isViewed := parseQueryBoolPtr(qs, "is_viewed")
-	input.IsViewed = isViewed
+	viewStatus := parseQueryString(qs, "view_status", "")
+	input.ViewStatus = viewStatus
 
 	isFavorite := parseQueryBoolPtr(qs, "is_favorite")
 	input.IsFavorite = isFavorite
@@ -257,11 +260,18 @@ func parseAndValidateFilmsFilters(r *http.Request) (*models.FilmsQueryInput, map
 
 	// Define safe sortable fields.
 	input.Filters.SortSafeList = []string{
-		"id", "title", "rating", "year", "is_viewed", "is_favorite", "user_rating", "created_at",
-		"-id", "-title", "-rating", "-year", "-is_viewed", "-is_favorite", "-user_rating", "-created_at",
+		"id", "title", "rating", "year", "view_status", "is_favorite", "user_rating", "created_at",
+		"-id", "-title", "-rating", "-year", "view_status", "-is_favorite", "-user_rating", "-created_at",
 	}
 
 	errs, err := filters.ValidateFilters(input.Filters)
 
 	return &input, errs, err
+}
+
+// setDefaultViewStatus sets the default view status to "not_viewed" if none is provided.
+func setDefaultViewStatus(f *models.Film) {
+	if f.ViewStatus == "" {
+		f.ViewStatus = models.ViewStatusNotViewed
+	}
 }

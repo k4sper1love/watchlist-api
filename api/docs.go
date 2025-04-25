@@ -1197,9 +1197,9 @@ const docTemplate = `{
                         "in": "query"
                     },
                     {
-                        "type": "boolean",
-                        "description": "Filter by ` + "`" + `is_viewed` + "`" + ` (true/false)",
-                        "name": "is_viewed",
+                        "type": "string",
+                        "description": "Filter by ` + "`" + `view_status` + "`" + `: not_viewed, in_progress, viewed",
+                        "name": "view_status",
                         "in": "query"
                     },
                     {
@@ -1424,6 +1424,12 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/swagger.FilmResponse"
+                        }
+                    },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
@@ -1945,11 +1951,6 @@ const docTemplate = `{
                     "type": "boolean",
                     "example": false
                 },
-                "is_viewed": {
-                    "description": "Indicates if the user has viewed the film.",
-                    "type": "boolean",
-                    "example": true
-                },
                 "rating": {
                     "description": "Rating of the film; optional, must be between 1 and 10.",
                     "type": "number",
@@ -1991,6 +1992,16 @@ const docTemplate = `{
                     "maximum": 10,
                     "minimum": 1,
                     "example": 5.5
+                },
+                "view_status": {
+                    "description": "View status of the film; optional. Can be one of: \"not_viewed\", \"in_progress\", or \"viewed\".",
+                    "type": "string",
+                    "enum": [
+                        "not_viewed",
+                        "in_progress",
+                        "viewed"
+                    ],
+                    "example": "not_viewed"
                 },
                 "year": {
                     "description": "Release year of the film; optional, must be between 1888 and 2100.",
@@ -2189,10 +2200,6 @@ const docTemplate = `{
                     "type": "boolean",
                     "example": false
                 },
-                "is_viewed": {
-                    "type": "boolean",
-                    "example": true
-                },
                 "rating": {
                     "type": "number",
                     "example": 6.7
@@ -2212,6 +2219,10 @@ const docTemplate = `{
                 "user_rating": {
                     "type": "number",
                     "example": 5.5
+                },
+                "view_status": {
+                    "type": "string",
+                    "example": "not_viewed"
                 },
                 "year": {
                     "type": "integer",

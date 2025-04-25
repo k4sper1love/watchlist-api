@@ -93,7 +93,7 @@ func GetCollectionFilms(c *models.CollectionFilms, input *models.FilmsQueryInput
 
 	for rows.Next() {
 		var film models.Film
-		if err := rows.Scan(&totalRecords, &film.ID, &film.UserID, &film.IsFavorite, &film.Title, &film.Year, &film.Genre, &film.Description, &film.Rating, &film.ImageURL, &film.Comment, &film.IsViewed, &film.UserRating, &film.Review, &film.URL, &film.CreatedAt, &film.UpdatedAt); err != nil {
+		if err := rows.Scan(&totalRecords, &film.ID, &film.UserID, &film.IsFavorite, &film.Title, &film.Year, &film.Genre, &film.Description, &film.Rating, &film.ImageURL, &film.Comment, &film.ViewStatus, &film.UserRating, &film.Review, &film.URL, &film.CreatedAt, &film.UpdatedAt); err != nil {
 			return filters.Metadata{}, err
 		}
 		films = append(films, film)

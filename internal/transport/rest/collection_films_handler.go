@@ -82,6 +82,7 @@ func addNewCollectionFilmHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	film.UserID = userID
 
+	setDefaultViewStatus(&film)
 	setDefaultImage(r, &film)
 
 	if errs := validator.ValidateStruct(&film); errs != nil {

@@ -159,10 +159,6 @@ definitions:
       is_favorite:
         example: false
         type: boolean
-      is_viewed:
-        description: Indicates if the user has viewed the film.
-        example: true
-        type: boolean
       rating:
         description: Rating of the film; optional, must be between 1 and 10.
         example: 6.7
@@ -199,6 +195,15 @@ definitions:
         maximum: 10
         minimum: 1
         type: number
+      view_status:
+        description: 'View status of the film; optional. Can be one of: "not_viewed",
+          "in_progress", or "viewed".'
+        enum:
+        - not_viewed
+        - in_progress
+        - viewed
+        example: not_viewed
+        type: string
       year:
         description: Release year of the film; optional, must be between 1888 and
           2100.
@@ -340,9 +345,6 @@ definitions:
       is_favorite:
         example: false
         type: boolean
-      is_viewed:
-        example: true
-        type: boolean
       rating:
         example: 6.7
         type: number
@@ -358,6 +360,9 @@ definitions:
       user_rating:
         example: 5.5
         type: number
+      view_status:
+        example: not_viewed
+        type: string
       year:
         example: 2001
         type: integer
@@ -1200,10 +1205,10 @@ paths:
         in: query
         name: user_rating
         type: string
-      - description: Filter by `is_viewed` (true/false)
+      - description: 'Filter by `view_status`: not_viewed, in_progress, viewed'
         in: query
-        name: is_viewed
-        type: boolean
+        name: view_status
+        type: string
       - description: Filter by `is_favorite` (true/false)
         in: query
         name: is_favorite
@@ -1395,6 +1400,10 @@ paths:
       produces:
       - application/json
       responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/swagger.FilmResponse'
         "400":
           description: Bad Request
           schema:

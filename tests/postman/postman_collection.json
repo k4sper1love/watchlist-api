@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "cd48afb6-52bc-4ae3-8f8e-7ecdf4792a7f",
+		"_postman_id": "85fedd1f-55fe-4c85-a49b-5de4cf02c2af",
 		"name": "wishlist-api",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "37771019"
@@ -610,7 +610,7 @@
 									"    pm.expect(responseData.film).to.have.property('rating').that.is.a('number');\r",
 									"    pm.expect(responseData.film).to.have.property('image_url').that.is.a('string');\r",
 									"    pm.expect(responseData.film).to.have.property('comment').that.is.a('string');\r",
-									"    pm.expect(responseData.film).to.have.property('is_viewed').that.is.a('boolean');\r",
+									"    pm.expect(responseData.film).to.have.property('view_status').that.is.a('string');\r",
 									"    pm.expect(responseData.film).to.have.property('created_at').that.is.a('string');\r",
 									"    pm.expect(responseData.film).to.have.property('updated_at').that.is.a('string');\r",
 									"});\r",
@@ -688,7 +688,7 @@
 									"        pm.expect(film).to.have.property('rating');\r",
 									"        pm.expect(film).to.have.property('image_url');\r",
 									"        pm.expect(film).to.have.property('comment');\r",
-									"        pm.expect(film).to.have.property('is_viewed');\r",
+									"        pm.expect(film).to.have.property('view_status');\r",
 									"        pm.expect(film).to.have.property('created_at');\r",
 									"        pm.expect(film).to.have.property('updated_at');\r",
 									"    });\r",
@@ -876,7 +876,7 @@
 									"        \"rating\",\r",
 									"        \"image_url\",\r",
 									"        \"comment\",\r",
-									"        \"is_viewed\",\r",
+									"        \"view_status\",\r",
 									"        \"created_at\",\r",
 									"        \"updated_at\"\r",
 									"    ];\r",
@@ -950,7 +950,7 @@
 									"    pm.expect(responseData.film).to.have.property('rating').that.is.a('number');\r",
 									"    pm.expect(responseData.film).to.have.property('image_url').that.is.a('string');\r",
 									"    pm.expect(responseData.film).to.have.property('comment').that.is.a('string');\r",
-									"    pm.expect(responseData.film).to.have.property('is_viewed').that.is.a('boolean');\r",
+									"    pm.expect(responseData.film).to.have.property('view_status').that.is.a('string');\r",
 									"    pm.expect(responseData.film).to.have.property('user_rating').that.is.a('number');\r",
 									"    pm.expect(responseData.film).to.have.property('review').that.is.a('string');\r",
 									"    pm.expect(responseData.film).to.have.property('created_at').that.is.a('string');\r",
@@ -974,7 +974,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"is_viewed\": true,\r\n    \"user_rating\":1,\r\n    \"review\": \"{{$randomPhrase}}\"\r\n}",
+							"raw": "{\r\n    \"view_status\": \"in_progress\",\r\n    \"user_rating\":1,\r\n    \"review\": \"{{$randomPhrase}}\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1603,7 +1603,7 @@
 									"        pm.expect(item).to.have.property('rating').that.is.a('number');\r",
 									"        pm.expect(item).to.have.property('image_url').that.is.a('string');\r",
 									"        pm.expect(item).to.have.property('comment').that.is.a('string');\r",
-									"        pm.expect(item).to.have.property('is_viewed').that.is.a('boolean');\r",
+									"        pm.expect(item).to.have.property('view_status').that.is.a('string');\r",
 									"        pm.expect(item).to.have.property('created_at').that.is.a('string');\r",
 									"        pm.expect(item).to.have.property('updated_at').that.is.a('string');\r",
 									"    });\r",
@@ -1782,7 +1782,7 @@
 									"    pm.expect(responseData.film.id).to.be.a('number').and.to.satisfy(num => num >= 0, \"Film ID should be a non-negative integer\");",
 									"    pm.expect(responseData.film.user_id).to.be.a('number').and.to.satisfy(num => num >= 0, \"User ID should be a non-negative integer\");",
 									"    pm.expect(responseData.film.title).to.be.a('string');",
-									"    pm.expect(responseData.film.is_viewed).to.be.a('boolean');",
+									"    pm.expect(responseData.film.view_status).to.be.a('string');",
 									"});",
 									"",
 									"pm.test(\"Added_at and updated_at are in a valid date format\", function () {",
